@@ -1,3 +1,11 @@
+import NavBar from '../components/NavBar.tsx';
+import HomeGrid from '../components/HomeGrid.tsx';
+
 export default function Home() {
-  return <h1 className="text-3xl text-blue-400">Home Page</h1>;
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      <NavBar />
+      <HomeGrid />
+    </div>
+  );
 }
