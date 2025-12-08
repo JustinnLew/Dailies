@@ -23,7 +23,6 @@ async fn main() {
         .allow_origin(Any);
 
 
-    // build our application with a single route
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/guess-the-song/create-lobby", get(create_lobby))

@@ -5,7 +5,6 @@ export default function GuessTheSongGame() {
     const lobbyCode = useParams().lobbyCode;
 
     useEffect(() => {
-        // Here you would add logic to connect to the lobby using the lobbyCode
         const socket = new WebSocket(`ws://localhost:3000/ws/guess-the-song/${lobbyCode}`);
         socket.onopen = () => {
             console.log("Connected to lobby ", lobbyCode);
