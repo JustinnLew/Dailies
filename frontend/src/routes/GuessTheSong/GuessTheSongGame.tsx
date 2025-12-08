@@ -1,24 +1,30 @@
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+
 
 export default function GuessTheSongGame() {
+    const navigate = useNavigate();
     const lobbyCode = useParams().lobbyCode;
+    const socket = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        const socket = new WebSocket(`ws://localhost:3000/ws/guess-the-song/${lobbyCode}`);
-        socket.onopen = () => {
+        const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song/${lobbyCode}`);
+        socket.current = s;
+        s.onopen = () => {
             console.log("Connected to lobby ", lobbyCode);
         }
-        socket.onclose = () => {
+        s.onclose = () => {
+            // navigate('/');
             console.log("Disconnected from lobby ", lobbyCode);
         }
-        socket.onmessage = (event) => {
+        s.onmessage = (event) => {
             console.log("Message from server ", event.data);
         }
         return () => {
-            socket.close();
+            // navigate('/');
+            s.close();
         }
-    }, [lobbyCode]);
+    }, [lobbyCode, navigate]);
 
   // Dummy data
   const players = ["Alice", "Bob", "Charlie"];

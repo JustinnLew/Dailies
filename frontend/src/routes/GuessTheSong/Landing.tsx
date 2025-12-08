@@ -18,7 +18,7 @@ export default function Landing() {
 
 
         // 2. Navigate to the lobby page, where websocket will start
-        navigate(`/guess-the-song/lobby/${lobbyId}`);
+        navigate(`/guess-the-song/${lobbyId}`);
     }
 
     return (
