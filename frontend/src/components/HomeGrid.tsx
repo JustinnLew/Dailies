@@ -5,7 +5,6 @@ export default function HomeGrid() {
     const modes = [
         { title: "Guess The Song", description: "Test your music knowledge by guessing songs from short clips.", to: "/guess-the-song" },
         { title: "Coming Soon", description: "Coming Soon", to: "/not-found"  },
-
     ]
 
     return (
