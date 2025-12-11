@@ -1,5 +1,5 @@
 use axum::{
-    Json, Router, extract::{Path, ws::{WebSocketUpgrade}}, response::{IntoResponse, Response}, routing::{any, get}
+    Json, Router, extract::{Path, ws::{WebSocketUpgrade}}, response::{IntoResponse, Response}, routing::{any, get, post}
 };
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::{Method, StatusCode};
@@ -26,9 +26,8 @@ async fn main() {
 
 
     let app = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
-        .route("/guess-the-song/create-lobby", get(create_lobby))
-        .route("/ws/{game}/{lobby_code}", any(handle_ws))
+        .route("/guess-the-song/create-lobby", post(create_lobby))
+        .route("/ws/{game}", any(handle_ws))
         .layer(cors);
 
     // run our app with hyper, listening globally on port 3000
@@ -36,9 +35,9 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn handle_ws(ws: WebSocketUpgrade, Path((game, lobby_code)): Path<(String, String)>) -> Response {
+async fn handle_ws(ws: WebSocketUpgrade, Path(game): Path<String>) -> Response {
     match game.as_str() {
-        "guess-the-song" => { ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, lobby_code)) },
+        "guess-the-song" => { ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket)) },
         _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response()
     }
 }
