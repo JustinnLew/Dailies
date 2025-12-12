@@ -1,6 +1,8 @@
 use std::{time::Duration};
 
-use axum::extract::ws::WebSocket;
+use axum::extract::{State, ws::WebSocket};
+
+use crate::AppState;
 
 struct Player {
     name: String,
@@ -13,7 +15,7 @@ struct GameState {
     songs: Vec<String>,
 }
 
-pub async fn handle_guess_the_song(mut socket: WebSocket) {
+pub async fn handle_guess_the_song(mut socket: WebSocket, state: AppState) {
     while let Some(msg) = socket.recv().await {
         let msg = if let Ok(msg) = msg {
             msg
