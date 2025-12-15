@@ -1,18 +1,22 @@
 import { useState } from "react";
 import Navbar from "../../components/NavBar"
 import { useNavigate } from "react-router-dom";
+import { getUserId, getUserName } from "../../utils/util";
 
 export default function Landing() {
     const navigate = useNavigate();
     const [lobbyInput, setLobbyInput] = useState("");
+    const userId = getUserId();
+    const userName = getUserName();
 
     // This will call your server to create a new lobby
     const createLobby = async () => {
         const res = await fetch("http://localhost:3000/guess-the-song/create-lobby", {
-            method: "POST"
+            method: "POST",
+            body: JSON.stringify({ userId, userName })
         });
         const data = await res.json();
-        console.log("Lobby created with code:", data.lobby_code);
+        console.log(`User ${userName} created lobby ${data.lobby_code}`);
         navigate(`/guess-the-song/${data.lobby_code}`);
     }
 
@@ -20,7 +24,8 @@ export default function Landing() {
         if (lobbyInput.trim() === "") return;
         // Maybe send a http request here to join as well
         const res = await fetch(`http://localhost:3000/guess-the-song/join-lobby/${lobbyInput}`, {
-            method: "POST"
+            method: "POST",
+            body: JSON.stringify({ userId })
         });
         if (!res.ok) {
             alert("Failed to join lobby. Please check the code and try again.");

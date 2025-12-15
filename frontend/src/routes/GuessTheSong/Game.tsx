@@ -6,7 +6,9 @@ import Gameplay from "./Gameplay";
 export default function Game() {
 	const params = useParams();
 	const [lobbyCode, setLobbyCode] = useState(params.lobbyCode);
+	// Need to get this from the server via websockets
 	const [waiting, setWaiting] = useState(true);
+	
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
 	
