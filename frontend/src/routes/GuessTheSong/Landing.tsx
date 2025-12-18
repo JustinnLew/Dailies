@@ -13,7 +13,7 @@ export default function Landing() {
     const createLobby = async () => {
         const res = await fetch("http://localhost:3000/guess-the-song/create-lobby", {
             method: "POST",
-            body: JSON.stringify({ userId, userName })
+            body: JSON.stringify({ userId, userName }),
         });
         const data = await res.json();
         console.log(`User ${userName} created lobby ${data.lobby_code}`);
@@ -25,7 +25,7 @@ export default function Landing() {
         // Maybe send a http request here to join as well
         const res = await fetch(`http://localhost:3000/guess-the-song/join-lobby/${lobbyInput}`, {
             method: "POST",
-            body: JSON.stringify({ userId })
+            body: JSON.stringify({ userId }),
         });
         if (!res.ok) {
             alert("Failed to join lobby. Please check the code and try again.");

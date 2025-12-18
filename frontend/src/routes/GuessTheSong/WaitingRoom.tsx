@@ -1,8 +1,8 @@
-export default function Waiting({ lobbyCode, ready }
-: { lobbyCode: string, ready: () => void }
-) {
+import type { Player } from "../../utils/types";
 
-    const players = ["Alice", "Bob", "Charlie"];
+export default function Waiting({ lobbyCode, ready, players }
+: { lobbyCode: string, ready: () => void, players: Map<string, Player> }
+) {
 
     return (<div className="h-screen flex p-4 bg-gray-100">
 		{/* Left panel: Game ID + Player List */}
@@ -14,11 +14,11 @@ export default function Waiting({ lobbyCode, ready }
 
 			<div>
 			<h2 className="text-lg font-bold mb-2">Players</h2>
-			<ul className="space-y-1">
-				{players.map((player) => (
-				<li key={player} className="p-2 bg-gray-200 rounded">
-					{player}
-				</li>
+			<ul className="space-y-2">
+				{[...players.entries()].map(([id, p]) => (
+					<li key={id} className={`p-2 rounded transition-colors ${p.ready ? "bg-green-200 text-green-900" : "bg-gray-200 text-gray-900"}`}>
+					{p.username}
+					</li>
 				))}
 			</ul>
 			</div>
