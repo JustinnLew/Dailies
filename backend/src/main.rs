@@ -1,19 +1,19 @@
-use axum::{
-    Router, extract::{Path, State, ws::WebSocketUpgrade}, response::{IntoResponse, Response}, routing::{any, post}
-};
-use tower_http::cors::{Any, CorsLayer};
-use axum::http::{Method, StatusCode};
-use rand:: {
-    Rng,
-    distr::Alphanumeric
-};
 use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
+use axum::http::{Method, StatusCode};
+use axum::{
+    Router,
+    extract::{Path, State, ws::WebSocketUpgrade},
+    response::{IntoResponse, Response},
+    routing::{any, post},
+};
+use rand::{Rng, distr::Alphanumeric};
+use tower_http::cors::{Any, CorsLayer};
 
 mod guess_the_song;
 mod state;
 
 #[tokio::main]
-async fn main() {    
+async fn main() {
     let state = AppState::new();
 
     let cors = CorsLayer::new()
@@ -24,7 +24,10 @@ async fn main() {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/guess-the-song/create-lobby", post(guess_the_song_create_lobby))
+        .route(
+            "/guess-the-song/create-lobby",
+            post(guess_the_song_create_lobby),
+        )
         .route("/ws/{game}", any(handle_ws))
         .layer(cors)
         .with_state(state);
@@ -34,13 +37,23 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn handle_ws(ws: WebSocketUpgrade, Path(game): Path<String>, State(state): State<AppState>) -> Response {
+async fn handle_ws(
+    ws: WebSocketUpgrade,
+    Path(game): Path<String>,
+    State(state): State<AppState>,
+) -> Response {
     match game.as_str() {
-        "guess-the-song" => { ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state)) },
-        _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response()
+        "guess-the-song" => {
+            ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state))
+        }
+        _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response(),
     }
 }
 
 fn generate_lobby_code() -> String {
-    rand::rng().sample_iter(&Alphanumeric).take(6).map(char::from).collect()
+    rand::rng()
+        .sample_iter(&Alphanumeric)
+        .take(6)
+        .map(char::from)
+        .collect()
 }

@@ -1,7 +1,14 @@
-use axum::{Json, extract::{State, ws::{Message, WebSocket}}, response::{IntoResponse}};
-use serde::Deserialize;
-use futures_util::{SinkExt, stream::{StreamExt}};
 use crate::{AppState, generate_lobby_code, state::Player};
+use axum::{
+    Json,
+    extract::{
+        State,
+        ws::{Message, WebSocket},
+    },
+    response::IntoResponse,
+};
+use futures_util::{SinkExt, stream::StreamExt};
+use serde::Deserialize;
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
@@ -31,7 +38,7 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
     state.games.add_lobby(&lobby_code);
 
     Json(CreateLobbyResponse {
-        lobby_code: lobby_code
+        lobby_code: lobby_code,
     })
 }
 
@@ -43,7 +50,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         Some(Ok(Message::Text(m))) => m,
         _ => return,
     };
-    let join_req= match serde_json::from_str::<UserEvent>(&join_req) {
+    let join_req = match serde_json::from_str::<UserEvent>(&join_req) {
         Ok(j) if j.event == "join" => j,
         _ => {
             let _ = sender
@@ -57,7 +64,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         None => {
             let _ = sender.send(Message::Text("Lobby Not Found".into())).await;
             return;
-        },
+        }
     };
 
     // Add player to lobby
@@ -72,37 +79,37 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let mut rx = tx.subscribe();
 
     /*
-        Create the send_task
-        Receives broadcasts and sends them to the client
+       Create the send_task
+       Receives broadcasts and sends them to the client
 
-        Requires
-            - Rx (Broadcast Receiver)
-            - Sender (Socket Sender)
-     */
+       Requires
+           - Rx (Broadcast Receiver)
+           - Sender (Socket Sender)
+    */
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
             match serde_json::to_string(&msg) {
-            Ok(json) => {
-                if sender.send(Message::Text(json.into())).await.is_err() {
-                    break;
+                Ok(json) => {
+                    if sender.send(Message::Text(json.into())).await.is_err() {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    eprintln!("Serialization error: {:?}", e);
+                    continue;
                 }
             }
-            Err(e) => {
-                eprintln!("Serialization error: {:?}", e);
-                continue;
-            }
-        }
         }
     });
 
     /*
-        Create the recv_task, which is the following code below
-        Takes in messages from the client and broadcasts them
+       Create the recv_task, which is the following code below
+       Takes in messages from the client and broadcasts them
 
-        Requires
-            - Tx (Broadcast Sender)
-            - Receiver (Socket Receiver)
-     */
+       Requires
+           - Tx (Broadcast Sender)
+           - Receiver (Socket Receiver)
+    */
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             match msg {
@@ -116,9 +123,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                     };
                     println!("{:?}", req);
                     match req.event.as_str() {
-                        "ready" => {
-
-                        }
+                        "ready" => {}
                         _ => {
                             continue;
                         }
