@@ -68,8 +68,6 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
 
 pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let (mut sender, mut receiver) = socket.split();
-    let mut player_id = String::new();
-    let mut player_username = String::new();
 
     // Await the Handshake Join Request
     let join_req = match receiver.next().await {
@@ -85,8 +83,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             return;
         }
     };
-    player_id = join_req.user_id;
-    player_username = join_req.username;
+    let player_id = join_req.user_id;
+    let player_username = join_req.username;
     let lobby = match state.games.get_lobby(&join_req.lobby_code) {
         Some(l) => l,
         None => {
