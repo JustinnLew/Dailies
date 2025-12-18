@@ -1,4 +1,9 @@
-use crate::{AppState, generate_lobby_code, state::Player};
+use std::sync::Arc;
+
+use crate::{
+    AppState, generate_lobby_code,
+    state::{Lobby, ServerEvent},
+};
 use axum::{
     Json,
     extract::{
@@ -24,6 +29,26 @@ struct UserEvent {
     content: Option<String>,
 }
 
+struct GuessTheSongConnectionGuard {
+    lobby: Arc<Lobby>,
+    player_id: String,
+}
+
+impl Drop for GuessTheSongConnectionGuard {
+    fn drop(&mut self) {
+        println!("Players {:?}", self.lobby.get_players());
+        self.lobby.player_leave(&self.player_id);
+        println!(
+            "Player {} disconnected and removed from lobby",
+            self.player_id
+        );
+        println!("Players after{:?}", self.lobby.get_players());
+        let _ = self.lobby.broadcast.send(ServerEvent::PlayerLeave {
+            player_id: self.player_id.clone(),
+        });
+    }
+}
+
 pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl IntoResponse {
     let mut lobby_code;
     loop {
@@ -33,9 +58,8 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
             None => break,
         }
     }
-
-    // Initialize a new lobby
     state.games.add_lobby(&lobby_code);
+    println!("Added lobby {lobby_code}");
 
     Json(CreateLobbyResponse {
         lobby_code: lobby_code,
@@ -44,6 +68,8 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
 
 pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let (mut sender, mut receiver) = socket.split();
+    let mut player_id = String::new();
+    let mut player_username = String::new();
 
     // Await the Handshake Join Request
     let join_req = match receiver.next().await {
@@ -59,6 +85,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             return;
         }
     };
+    player_id = join_req.user_id;
+    player_username = join_req.username;
     let lobby = match state.games.get_lobby(&join_req.lobby_code) {
         Some(l) => l,
         None => {
@@ -67,29 +95,32 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         }
     };
 
-    // Add player to lobby
-    lobby.player_join(Player {
-        user_id: join_req.user_id,
-        username: join_req.username,
-    });
-
+    let _ = lobby.player_join(player_id.clone(), player_username.clone());
+    let _guard = GuessTheSongConnectionGuard {
+        lobby: lobby.clone(),
+        player_id: player_id.clone(),
+    };
     // Clone the broadcast channel into tx (Sender)
     let tx = lobby.broadcast.clone();
     // Subscribe to the broadcast channel to aquire a (Receiver)
     let mut rx = tx.subscribe();
 
-    /*
-       Create the send_task
-       Receives broadcasts and sends them to the client
+    let _ = sender
+        .send(Message::Text(
+            serde_json::to_string(&ServerEvent::SyncState {
+                players: lobby.get_players(),
+            })
+            .expect("Failed to parse SyncState event")
+            .into(),
+        ))
+        .await;
 
-       Requires
-           - Rx (Broadcast Receiver)
-           - Sender (Socket Sender)
-    */
+    // Create the send_task
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
             match serde_json::to_string(&msg) {
                 Ok(json) => {
+                    println!("Relaying broadcast {:?}", json);
                     if sender.send(Message::Text(json.into())).await.is_err() {
                         break;
                     }
@@ -102,14 +133,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         }
     });
 
-    /*
-       Create the recv_task, which is the following code below
-       Takes in messages from the client and broadcasts them
+    let _ = lobby.broadcast.send(ServerEvent::PlayerJoin {
+        player_id: player_id.clone(),
+        player_username: player_username.clone(),
+    });
 
-       Requires
-           - Tx (Broadcast Sender)
-           - Receiver (Socket Receiver)
-    */
+    //  Create the recv_task
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             match msg {
@@ -123,7 +152,15 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                     };
                     println!("{:?}", req);
                     match req.event.as_str() {
-                        "ready" => {}
+                        "ready" => {
+                            lobby.player_ready(&player_id);
+                            let _ = lobby.broadcast.send(ServerEvent::PlayerReady {
+                                player_id: player_id.clone(),
+                            });
+                            if lobby.all_ready() {
+                                let _ = lobby.broadcast.send(ServerEvent::AllReady);
+                            }
+                        }
                         _ => {
                             continue;
                         }
@@ -141,8 +178,5 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         _ = (&mut recv_task) => send_task.abort(),
     }
 
-    // Clean up on client disconnect
     println!("Websocket disconnected");
-    // TODO remove client from lobby
-    // Figure out how to remove the lobby if all clients are gone
 }
