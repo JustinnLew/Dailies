@@ -1,5 +1,5 @@
 use axum::{
-    Json, Router, extract::{Path, State, ws::WebSocketUpgrade}, response::{IntoResponse, Response}, routing::{any, get, post}
+    Router, extract::{Path, State, ws::WebSocketUpgrade}, response::{IntoResponse, Response}, routing::{any, post}
 };
 use tower_http::cors::{Any, CorsLayer};
 use axum::http::{Method, StatusCode};
@@ -7,37 +7,24 @@ use rand:: {
     Rng,
     distr::Alphanumeric
 };
-use dotenv::{
-    dotenv,
-    var
-};
+use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
 
 mod guess_the_song;
-
-#[derive(serde::Serialize)]
-struct CreateLobbyResponse {
-    lobby_code: String,
-}
-#[derive(Clone)]
-struct AppState {
-    db: redis::Client,
-}
+mod state;
 
 #[tokio::main]
-async fn main() {
-    dotenv().ok();
-    let db = redis::Client::open(var("REDIS_ADDRESS").expect("MISSING DB URL")).unwrap();
-    let state = AppState { db };
+async fn main() {    
+    let state = AppState::new();
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
         // allow requests from any origin
-        .allow_origin(Any);
-
+        .allow_origin(Any)
+        .allow_headers(Any);
 
     let app = Router::new()
-        .route("/guess-the-song/create-lobby", post(create_lobby))
+        .route("/guess-the-song/create-lobby", post(guess_the_song_create_lobby))
         .route("/ws/{game}", any(handle_ws))
         .layer(cors)
         .with_state(state);
@@ -52,14 +39,6 @@ async fn handle_ws(ws: WebSocketUpgrade, Path(game): Path<String>, State(state):
         "guess-the-song" => { ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state)) },
         _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response()
     }
-}
-
-
-async fn create_lobby() -> impl IntoResponse {
-    let lobby_code = generate_lobby_code();
-    Json(CreateLobbyResponse {
-        lobby_code: lobby_code
-    })
 }
 
 fn generate_lobby_code() -> String {
