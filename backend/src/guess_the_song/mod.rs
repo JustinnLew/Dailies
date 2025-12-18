@@ -1,6 +1,5 @@
 use axum::{Json, extract::{State, ws::{Message, WebSocket}}, response::{IntoResponse}};
 use serde::Deserialize;
-use tokio::{sync::broadcast};
 use futures_util::{SinkExt, stream::{StreamExt}};
 use crate::{AppState, generate_lobby_code, state::Player};
 
@@ -12,7 +11,7 @@ struct CreateLobbyResponse {
 #[derive(Deserialize, Debug)]
 struct UserEvent {
     lobby_code: String,
-    action: String,
+    event: String,
     user_id: String,
     username: String,
     content: Option<String>,
@@ -23,14 +22,13 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
     loop {
         lobby_code = generate_lobby_code();
         match state.games.get_lobby(&lobby_code) {
-            Some(l) => continue,
+            Some(_) => continue,
             None => break,
         }
     }
 
-    let (send, _) = broadcast::channel::<String>(64);
     // Initialize a new lobby
-    state.games.add_lobby(&lobby_code, send);
+    state.games.add_lobby(&lobby_code);
 
     Json(CreateLobbyResponse {
         lobby_code: lobby_code
@@ -46,7 +44,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         _ => return,
     };
     let join_req= match serde_json::from_str::<UserEvent>(&join_req) {
-        Ok(j) if j.action == "join" => j,
+        Ok(j) if j.event == "join" => j,
         _ => {
             let _ = sender
                 .send(Message::Text("Expected join request".into()))
@@ -83,9 +81,17 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
      */
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
-            if sender.send(Message::Text(msg.into())).await.is_err() {
-                break;
+            match serde_json::to_string(&msg) {
+            Ok(json) => {
+                if sender.send(Message::Text(json.into())).await.is_err() {
+                    break;
+                }
             }
+            Err(e) => {
+                eprintln!("Serialization error: {:?}", e);
+                continue;
+            }
+        }
         }
     });
 
@@ -109,7 +115,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                         }
                     };
                     println!("{:?}", req);
-                    match req.action.as_str() {
+                    match req.event.as_str() {
                         "ready" => {
 
                         }

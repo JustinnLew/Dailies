@@ -1,5 +1,11 @@
 use std::{collections::HashMap, sync::{Arc, Mutex}};
-use tokio::sync::broadcast::{self, Sender};
+use serde::{Deserialize, Serialize};
+use tokio::sync::broadcast::{self};
+
+#[derive(Serialize, Deserialize, Clone)]
+pub(crate) enum ServerEvent {
+    PlayerJoin { player : Player },
+}
 
 pub(crate) struct Song {
     title: String,
@@ -14,7 +20,7 @@ pub(crate) enum GameState {
         round_length_seconds: u8,
     }
 }
-
+#[derive(Serialize, Deserialize, Clone)]
 pub(crate) struct Player {
     pub user_id: String,
     pub username: String,
@@ -25,7 +31,6 @@ pub(crate) enum LobbyStatus {
     Finished,
 }
 
-
 pub (crate) struct LobbyState {
     players: Vec<Player>,
     status: LobbyStatus,
@@ -33,7 +38,7 @@ pub (crate) struct LobbyState {
 }
 pub(crate) struct Lobby {
     pub state: Mutex<LobbyState>,
-    pub broadcast: broadcast::Sender<String>
+    pub broadcast: broadcast::Sender<ServerEvent>
 }
 
 pub (crate) struct Games {
@@ -54,7 +59,8 @@ impl Games {
         }
     }
 
-    pub fn add_lobby(&self, lobby_code: &String, broadcast: Sender<String>) {
+    pub fn add_lobby(&self, lobby_code: &String) {
+        let (send, _) = broadcast::channel::<ServerEvent>(64);
         let lobby = Lobby {
         state: Mutex::new(LobbyState {
             players: vec![],
@@ -66,7 +72,7 @@ impl Games {
                 round_length_seconds: 30,
             },
         }),
-            broadcast: broadcast,
+            broadcast: send,
         };
         self.games.lock().unwrap().insert(lobby_code.to_string(), Arc::new(lobby));
     }
@@ -89,7 +95,9 @@ impl Lobby {
     pub fn player_join(&self, player: Player) {
         let mut state = self.state.lock().unwrap();
         state.players.push(player);
-        drop(state);
+    }
 
+    pub fn broadcast(&self, msg: ServerEvent) {
+        let _ = self.broadcast.send(msg);
     }
 }
