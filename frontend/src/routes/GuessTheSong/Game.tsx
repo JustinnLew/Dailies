@@ -29,6 +29,7 @@ export default function Game() {
 			}));
 		}
 	}, []);
+
 	
 	useEffect(() => {
 		const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);

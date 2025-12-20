@@ -10,7 +10,10 @@ type ChatMessage = {
   message: string;
 };
 
-export default function Gameplay({ sendGuess } : { sendGuess: (guess: string) => void }) {
+export default function Gameplay({ 
+    sendGuess } 
+  : { 
+    sendGuess: (guess: string) => void }) {
   const [songHint] = useState("🎵 Guess the song");
   const [leaderboard] = useState<Player[]>([
     { name: "Justin", score: 12 },

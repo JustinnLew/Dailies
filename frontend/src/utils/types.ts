@@ -8,4 +8,10 @@ type GuessTheSongGameSettings = {
   numSongs: number;
 }
 
-export type { Player, GuessTheSongGameSettings }
+type Song = {
+  title: string;
+  artists: string[];
+  src: string,
+}
+
+export type { Player, GuessTheSongGameSettings, Song }
