@@ -3,4 +3,9 @@ type Player = {
   ready: boolean
 };
 
-export type { Player }
+type GuessTheSongGameSettings = {
+  playlistLink: string;
+  numSongs: number;
+}
+
+export type { Player, GuessTheSongGameSettings }

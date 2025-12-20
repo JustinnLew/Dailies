@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
 import { getUserId, getUserName } from "../../utils/util";
-import type { Player } from "../../utils/types";
+import type { Player, GuessTheSongGameSettings } from "../../utils/types";
 
 export default function Game() {
 	const params = useParams();
@@ -11,6 +11,14 @@ export default function Game() {
 	const userId = getUserId();
 	const username = getUserName();
 	const [players, setPlayers] = useState<Map<string, Player>>(new Map());
+	const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
+		playlistLink: "",
+		numSongs: 10,
+	})
+
+	useEffect(() => {
+		console.log("Game settings update: ", gameSettings);
+	}, [gameSettings]);
 	
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
@@ -72,6 +80,15 @@ export default function Game() {
 	}
 
 	return (
-		waiting ? (<WaitingRoom lobbyCode={params.lobbyCode!} ready={ready} players={players} />) : (<Gameplay sendGuess={sendGuess} />)
+		waiting ? (
+		<WaitingRoom 
+			lobbyCode={params.lobbyCode!}
+			ready={ready}
+			players={players}
+			gameSettings={gameSettings}
+			updateGameSettings={setGameSettings} />)
+		: (
+		<Gameplay 
+			sendGuess={sendGuess} />)
 );
 }
