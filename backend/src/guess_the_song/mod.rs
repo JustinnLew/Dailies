@@ -45,7 +45,7 @@ enum GuessTheSongUserEvent {
         username: String,
     },
     Ready,
-    UpdateGameSettings{
+    UpdateGameSettings {
         settings: GuessTheSongGameSettings,
     },
 }
@@ -104,10 +104,16 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     };
 
     // 2. Use Pattern Matching to extract the fields from the Join variant
-    let (lobby_code,player_id, player_username) = match event {
-        GuessTheSongUserEvent::Join { lobby_code, user_id, username } => (lobby_code, user_id, username),
+    let (lobby_code, player_id, player_username) = match event {
+        GuessTheSongUserEvent::Join {
+            lobby_code,
+            user_id,
+            username,
+        } => (lobby_code, user_id, username),
         _ => {
-            let _ = sender.send(Message::Text("Expected join event".into())).await;
+            let _ = sender
+                .send(Message::Text("Expected join event".into()))
+                .await;
             return;
         }
     };
@@ -186,9 +192,11 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 let _ = lobby.broadcast.send(ServerEvent::AllReady);
                             }
                         }
-                        GuessTheSongUserEvent::UpdateGameSettings{settings} => {
-                            lobby.update_game_settings(&GameSettings::GuessTheSong(settings.clone()));
-                            let _ = lobby.broadcast.send(ServerEvent::GameSettingsUpdated{
+                        GuessTheSongUserEvent::UpdateGameSettings { settings } => {
+                            lobby.update_game_settings(&GameSettings::GuessTheSong(
+                                settings.clone(),
+                            ));
+                            let _ = lobby.broadcast.send(ServerEvent::GameSettingsUpdated {
                                 settings: GameSettings::GuessTheSong(settings),
                             });
                         }

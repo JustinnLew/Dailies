@@ -1,3 +1,4 @@
+use rspotify::ClientCredsSpotify;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
@@ -24,8 +25,8 @@ pub(crate) enum ServerEvent {
         player_id: String,
     },
     AllReady,
-    GameSettingsUpdated{
-        settings: GameSettings
+    GameSettingsUpdated {
+        settings: GameSettings,
     },
 }
 
@@ -153,12 +154,14 @@ impl Lobby {
 #[derive(Clone)]
 pub(crate) struct AppState {
     pub games: Arc<Games>,
+    pub spotify_clietnt: Arc<ClientCredsSpotify>,
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new(spotify: ClientCredsSpotify) -> Self {
         AppState {
             games: Arc::new(Games::new()),
+            spotify_clietnt: Arc::new(spotify),
         }
     }
 }

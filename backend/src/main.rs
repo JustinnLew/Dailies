@@ -10,11 +10,13 @@ use rand::{Rng, distr::Alphanumeric};
 use tower_http::cors::{Any, CorsLayer};
 
 mod guess_the_song;
+mod spotify;
 mod state;
 
 #[tokio::main]
 async fn main() {
-    let state = AppState::new();
+    let s = spotify::get_spotify_client().await;
+    let state = AppState::new(s);
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
