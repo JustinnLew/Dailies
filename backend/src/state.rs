@@ -1,12 +1,14 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
 use tokio::sync::broadcast::{self};
 
+use crate::guess_the_song::GuessTheSongGameSettings;
+
 #[derive(Serialize, Clone, Debug)]
-#[serde(tag = "action", content = "data")]
+#[serde(tag = "event", content = "data")]
 pub(crate) enum ServerEvent {
     SyncState {
         players: Vec<(String, String, bool)>,
@@ -22,6 +24,9 @@ pub(crate) enum ServerEvent {
         player_id: String,
     },
     AllReady,
+    GameSettingsUpdated{
+        settings: GameSettings
+    },
 }
 
 #[derive(Debug)]
@@ -41,6 +46,11 @@ pub(crate) enum GameState {
     },
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub(crate) enum GameSettings {
+    GuessTheSong(GuessTheSongGameSettings),
+}
+
 #[derive(Debug)]
 pub(crate) enum LobbyStatus {
     Waiting,
@@ -53,6 +63,7 @@ pub(crate) struct LobbyState {
     players: HashMap<String, (String, bool)>,
     status: LobbyStatus,
     game: GameState,
+    settings: GameSettings,
 }
 
 #[derive(Debug)]
@@ -72,6 +83,7 @@ impl Games {
         }
     }
 
+    // For future: Need to change for other games
     pub fn add_lobby(&self, lobby_code: &String) {
         let (send, _) = broadcast::channel::<ServerEvent>(64);
         let lobby = Lobby {
@@ -84,6 +96,7 @@ impl Games {
                     chat: Vec::new(),
                     round_length_seconds: 30,
                 },
+                settings: GameSettings::GuessTheSong(GuessTheSongGameSettings::new()),
             }),
             broadcast: send,
         };
@@ -129,6 +142,11 @@ impl Lobby {
     pub fn player_leave(&self, player_id: &String) {
         let mut state = self.state.lock().unwrap();
         state.players.remove(player_id);
+    }
+
+    pub fn update_game_settings(&self, settings: &GameSettings) {
+        let mut state = self.state.lock().unwrap();
+        state.settings = settings.clone();
     }
 }
 

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     AppState, generate_lobby_code,
-    state::{Lobby, ServerEvent},
+    state::{GameSettings, Lobby, ServerEvent},
 };
 use axum::{
     Json,
@@ -13,22 +13,42 @@ use axum::{
     response::IntoResponse,
 };
 use futures_util::{SinkExt, stream::StreamExt};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
     lobby_code: String,
 }
 
-#[derive(Deserialize, Debug)]
-struct UserEvent {
-    lobby_code: String,
-    event: String,
-    user_id: String,
-    username: String,
-    content: Option<String>,
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GuessTheSongGameSettings {
+    playlist_link: String,
+    num_songs: u8,
 }
 
+impl GuessTheSongGameSettings {
+    pub fn new() -> Self {
+        Self {
+            playlist_link: String::new(),
+            num_songs: 10,
+        }
+    }
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(tag = "event")]
+enum GuessTheSongUserEvent {
+    Join {
+        lobby_code: String,
+        user_id: String,
+        username: String,
+    },
+    Ready,
+    UpdateGameSettings{
+        settings: GuessTheSongGameSettings,
+    },
+}
 struct GuessTheSongConnectionGuard {
     lobby: Arc<Lobby>,
     player_id: String,
@@ -74,18 +94,24 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         Some(Ok(Message::Text(m))) => m,
         _ => return,
     };
-    let join_req = match serde_json::from_str::<UserEvent>(&join_req) {
-        Ok(j) if j.event == "join" => j,
-        _ => {
-            let _ = sender
-                .send(Message::Text("Expected join request".into()))
-                .await;
+    // 1. Deserialize to the Enum Type
+    let event = match serde_json::from_str::<GuessTheSongUserEvent>(&join_req) {
+        Ok(e) => e,
+        Err(_) => {
+            let _ = sender.send(Message::Text("Invalid JSON".into())).await;
             return;
         }
     };
-    let player_id = join_req.user_id;
-    let player_username = join_req.username;
-    let lobby = match state.games.get_lobby(&join_req.lobby_code) {
+
+    // 2. Use Pattern Matching to extract the fields from the Join variant
+    let (lobby_code,player_id, player_username) = match event {
+        GuessTheSongUserEvent::Join { lobby_code, user_id, username } => (lobby_code, user_id, username),
+        _ => {
+            let _ = sender.send(Message::Text("Expected join event".into())).await;
+            return;
+        }
+    };
+    let lobby = match state.games.get_lobby(&lobby_code) {
         Some(l) => l,
         None => {
             let _ = sender.send(Message::Text("Lobby Not Found".into())).await;
@@ -141,7 +167,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         while let Some(Ok(msg)) = receiver.next().await {
             match msg {
                 Message::Text(req) => {
-                    let req: UserEvent = match serde_json::from_str(&req) {
+                    println!("Received message from {}: {}", player_id, req);
+                    let req: GuessTheSongUserEvent = match serde_json::from_str(&req) {
                         Ok(r) => r,
                         Err(e) => {
                             eprintln!("Failed to parse user event: {:?}", e);
@@ -149,8 +176,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                         }
                     };
                     println!("{:?}", req);
-                    match req.event.as_str() {
-                        "ready" => {
+                    match req {
+                        GuessTheSongUserEvent::Ready => {
                             lobby.player_ready(&player_id);
                             let _ = lobby.broadcast.send(ServerEvent::PlayerReady {
                                 player_id: player_id.clone(),
@@ -158,6 +185,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             if lobby.all_ready() {
                                 let _ = lobby.broadcast.send(ServerEvent::AllReady);
                             }
+                        }
+                        GuessTheSongUserEvent::UpdateGameSettings{settings} => {
+                            lobby.update_game_settings(&GameSettings::GuessTheSong(settings.clone()));
+                            let _ = lobby.broadcast.send(ServerEvent::GameSettingsUpdated{
+                                settings: GameSettings::GuessTheSong(settings),
+                            });
                         }
                         _ => {
                             continue;
