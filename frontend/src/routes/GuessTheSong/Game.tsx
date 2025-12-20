@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
@@ -15,13 +15,20 @@ export default function Game() {
 		playlistLink: "",
 		numSongs: 10,
 	})
-
-	useEffect(() => {
-		console.log("Game settings update: ", gameSettings);
-	}, [gameSettings]);
-	
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
+	const updateGameSettings = useCallback((settings: GuessTheSongGameSettings) => {
+		console.log("Updating game settings: ", settings);
+		setGameSettings(settings);
+
+		if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+			console.log("Sending updated settings to server");
+			socket.current.send(JSON.stringify({
+				event: "UpdateGameSettings",
+				settings: settings,
+			}));
+		}
+	}, []);
 	
 	useEffect(() => {
 		const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
@@ -30,8 +37,8 @@ export default function Game() {
         s.onopen = () => {
 			console.log("Connected to server ", params.lobbyCode);
 			socket.current.send(JSON.stringify({
+				event: "Join",
 				lobby_code: params.lobbyCode,
-				event: "join",
 				user_id: userId,
 				username: username,
 			}))
@@ -41,9 +48,8 @@ export default function Game() {
             // navigate('/');
         }
         s.onmessage = (event) => {
-            console.log("Message from server ", event.data);
             const msg = JSON.parse(event.data);
-            switch (msg.action) {
+            switch (msg.event) {
 				case "SyncState":
 					setPlayers(new Map(msg.data.players.map((p: [string, string, boolean]) => [p[0], { username: p[1], ready: p[2] }])));
 					break;
@@ -60,9 +66,15 @@ export default function Game() {
 						return newPlayers;
 					});
 					break;
+				case "GameSettingsUpdated":
+					console.log("Received updated game settings from server: ", msg.data.settings);
+					setGameSettings(msg.data.settings.GuessTheSong);
+					break;
+				break;
 				case "AllReady":
 					setWaiting(false);
 					break;
+				
 			}
         }
         return () => {
@@ -72,11 +84,11 @@ export default function Game() {
 	}, [params.lobbyCode, navigate, userId, username]);
 
 	const sendGuess = (guess: string) => {
-		socket.current.send(JSON.stringify({ lobby_code: params.lobbyCode, event: "guess", content: guess }));
+		socket.current.send(JSON.stringify({  event: "guess", lobby_code: params.lobbyCode, content: guess }));
 	}
 
 	const ready = () => {
-		socket.current.send(JSON.stringify({ lobby_code: params.lobbyCode, event: "ready", user_id: userId, username }));
+		socket.current.send(JSON.stringify({ event: "Ready"}));
 	}
 
 	return (
@@ -86,9 +98,9 @@ export default function Game() {
 			ready={ready}
 			players={players}
 			gameSettings={gameSettings}
-			updateGameSettings={setGameSettings} />)
+			updateGameSettings={updateGameSettings} />)
 		: (
 		<Gameplay 
 			sendGuess={sendGuess} />)
-);
+	);
 }
