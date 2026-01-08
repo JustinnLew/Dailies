@@ -193,7 +193,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 lobby.update_lobby_status(LobbyStatus::Playing);
                                 let playlist_link = match &lobby.get_game_settings() {
                                     GameSettings::GuessTheSong(settings) => settings.playlist_link.clone(),
-                                    _ => return,
+                                    // _ => return,
                                 };
 
                                 let l = lobby.clone();
