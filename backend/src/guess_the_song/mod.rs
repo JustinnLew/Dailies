@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use crate::{
-    AppState, generate_lobby_code,
-    state::{GameSettings, Lobby, ServerEvent},
+    AppState, generate_lobby_code, spotify::{self, load_tracks}, state::{GameSettings, Lobby, LobbyStatus, ServerEvent}
 };
 use axum::{
     Json,
@@ -189,7 +188,19 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 player_id: player_id.clone(),
                             });
                             if lobby.all_ready() {
+                                let playlist_link = match &lobby.get_game_settings() {
+                                    GameSettings::GuessTheSong(settings) => settings.playlist_link.clone(),
+                                    _ => return,
+                                };
+
+                                load_tracks(&state.spotify_client, lobby.clone(), &playlist_link).await;
+                                let l = lobby.clone();
+                                let spotify_client = state.spotify_client.clone();
+                                tokio::spawn(async move {
+                                    // spotify::run_guess_the_song_game(spotify_client, l).await;
+                                });
                                 let _ = lobby.broadcast.send(ServerEvent::AllReady);
+                                lobby.update_lobby_status(LobbyStatus::Playing);
                             }
                         }
                         GuessTheSongUserEvent::UpdateGameSettings { settings } => {

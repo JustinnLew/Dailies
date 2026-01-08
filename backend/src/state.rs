@@ -32,9 +32,9 @@ pub(crate) enum ServerEvent {
 
 #[derive(Debug)]
 pub(crate) struct Song {
-    title: String,
-    artists: Vec<String>,
-    url: String,
+    pub title: String,
+    pub artists: Vec<String>,
+    pub url: String,
 }
 
 #[derive(Debug)]
@@ -52,19 +52,18 @@ pub(crate) enum GameSettings {
     GuessTheSong(GuessTheSongGameSettings),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub(crate) enum LobbyStatus {
     Waiting,
     Playing,
-    Finished,
 }
 
 #[derive(Debug)]
 pub(crate) struct LobbyState {
-    players: HashMap<String, (String, bool)>,
-    status: LobbyStatus,
-    game: GameState,
-    settings: GameSettings,
+    pub players: HashMap<String, (String, bool)>,
+    pub status: LobbyStatus,
+    pub game: GameState,
+    pub settings: GameSettings,
 }
 
 #[derive(Debug)]
@@ -149,19 +148,29 @@ impl Lobby {
         let mut state = self.state.lock().unwrap();
         state.settings = settings.clone();
     }
+
+    pub fn get_game_settings(&self) -> GameSettings {
+        let state = self.state.lock().unwrap();
+        state.settings.clone()
+    }
+
+    pub fn update_lobby_status(&self, status: LobbyStatus) {
+        let mut state = self.state.lock().unwrap();
+        state.status = status;
+    }
 }
 
 #[derive(Clone)]
 pub(crate) struct AppState {
     pub games: Arc<Games>,
-    pub spotify_clietnt: Arc<ClientCredsSpotify>,
+    pub spotify_client: Arc<ClientCredsSpotify>,
 }
 
 impl AppState {
     pub fn new(spotify: ClientCredsSpotify) -> Self {
         AppState {
             games: Arc::new(Games::new()),
-            spotify_clietnt: Arc::new(spotify),
+            spotify_client: Arc::new(spotify),
         }
     }
 }

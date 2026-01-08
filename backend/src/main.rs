@@ -17,7 +17,6 @@ mod state;
 async fn main() {
     let s = spotify::get_spotify_client().await;
     let state = AppState::new(s);
-
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
