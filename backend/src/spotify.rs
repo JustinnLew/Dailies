@@ -4,7 +4,7 @@ use std::{env, sync::Arc};
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::{PlaylistId}};
 use dotenv::dotenv;
 
-use crate::state::{Lobby, Song};
+use crate::state::{GameState, Lobby, Song};
 
 pub async fn get_spotify_client() -> ClientCredsSpotify {
     dotenv().ok();
@@ -23,9 +23,7 @@ pub async fn get_spotify_client() -> ClientCredsSpotify {
     spotify
 }
 
-pub async fn load_tracks(spotify_client: &ClientCredsSpotify, lobby: Arc<Lobby>, playlist_link: &str) -> Vec<Song> {
-    let mut res = vec![];
-
+pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str, lobby: Arc<Lobby>) {
     // Extract playlist ID from link
     let playlist_id = playlist_link
         .split("playlist/")
@@ -34,7 +32,7 @@ pub async fn load_tracks(spotify_client: &ClientCredsSpotify, lobby: Arc<Lobby>,
         Some(id) => PlaylistId::from_id(id).unwrap(),
         None => {
             println!("Failed to extract playlist ID from link");
-            return res;
+            return;
         }
     };
     println!("Loading tracks from playlist: {:?}", playlist_id);
@@ -42,29 +40,33 @@ pub async fn load_tracks(spotify_client: &ClientCredsSpotify, lobby: Arc<Lobby>,
         Ok(r) => r.tracks,
         Err(e) => {
             println!("Failed to fetch playlist: {:?}", e);
-            return res;
+            return;
         }
     };
+
     // First obtain isrc, then make another request to deezer endpoint to get preview URLs
     for item in playlist_items.items {
         if let Some(rspotify::model::PlayableItem::Track(track)) = item.track {
             if let Some(isrc) = track.external_ids.get("isrc") {
                 let deezer_url = format!("https://api.deezer.com/track/isrc:{}", isrc);
                 
-                // Fetch from Deezer (Handling errors locally to keep the return type Vec<Song>)
+                // Fetch from Deezer
                 if let Ok(resp) = reqwest::get(&deezer_url).await {
                     if let Ok(json) = resp.json::<serde_json::Value>().await {
                         if let Some(preview_url) = json["preview"].as_str() {
                             println!("Success! Preview URL for {}: {}", track.name, preview_url);
                             
-                            // 3. Push to your results vector
-                            res.push(Song {
-                                title: track.name.clone(),
-                                artists: track.artists.iter().map(|a| a.name.clone()).collect(),
-                                url: preview_url.to_string(),
-                            });
+                            let mut state = lobby.state.lock().unwrap();
+
+                            if let GameState::GuessTheSong { songs, .. } = &mut state.game {
+                                songs.push(Song {
+                                    title: track.name.clone(),
+                                    artists: track.artists.iter().map(|a| a.name.clone()).collect(),
+                                    url: preview_url.to_string(),
+                                });
+                            }
                         } else {
-                            // Deezer sometimes returns an "error" object if ISRC isn't found
+                            // ISRC isn't found
                             println!("No preview found for ISRC: {}", isrc);
                         }
                     }
@@ -72,6 +74,13 @@ pub async fn load_tracks(spotify_client: &ClientCredsSpotify, lobby: Arc<Lobby>,
             }
         }
     }
-    
-    res
+    // Randomly sort the songs
+    {
+        let mut state = lobby.state.lock().unwrap();
+        if let GameState::GuessTheSong { songs, .. } = &mut state.game {
+            use rand::seq::SliceRandom;
+            let mut rng = rand::rng();
+            songs.shuffle(&mut rng);
+        }
+    }
 }

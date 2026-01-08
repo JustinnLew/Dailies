@@ -28,6 +28,14 @@ pub(crate) enum ServerEvent {
     GameSettingsUpdated {
         settings: GameSettings,
     },
+    RoundStart {
+        preview_url: String,
+    },
+    RoundEnd {
+        correct_title: String,
+        correct_artists: Vec<String>,
+    },
+    GameEnd,
 }
 
 #[derive(Debug)]
@@ -45,6 +53,7 @@ pub(crate) enum GameState {
         chat: Vec<(String, String)>,
         round_length_seconds: u8,
     },
+    AAA {},
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
