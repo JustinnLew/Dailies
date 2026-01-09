@@ -13,6 +13,8 @@ use crate::guess_the_song::GuessTheSongGameSettings;
 pub(crate) enum ServerEvent {
     SyncState {
         players: Vec<(String, String, bool)>,
+        num_songs: u8,
+        playlist_link: String,
     },
     PlayerJoin {
         player_id: String,

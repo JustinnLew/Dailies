@@ -139,6 +139,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         .send(Message::Text(
             serde_json::to_string(&ServerEvent::SyncState {
                 players: lobby.get_players(),
+                num_songs: lobby.get_game_settings().num_songs,
             })
             .expect("Failed to parse SyncState event")
             .into(),
