@@ -62,6 +62,8 @@ impl GuessTheSongGame {
 pub(crate) struct GuessTheSongGameSettings {
     pub playlist_link: String,
     pub num_songs: u8,
+    pub round_length_seconds: u8,
+    pub answer_delay_seconds: u8,
 }
 
 impl GuessTheSongGameSettings {
@@ -69,6 +71,8 @@ impl GuessTheSongGameSettings {
         Self {
             playlist_link: String::new(),
             num_songs: 10,
+            round_length_seconds: 30,
+            answer_delay_seconds: 5,
         }
     }
 
@@ -93,7 +97,6 @@ pub(crate) struct GuessTheSongGameState {
     pub scores: HashMap<String, u32>,
     pub songs: Vec<Song>,
     pub chat: Vec<(String, String)>,
-    pub round_length_seconds: u8,
 }
 
 impl GuessTheSongGameState {
@@ -102,7 +105,6 @@ impl GuessTheSongGameState {
             scores: HashMap::new(),
             songs: Vec::new(),
             chat: Vec::new(),
-            round_length_seconds: 30,
         }
     }
 

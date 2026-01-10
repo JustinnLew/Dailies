@@ -195,11 +195,15 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             game_obj.update_game_settings(GuessTheSongGameSettings {
                                 playlist_link: settings.playlist_link.clone(),
                                 num_songs: settings.num_songs,
+                                round_length_seconds: settings.round_length_seconds,
+                                answer_delay_seconds: settings.answer_delay_seconds,
                             });
                             let _ = game_obj.broadcast.send(GuessTheSongServerEvent::GameSettingsUpdated {
                                 settings: GuessTheSongGameSettings {
                                     playlist_link: settings.playlist_link.clone(),
                                     num_songs: settings.num_songs,
+                                    round_length_seconds: settings.round_length_seconds,
+                                    answer_delay_seconds: settings.answer_delay_seconds,
                                 }
                             });
                         }
@@ -225,6 +229,10 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 
 async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
     println!("Starting Guess The Song game");
+    let settings = {
+        let s = game.settings.lock().unwrap();
+        s.clone()
+    };
 
     loop {
         let song = {
@@ -244,7 +252,7 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
         });
 
         // --- 3. Wait for round duration ---
-        sleep(Duration::from_secs(30)).await;
+        sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
 
         // --- 4. End round ---
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundEnd {
