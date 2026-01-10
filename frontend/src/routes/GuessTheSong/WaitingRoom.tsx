@@ -87,6 +87,21 @@ export default function Waiting({
                                 {[0, 1, 2, 3].map(val => <option key={val} value={val}>{val}s</option>)}
                             </select>
                         </div>
+
+                        {/* Round Delay */}
+                        <div className="mb-2">
+                            <label className="block mb-1 font-medium text-sm">Round Delay (s):</label>
+                            <select 
+                                className="w-full border rounded p-1 bg-white cursor-pointer"
+                                value={gameSettings.roundDelaySeconds}
+                                onChange={(e) => updateGameSettings({
+                                    ...gameSettings, 
+                                    roundDelaySeconds: parseInt(e.target.value)
+                                })}
+                            >
+                                {[0, 1, 2, 3].map(val => <option key={val} value={val}>{val}s</option>)}
+                            </select>
+                        </div>
                     </div>
 
                     <div className="mt-4">
