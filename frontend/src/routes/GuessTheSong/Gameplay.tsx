@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./AudioPlayer";
-
-type Player = {
-  name: string;
-  score: number;
-};
+import type { Player } from "../../utils/types";
 
 type ChatMessage = {
   user: string;
@@ -13,12 +9,13 @@ type ChatMessage = {
 
 export default function Gameplay({ 
     sendGuess,
-  	previewUrl } 
+  	previewUrl,
+	players } 
   : { 
     sendGuess: (guess: string) => void,
-    previewUrl: string }) {
+    previewUrl: string,
+	players: Map<string, Player>,}) {
 	const [songHint] = useState("🎵 Guess the song");
-	const [leaderboard] = useState<Player[]>([]);
 	const [chat, setChat] = useState<ChatMessage[]>([]);
 	const [message, setMessage] = useState("");
 
@@ -56,15 +53,20 @@ export default function Gameplay({
 				<div className="bg-gray-800 rounded-lg p-4 w-1/3">
 					<h2 className="text-lg font-bold mb-3">🏆 Leaderboard</h2>
 					<ul className="space-y-2">
-					{leaderboard.map((p, i) => (
-						<li
-						key={i}
-						className="flex justify-between bg-gray-700 px-3 py-1 rounded"
-						>
-						<span>{p.name}</span>
-						<span>{p.score}</span>
-						</li>
-					))}
+					{Array.from(players.values())
+						.sort((a, b) => (b.score || 0) - (a.score || 0))
+						.map((p, i) => (
+							<li
+								key={p.username}
+								className="flex justify-between bg-gray-700 px-3 py-1 rounded"
+							>
+								<div className="flex gap-2">
+									<span className="text-gray-400">#{i + 1}</span>
+									<span className="font-medium">{p.username}</span>
+								</div>
+								<span className="text-emerald-400 font-mono">{p.score || 0}</span>
+							</li>
+						))}
 					</ul>
 				</div>
 			</div>

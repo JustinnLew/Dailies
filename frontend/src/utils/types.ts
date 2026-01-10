@@ -1,6 +1,7 @@
 type Player = {
 	username: string;
 	ready: boolean
+	score: number
 };
 
 type GuessTheSongGameSettings = {

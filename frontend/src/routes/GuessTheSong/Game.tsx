@@ -32,7 +32,7 @@ export default function Game() {
 		}
 	}, []);
 	const [previewUrl, setPreviewUrl] = useState<string>("");
-	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing">("waiting");
+	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing" | "finished">("waiting");
 
 	
 	useEffect(() => {
@@ -66,7 +66,7 @@ export default function Game() {
 					})
 					break;
 				case "PlayerJoin":
-						setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
+						setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false, score: 0 }]]));
 					break;
 				case "PlayerReady":
 					setPlayers(p => new Map([...p].map(pl => pl[0] === msg.data.player_id ? [pl[0], { ...pl[1], ready: true }] : pl)));
@@ -142,7 +142,8 @@ export default function Game() {
 	return (
 		<Gameplay 
 			sendGuess={sendGuess}
-			previewUrl={previewUrl} 
+			previewUrl={previewUrl}
+			players={players} 
 		/>
 	);
 }
