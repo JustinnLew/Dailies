@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./AudioPlayer";
 
 type Player = {
@@ -17,83 +17,92 @@ export default function Gameplay({
   : { 
     sendGuess: (guess: string) => void,
     previewUrl: string }) {
-  const [songHint] = useState("🎵 Guess the song");
-  const [leaderboard] = useState<Player[]>([
-    { name: "Justin", score: 12 },
-    { name: "Alice", score: 9 },
-    { name: "Bob", score: 5 },
-  ]);
-  const [chat, setChat] = useState<ChatMessage[]>([
-    { user: "Alice", message: "Sounds like 80s pop 🤔" },
-    { user: "Bob", message: "Is it Queen?" },
-    { user: "Justin", message: "Never Gonna Give You Up!" },
-  ]);
-  const [message, setMessage] = useState("");
+	const [songHint] = useState("🎵 Guess the song");
+	const [leaderboard] = useState<Player[]>([]);
+	const [chat, setChat] = useState<ChatMessage[]>([]);
+	const [message, setMessage] = useState("");
 
-  const sendMessage = () => {
-    sendGuess(message);
-    if (!message.trim()) return;
+	const chatEndRef = useRef<HTMLDivElement>(null);
 
-    setChat((prev) => [
-      ...prev,
-      { user: "You", message },
-    ]);
-    setMessage("");
-  };
+	const scrollToBottom = () => {
+		chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	};
 
-  return (
-    <div className="h-screen grid grid-cols-4 gap-4 p-4 bg-gray-900 text-white">
-      {/* Song Display */}
-      <div className="col-span-3 bg-gray-800 rounded-lg p-6 flex items-center justify-center text-2xl font-semibold text-center">
-        {songHint}
-      </div>
+	// AutoScroll
+	useEffect(() => {
+		scrollToBottom();
+	}, [chat]);
 
-      {/* Leaderboard */}
-      <div className="bg-gray-800 rounded-lg p-4">
-        <h2 className="text-lg font-bold mb-3">🏆 Leaderboard</h2>
-        <ul className="space-y-2">
-          {leaderboard.map((p, i) => (
-            <li
-              key={i}
-              className="flex justify-between bg-gray-700 px-3 py-1 rounded"
-            >
-              <span>{p.name}</span>
-              <span>{p.score}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+	const sendMessage = () => {
+		if (message === "") return;
+		sendGuess(message);
 
-      {/* Chat */}
-      <div className="col-span-4 bg-gray-800 rounded-lg p-4 flex flex-col">
-        <h2 className="text-lg font-bold mb-2">💬 Chat</h2>
+		setChat((prev) => [
+		...prev,
+		{ user: "You", message },
+		]);
+		setMessage("");
+	};
 
-        <div className="flex-1 overflow-y-auto space-y-1 mb-3">
-          {chat.map((c, i) => (
-            <div key={i} className="text-sm">
-              <span className="font-semibold">{c.user}: </span>
-              {c.message}
-            </div>
-          ))}
-        </div>
+	return (
+		<div className="h-screen flex flex-col gap-4 p-4 bg-gray-900 text-white">
+			<div className="h-1/2 flex gap-4">
+				{/* Song Display */}
+				<div className="bg-gray-800 rounded-lg p-6 flex items-center justify-center text-2xl font-semibold text-center w-2/3">
+					{songHint}
+				</div>
 
-        <div className="flex gap-2">
-          <input
-            className="flex-1 rounded bg-gray-700 px-3 py-2 outline-none"
-            placeholder="Type a guess..."
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
-          <button
-            onClick={sendMessage}
-            className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500"
-          >
-            Send
-          </button>
-        </div>
-      </div>
-	  <AudioPlayer previewUrl={previewUrl} />
-    </div>
-  );
+				{/* Leaderboard */}
+				<div className="bg-gray-800 rounded-lg p-4 w-1/3">
+					<h2 className="text-lg font-bold mb-3">🏆 Leaderboard</h2>
+					<ul className="space-y-2">
+					{leaderboard.map((p, i) => (
+						<li
+						key={i}
+						className="flex justify-between bg-gray-700 px-3 py-1 rounded"
+						>
+						<span>{p.name}</span>
+						<span>{p.score}</span>
+						</li>
+					))}
+					</ul>
+				</div>
+			</div>
+
+			{/* Chat Section */}
+			<div className="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2"> 
+				<h2 className="text-lg font-bold mb-2">💬</h2>
+
+				{/* Message List: This area will now scroll */}
+				<div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar">
+					{chat.map((c, i) => (
+						<div key={i} className="text-sm break-words">
+						<span className="font-semibold text-blue-400">{c.user}: </span>
+						<span className="text-gray-200">{c.message}</span>
+						</div>
+					))}
+					{/* Auto-scroll anchor (optional but recommended) */}
+					<div ref={chatEndRef} />
+				</div>
+
+				{/* Input Area: Stays at the bottom */}
+				<div className="flex gap-2 pt-2 border-t border-gray-700">
+				<input
+					className="flex-1 rounded bg-gray-700 px-3 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500"
+					placeholder="Type a guess..."
+					value={message}
+					onChange={(e) => setMessage(e.target.value)}
+					onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+				/>
+				<button
+					onClick={sendMessage}
+					className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500 transition-colors"
+				>
+					Send
+				</button>
+				</div>
+			</div>
+			<AudioPlayer previewUrl={previewUrl} />
+		</div>
+  	);
 }

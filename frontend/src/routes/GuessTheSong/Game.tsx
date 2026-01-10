@@ -105,7 +105,7 @@ export default function Game() {
 	}, [params.lobbyCode, navigate, userId, username]);
 
 	const sendGuess = (guess: string) => {
-		socket.current.send(JSON.stringify({  event: "guess", lobby_code: params.lobbyCode, content: guess }));
+		socket.current.send(JSON.stringify({ event: "Guess", content: guess }));
 	}
 
 	const ready = () => {
