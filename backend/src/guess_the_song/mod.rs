@@ -128,6 +128,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                     players: game_obj.get_players(),
                     num_songs: game_obj.get_num_songs(),
                     playlist_link: game_obj.get_playlist_link(),
+                    round_length_seconds: game_obj.get_round_length_seconds(),
+                    answer_delay_seconds: game_obj.get_answer_delay_seconds(),
                 })
                 .expect("Failed to parse SyncState event")
                 .into(),

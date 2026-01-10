@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AudioPlayer from "./AudioPlayer";
 
 type Player = {
   name: string;
@@ -11,9 +12,11 @@ type ChatMessage = {
 };
 
 export default function Gameplay({ 
-    sendGuess } 
+    sendGuess,
+  	previewUrl } 
   : { 
-    sendGuess: (guess: string) => void }) {
+    sendGuess: (guess: string) => void,
+    previewUrl: string }) {
   const [songHint] = useState("🎵 Guess the song");
   const [leaderboard] = useState<Player[]>([
     { name: "Justin", score: 12 },
@@ -90,6 +93,7 @@ export default function Gameplay({
           </button>
         </div>
       </div>
+	  <AudioPlayer previewUrl={previewUrl} />
     </div>
   );
 }

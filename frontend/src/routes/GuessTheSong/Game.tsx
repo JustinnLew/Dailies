@@ -14,6 +14,8 @@ export default function Game() {
 	const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
 		playlistLink: "",
 		numSongs: 10,
+		roundLengthSeconds: 30,
+		answerDelaySeconds: 0,
 	})
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
@@ -29,6 +31,7 @@ export default function Game() {
 			}));
 		}
 	}, []);
+	const [previewUrl, setPreviewUrl] = useState<string>("");
 
 	
 	useEffect(() => {
@@ -53,29 +56,46 @@ export default function Game() {
             switch (msg.event) {
 				case "SyncState":
 					setPlayers(new Map(msg.data.players.map((p: [string, string, boolean]) => [p[0], { username: p[1], ready: p[2] }])));
+					setGameSettings({
+						numSongs: msg.data.num_songs,
+						playlistLink: msg.data.playlist_link,
+						roundLengthSeconds: msg.data.round_length_seconds,
+						answerDelaySeconds: msg.data.answer_delay_seconds,
+					})
 					break;
 				case "PlayerJoin":
-					setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
+						setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
 					break;
 				case "PlayerReady":
 					setPlayers(p => new Map([...p].map(pl => pl[0] === msg.data.player_id ? [pl[0], { ...pl[1], ready: true }] : pl)));
 					break;
 				case "PlayerLeave":
-					setPlayers(p => {
-						const newPlayers = new Map(p);
-						newPlayers.delete(msg.data.player_id);
-						return newPlayers;
-					});
-					break;
+						setPlayers(p => {
+							const newPlayers = new Map(p);
+							newPlayers.delete(msg.data.player_id);
+							return newPlayers;
+						});
+						break;
 				case "GameSettingsUpdated":
 					console.log("Received updated game settings from server: ", msg.data.settings);
-					setGameSettings(msg.data.settings.GuessTheSong);
+					setGameSettings(msg.data.settings);
 					break;
-				break;
 				case "AllReady":
 					setWaiting(false);
 					break;
-				
+				case "RoundStart":
+					console.log("Round started with preview URL: ", msg.data.preview_url);
+					setPreviewUrl(msg.data.preview_url);
+					break;
+				case "RoundEnd":
+					console.log("Round ended. Correct title: ", msg.data.correct_title, " Correct artists: ", msg.data.correct_artists);
+					break;
+				case "GameEnd":
+					console.log("Game ended");
+					break;
+				default:
+					console.log("Unknown event received: ", msg);
+					break;
 			}
         }
         return () => {
@@ -102,6 +122,8 @@ export default function Game() {
 			updateGameSettings={updateGameSettings} />)
 		: (
 		<Gameplay 
-			sendGuess={sendGuess} />)
+			sendGuess={sendGuess}
+			previewUrl={previewUrl} 
+		/>)
 	);
 }
