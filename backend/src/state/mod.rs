@@ -1,15 +1,13 @@
 use rspotify::ClientCredsSpotify;
-use std::{
-    sync::{Arc},
-};
+use std::sync::Arc;
 
-pub mod lobby;
 pub mod games;
 pub mod guessthesong;
+pub mod lobby;
 
-pub(crate) use lobby::*;
 pub(crate) use games::*;
 pub(crate) use guessthesong::*;
+pub(crate) use lobby::*;
 
 #[derive(Debug, PartialEq)]
 pub(crate) enum LobbyStatus {

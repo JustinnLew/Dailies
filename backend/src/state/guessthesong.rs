@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Mutex};
 
+use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
-use rand::seq::SliceRandom;
 
-use crate::state::{LobbyState};
+use crate::state::LobbyState;
 
 /// ===============================================
 /// Main Parent Struct for Guess The Song Game
@@ -45,7 +45,11 @@ impl GuessTheSongGame {
     }
 
     pub fn get_playlist_link(&self) -> String {
-        self.settings.lock().unwrap().get_playlist_link().to_string()
+        self.settings
+            .lock()
+            .unwrap()
+            .get_playlist_link()
+            .to_string()
     }
 
     pub fn get_round_length_seconds(&self) -> u8 {

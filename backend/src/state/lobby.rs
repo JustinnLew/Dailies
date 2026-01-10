@@ -1,6 +1,6 @@
-use std::{collections::HashMap};
+use std::collections::HashMap;
 
-use crate::state::{LobbyStatus};
+use crate::state::LobbyStatus;
 
 #[derive(Debug)]
 pub(crate) struct LobbyState {

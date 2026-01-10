@@ -1,8 +1,8 @@
-use std::{env, sync::{Arc}};
+use std::{env, sync::Arc};
 
 // src/spotify.rs
-use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::{PlaylistId}};
 use dotenv::dotenv;
+use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::PlaylistId};
 
 use crate::state::{GuessTheSongGame, Song};
 
@@ -16,18 +16,23 @@ pub async fn get_spotify_client() -> ClientCredsSpotify {
     let spotify = ClientCredsSpotify::new(creds);
 
     // This requests the initial token.
-    // rspotify creates a specialized client that checks token expiration 
+    // rspotify creates a specialized client that checks token expiration
     // before every future request and refreshes it automatically if needed.
-    spotify.request_token().await.expect("Failed to get initial Spotify token");
+    spotify
+        .request_token()
+        .await
+        .expect("Failed to get initial Spotify token");
 
     spotify
 }
 
-pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str, game: Arc<GuessTheSongGame>) {
+pub async fn load_songs(
+    spotify_client: &ClientCredsSpotify,
+    playlist_link: &str,
+    game: Arc<GuessTheSongGame>,
+) {
     // Extract playlist ID from link
-    let playlist_id = playlist_link
-        .split("playlist/")
-        .nth(1);
+    let playlist_id = playlist_link.split("playlist/").nth(1);
     let playlist_id = match playlist_id {
         Some(id) => PlaylistId::from_id(id).unwrap(),
         None => {
@@ -49,13 +54,13 @@ pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str
         if let Some(rspotify::model::PlayableItem::Track(track)) = item.track {
             if let Some(isrc) = track.external_ids.get("isrc") {
                 let deezer_url = format!("https://api.deezer.com/track/isrc:{}", isrc);
-                
+
                 // Fetch from Deezer
                 if let Ok(resp) = reqwest::get(&deezer_url).await {
                     if let Ok(json) = resp.json::<serde_json::Value>().await {
                         if let Some(preview_url) = json["preview"].as_str() {
                             println!("Success! Preview URL for {}: {}", track.name, preview_url);
-                            
+
                             game.state.lock().unwrap().add_song(Song {
                                 title: track.name.clone(),
                                 artists: track.artists.iter().map(|a| a.name.clone()).collect(),

@@ -1,7 +1,9 @@
-use std::sync::{Arc};
+use std::sync::Arc;
 
 use crate::{
-    AppState, generate_lobby_code, spotify::load_songs, state::{GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, LobbyStatus}
+    AppState, generate_lobby_code,
+    spotify::load_songs,
+    state::{GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, LobbyStatus},
 };
 use axum::{
     Json,
@@ -12,8 +14,11 @@ use axum::{
     response::IntoResponse,
 };
 use futures_util::{SinkExt, stream::StreamExt};
-use serde::{Deserialize};
-use tokio::{sync::broadcast, time::{Duration, sleep}};
+use serde::Deserialize;
+use tokio::{
+    sync::broadcast,
+    time::{Duration, sleep},
+};
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
@@ -123,8 +128,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     {
         // Extract the gamestate
         let _ = sender
-        .send(Message::Text(
-            serde_json::to_string(&GuessTheSongServerEvent::SyncState {
+            .send(Message::Text(
+                serde_json::to_string(&GuessTheSongServerEvent::SyncState {
                     players: game_obj.get_players(),
                     num_songs: game_obj.get_num_songs(),
                     playlist_link: game_obj.get_playlist_link(),
@@ -155,10 +160,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         }
     });
 
-    let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerJoin {
-        player_id: player_id.clone(),
-        player_username: player_username.clone(),
-    });
+    let _ = game_obj
+        .broadcast
+        .send(GuessTheSongServerEvent::PlayerJoin {
+            player_id: player_id.clone(),
+            player_username: player_username.clone(),
+        });
 
     //  Create the recv_task
     let mut recv_task = tokio::spawn(async move {
@@ -177,9 +184,11 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                     match req {
                         GuessTheSongUserEvent::Ready => {
                             game_obj.player_ready(&player_id);
-                            let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerReady {
-                                player_id: player_id.clone(),
-                            });
+                            let _ = game_obj
+                                .broadcast
+                                .send(GuessTheSongServerEvent::PlayerReady {
+                                    player_id: player_id.clone(),
+                                });
                             if game_obj.all_ready() {
                                 let _ = game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
                                 game_obj.update_lobby_status(LobbyStatus::Playing);
@@ -200,14 +209,16 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 round_length_seconds: settings.round_length_seconds,
                                 answer_delay_seconds: settings.answer_delay_seconds,
                             });
-                            let _ = game_obj.broadcast.send(GuessTheSongServerEvent::GameSettingsUpdated {
-                                settings: GuessTheSongGameSettings {
-                                    playlist_link: settings.playlist_link.clone(),
-                                    num_songs: settings.num_songs,
-                                    round_length_seconds: settings.round_length_seconds,
-                                    answer_delay_seconds: settings.answer_delay_seconds,
-                                }
-                            });
+                            let _ = game_obj.broadcast.send(
+                                GuessTheSongServerEvent::GameSettingsUpdated {
+                                    settings: GuessTheSongGameSettings {
+                                        playlist_link: settings.playlist_link.clone(),
+                                        num_songs: settings.num_songs,
+                                        round_length_seconds: settings.round_length_seconds,
+                                        answer_delay_seconds: settings.answer_delay_seconds,
+                                    },
+                                },
+                            );
                         }
                         _ => {
                             continue;

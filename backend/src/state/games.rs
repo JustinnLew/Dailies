@@ -1,10 +1,12 @@
-use std::{sync::{Arc, Mutex}};
+use std::sync::{Arc, Mutex};
 
 use dashmap::DashMap;
 use tokio::sync::broadcast;
 
-use crate::state::{GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState, guessthesong::GuessTheSongGameSettings};
-
+use crate::state::{
+    GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState,
+    guessthesong::GuessTheSongGameSettings,
+};
 
 pub(crate) enum GameType {
     GuessTheSong,
@@ -32,7 +34,8 @@ impl Games {
         };
         self.guess_the_song
             .insert(lobby_code.to_string(), Arc::new(lobby));
-        self.registry.insert(lobby_code.to_string(), GameType::GuessTheSong);
+        self.registry
+            .insert(lobby_code.to_string(), GameType::GuessTheSong);
     }
 
     pub fn valid_lobby_code(&self, lobby_code: &str) -> bool {
