@@ -1,10 +1,10 @@
-use std::{env, sync::Arc};
+use std::{env, sync::{Arc}};
 
 // src/spotify.rs
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::{PlaylistId}};
 use dotenv::dotenv;
 
-use crate::state::{GameState, Lobby, Song};
+use crate::state::{GuessTheSongGame, Song};
 
 pub async fn get_spotify_client() -> ClientCredsSpotify {
     dotenv().ok();
@@ -23,7 +23,7 @@ pub async fn get_spotify_client() -> ClientCredsSpotify {
     spotify
 }
 
-pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str, lobby: Arc<Lobby>) {
+pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str, game: Arc<GuessTheSongGame>) {
     // Extract playlist ID from link
     let playlist_id = playlist_link
         .split("playlist/")
@@ -56,15 +56,11 @@ pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str
                         if let Some(preview_url) = json["preview"].as_str() {
                             println!("Success! Preview URL for {}: {}", track.name, preview_url);
                             
-                            let mut state = lobby.state.lock().unwrap();
-
-                            if let GameState::GuessTheSong { songs, .. } = &mut state.game {
-                                songs.push(Song {
-                                    title: track.name.clone(),
-                                    artists: track.artists.iter().map(|a| a.name.clone()).collect(),
-                                    url: preview_url.to_string(),
-                                });
-                            }
+                            game.state.lock().unwrap().add_song(Song {
+                                title: track.name.clone(),
+                                artists: track.artists.iter().map(|a| a.name.clone()).collect(),
+                                url: preview_url.to_string(),
+                            });
                         } else {
                             // ISRC isn't found
                             println!("No preview found for ISRC: {}", isrc);
@@ -75,12 +71,5 @@ pub async fn load_songs(spotify_client: &ClientCredsSpotify, playlist_link: &str
         }
     }
     // Randomly sort the songs
-    {
-        let mut state = lobby.state.lock().unwrap();
-        if let GameState::GuessTheSong { songs, .. } = &mut state.game {
-            use rand::seq::SliceRandom;
-            let mut rng = rand::rng();
-            songs.shuffle(&mut rng);
-        }
-    }
+    game.state.lock().unwrap().shuffle_songs();
 }
