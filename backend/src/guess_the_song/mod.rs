@@ -120,6 +120,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                     playlist_link: game_obj.get_playlist_link(),
                     round_length_seconds: game_obj.get_round_length_seconds(),
                     answer_delay_seconds: game_obj.get_answer_delay_seconds(),
+                    round_delay_seconds: game_obj.get_round_delay_seconds(),
                 })
                 .expect("Failed to parse SyncState event")
                 .into(),
@@ -229,6 +230,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 
 async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
     println!("Starting Guess The Song game");
+    game.broadcast.send(GuessTheSongServerEvent::GameStart).unwrap();
+    sleep(Duration::from_secs(3)).await;
     let settings = {
         let s = game.settings.lock().unwrap();
         s.clone()
@@ -259,5 +262,6 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
             correct_title: song.title.clone(),
             correct_artists: song.artists.clone(),
         });
+        sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
     }
 }

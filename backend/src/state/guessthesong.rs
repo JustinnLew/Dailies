@@ -60,6 +60,10 @@ impl GuessTheSongGame {
         self.settings.lock().unwrap().get_answer_delay_seconds()
     }
 
+    pub fn get_round_delay_seconds(&self) -> u8 {
+        self.settings.lock().unwrap().get_round_delay_seconds()
+    }
+
     pub fn update_game_settings(&self, settings: GuessTheSongGameSettings) {
         let mut game_settings = self.settings.lock().unwrap();
         game_settings.update_game_settings(settings);
@@ -106,9 +110,16 @@ impl GuessTheSongGameSettings {
         self.answer_delay_seconds
     }
 
+    pub fn get_round_delay_seconds(&self) -> u8 {
+        self.round_delay_seconds
+    }
+
     pub fn update_game_settings(&mut self, settings: GuessTheSongGameSettings) {
         self.num_songs = settings.num_songs;
         self.playlist_link = settings.playlist_link;
+        self.round_length_seconds = settings.round_length_seconds;
+        self.answer_delay_seconds = settings.answer_delay_seconds;
+        self.round_delay_seconds = settings.round_delay_seconds;
     }
 }
 
@@ -154,6 +165,7 @@ pub(crate) enum GuessTheSongServerEvent {
         playlist_link: String,
         round_length_seconds: u8,
         answer_delay_seconds: u8,
+        round_delay_seconds: u8,
     },
     PlayerJoin {
         player_id: String,
@@ -166,6 +178,7 @@ pub(crate) enum GuessTheSongServerEvent {
         player_id: String,
     },
     AllReady,
+    GameStart,
     GameSettingsUpdated {
         settings: GuessTheSongGameSettings,
     },

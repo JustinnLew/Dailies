@@ -7,7 +7,6 @@ import type { Player, GuessTheSongGameSettings } from "../../utils/types";
 
 export default function Game() {
 	const params = useParams();
-	const [waiting, setWaiting] = useState(true);
 	const userId = getUserId();
 	const username = getUserName();
 	const [players, setPlayers] = useState<Map<string, Player>>(new Map());
@@ -21,11 +20,11 @@ export default function Game() {
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
 	const updateGameSettings = useCallback((settings: GuessTheSongGameSettings) => {
-		console.log("Updating game settings: ", settings);
 		setGameSettings(settings);
+		console.log("Updating game settings: ", settings);
 
 		if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-			console.log("Sending updated settings to server");
+			console.log("Sending updated settings to server", settings);
 			socket.current.send(JSON.stringify({
 				event: "UpdateGameSettings",
 				settings: settings,
@@ -33,6 +32,7 @@ export default function Game() {
 		}
 	}, []);
 	const [previewUrl, setPreviewUrl] = useState<string>("");
+	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing">("waiting");
 
 	
 	useEffect(() => {
@@ -83,14 +83,19 @@ export default function Game() {
 					setGameSettings(msg.data.settings);
 					break;
 				case "AllReady":
-					setWaiting(false);
+					setGameState("loading");
 					break;
-				case "RoundStart":
+				case "GameStart":
+					console.log("Game starting!");
+					setGameState("playing");
+				break;
+					case "RoundStart":
 					console.log("Round started with preview URL: ", msg.data.preview_url);
 					setPreviewUrl(msg.data.preview_url);
 					break;
 				case "RoundEnd":
 					console.log("Round ended. Correct title: ", msg.data.correct_title, " Correct artists: ", msg.data.correct_artists);
+					setPreviewUrl("");
 					break;
 				case "GameEnd":
 					console.log("Game ended");
@@ -114,18 +119,30 @@ export default function Game() {
 		socket.current.send(JSON.stringify({ event: "Ready"}));
 	}
 
-	return (
-		waiting ? (
-		<WaitingRoom 
+	if (gameState === "waiting") {
+		return (<WaitingRoom 
 			lobbyCode={params.lobbyCode!}
 			ready={ready}
 			players={players}
 			gameSettings={gameSettings}
-			updateGameSettings={updateGameSettings} />)
-		: (
+			updateGameSettings={updateGameSettings} />
+		);
+	}
+
+	if (gameState === "loading") {
+		return (
+			<div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
+				<div className="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-500 mb-4"></div>
+				<h2 className="text-2xl font-bold">Preparing Playlist...</h2>
+				<p className="text-gray-400">The game will start in a moment.</p>
+			</div>
+    );
+}
+
+	return (
 		<Gameplay 
 			sendGuess={sendGuess}
 			previewUrl={previewUrl} 
-		/>)
+		/>
 	);
 }
