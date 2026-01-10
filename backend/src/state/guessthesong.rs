@@ -97,6 +97,7 @@ pub(crate) struct GuessTheSongGameState {
     pub scores: HashMap<String, u32>,
     pub songs: Vec<Song>,
     pub chat: Vec<(String, String)>,
+    pub song_index: usize,
 }
 
 impl GuessTheSongGameState {
