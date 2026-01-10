@@ -178,6 +178,25 @@ pub(crate) enum GuessTheSongServerEvent {
 }
 
 /// ===============================================
+/// User Events
+/// ===============================================
+#[derive(Deserialize, Debug)]
+#[serde(tag = "event")]
+pub(crate) enum GuessTheSongUserEvent {
+    Join {
+        lobby_code: String,
+        user_id: String,
+        username: String,
+    },
+    Ready,
+    UpdateGameSettings {
+        settings: GuessTheSongGameSettings,
+    },
+    Guess { 
+        content: String,
+    }
+}
+/// ===============================================
 /// Helper Structs
 /// ===============================================
 

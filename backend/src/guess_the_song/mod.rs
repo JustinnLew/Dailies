@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     AppState, generate_lobby_code,
     spotify::load_songs,
-    state::{GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, LobbyStatus},
+    state::{GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, LobbyStatus, GuessTheSongUserEvent},
 };
 use axum::{
     Json,
@@ -14,7 +14,6 @@ use axum::{
     response::IntoResponse,
 };
 use futures_util::{SinkExt, stream::StreamExt};
-use serde::Deserialize;
 use tokio::{
     sync::broadcast,
     time::{Duration, sleep},
@@ -23,20 +22,6 @@ use tokio::{
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
     lobby_code: String,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(tag = "event")]
-enum GuessTheSongUserEvent {
-    Join {
-        lobby_code: String,
-        user_id: String,
-        username: String,
-    },
-    Ready,
-    UpdateGameSettings {
-        settings: GuessTheSongGameSettings,
-    },
 }
 struct GuessTheSongConnectionGuard {
     game: Arc<GuessTheSongGame>,
@@ -247,7 +232,7 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
         s.clone()
     };
 
-    loop {
+    for _ in 0..settings.num_songs {
         let song = {
             let songs = &mut game.state.lock().unwrap().songs;
             if songs.is_empty() {
