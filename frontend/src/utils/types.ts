@@ -8,6 +8,7 @@ type GuessTheSongGameSettings = {
 	numSongs: number;
 	roundLengthSeconds: number;
 	answerDelaySeconds: number;
+	roundDelaySeconds: number;
 }
 
 type Song = {

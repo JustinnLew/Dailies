@@ -193,6 +193,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 num_songs: settings.num_songs,
                                 round_length_seconds: settings.round_length_seconds,
                                 answer_delay_seconds: settings.answer_delay_seconds,
+                                round_delay_seconds: settings.round_delay_seconds,
                             });
                             let _ = game_obj.broadcast.send(
                                 GuessTheSongServerEvent::GameSettingsUpdated {
@@ -201,6 +202,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                         num_songs: settings.num_songs,
                                         round_length_seconds: settings.round_length_seconds,
                                         answer_delay_seconds: settings.answer_delay_seconds,
+                                        round_delay_seconds: settings.round_delay_seconds,
                                     },
                                 },
                             );

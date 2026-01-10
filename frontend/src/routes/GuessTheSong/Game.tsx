@@ -16,6 +16,7 @@ export default function Game() {
 		numSongs: 10,
 		roundLengthSeconds: 30,
 		answerDelaySeconds: 0,
+		roundDelaySeconds: 3,
 	})
 	const navigate = useNavigate();
 	const socket = useRef<WebSocket>(null!);
@@ -61,6 +62,7 @@ export default function Game() {
 						playlistLink: msg.data.playlist_link,
 						roundLengthSeconds: msg.data.round_length_seconds,
 						answerDelaySeconds: msg.data.answer_delay_seconds,
+						roundDelaySeconds: msg.data.round_delay_seconds,
 					})
 					break;
 				case "PlayerJoin":

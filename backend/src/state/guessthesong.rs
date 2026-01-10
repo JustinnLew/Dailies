@@ -76,6 +76,7 @@ pub(crate) struct GuessTheSongGameSettings {
     pub num_songs: u8,
     pub round_length_seconds: u8,
     pub answer_delay_seconds: u8,
+    pub round_delay_seconds: u8,
 }
 
 impl GuessTheSongGameSettings {
@@ -85,6 +86,7 @@ impl GuessTheSongGameSettings {
             num_songs: 10,
             round_length_seconds: 30,
             answer_delay_seconds: 5,
+            round_delay_seconds: 3,
         }
     }
 
