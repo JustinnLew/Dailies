@@ -106,6 +106,7 @@ impl GuessTheSongGameState {
             scores: HashMap::new(),
             songs: Vec::new(),
             chat: Vec::new(),
+            song_index: 0,
         }
     }
 
