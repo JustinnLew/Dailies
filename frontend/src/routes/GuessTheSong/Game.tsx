@@ -98,12 +98,16 @@ export default function Game() {
 					console.log("Round ended. Correct title: ", msg.data.correct_title, " Correct artists: ", msg.data.correct_artists);
 					setLeaderboard(new Map(Object.entries(msg.data.leaderboard)));
 					setPreviewUrl("");
+					setChat(c => [...c, { user: "", message: `The correct song was '${msg.data.correct_title}' by ${msg.data.correct_artists.join(", ")}` }]);
 					break;
 				case "GameEnd":
 					console.log("Game ended");
 					break;
 				case "PlayerGuess":
 					setChat(c => [...c, { user: msg.data.username, message: msg.data.content }]);
+					break;
+				case "CorrectGuess":
+					setChat(c => [...c, { user: "", message: msg.data.msg }]);
 					break;
 				default:
 					console.log("Unknown event received: ", msg);

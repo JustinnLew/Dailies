@@ -80,20 +80,35 @@ export default function Gameplay({
 			<div className="bg-gray-800 rounded-lg p-4 flex flex-col h-1/2"> 
 				<h2 className="text-lg font-bold mb-2">💬</h2>
 
-				{/* Message List: This area will now scroll */}
-				<div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar">
-					{chat.map((c, i) => (
-						<div key={i} className="text-sm break-words">
-						<span className="font-semibold text-blue-400">{c.user}: </span>
-						<span className="text-gray-200">{c.message}</span>
+			{/* Message List: This area will now scroll */}
+			<div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar">
+				{chat.map((c, i) => {
+					const isSystem = c.user === "";
+					
+					return (
+						<div 
+							key={i} 
+							className={`text-sm break-words p-1 rounded-md transition-all ${
+								isSystem 
+								? 'bg-emerald-500/10 border-l-4 border-emerald-500 my-1 shadow-sm' 
+								: 'hover:bg-gray-700/30'
+							}`}
+						>
+							<span className={`font-bold ${isSystem ? 'text-emerald-400' : 'text-blue-400'}`}>
+								{isSystem ? "🎵" : ""}{c.user}
+							</span>
+							<span className={`ml-1 ${isSystem ? 'text-emerald-50 font-medium' : 'text-gray-200'}`}>
+								{isSystem ? "" : ": "}{c.message}
+							</span>
 						</div>
-					))}
-					{/* Auto-scroll anchor (optional but recommended) */}
-					<div ref={chatEndRef} />
-				</div>
+					);
+				})}
+				{/* Auto-scroll anchor */}
+				<div ref={chatEndRef} />
+			</div>
 
-				{/* Input Area: Stays at the bottom */}
-				<div className="flex gap-2 pt-2 border-t border-gray-700">
+			{/* Input Area: Stays at the bottom */}
+			<div className="flex gap-2 pt-2 border-t border-gray-700">
 				<input
 					className="flex-1 rounded bg-gray-700 px-3 py-2 text-white outline-none focus:ring-2 focus:ring-blue-500"
 					placeholder="Type a guess..."
