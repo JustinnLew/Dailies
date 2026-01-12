@@ -89,7 +89,7 @@ export default function Game() {
 					console.log("Game starting!");
 					setGameState("playing");
 				break;
-					case "RoundStart":
+				case "RoundStart":
 					console.log("Round started with preview URL: ", msg.data.preview_url);
 					setPreviewUrl(msg.data.preview_url);
 					break;

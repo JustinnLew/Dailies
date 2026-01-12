@@ -1,6 +1,5 @@
 use std::{collections::HashMap, sync::Mutex};
 
-use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
 

@@ -31,7 +31,7 @@ export default function Gameplay({
 	}, [chat]);
 
 	const sendMessage = () => {
-		if (message === "") return;
+		if (message === ""|| previewUrl === "") return;
 		sendGuess(message);
 
 		setChat((prev) => [

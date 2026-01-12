@@ -1,6 +1,10 @@
 use std::collections::HashMap;
 
-use crate::state::LobbyStatus;
+#[derive(Debug, PartialEq)]
+pub(crate) enum LobbyStatus {
+    Waiting,
+    Playing,
+}
 
 #[derive(Debug)]
 pub(crate) struct LobbyState {

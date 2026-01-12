@@ -9,12 +9,6 @@ pub(crate) use games::*;
 pub(crate) use guessthesong::*;
 pub(crate) use lobby::*;
 
-#[derive(Debug, PartialEq)]
-pub(crate) enum LobbyStatus {
-    Waiting,
-    Playing,
-}
-
 #[derive(Clone)]
 pub(crate) struct AppState {
     pub games: Arc<Games>,
