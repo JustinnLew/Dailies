@@ -16,11 +16,15 @@ pub(crate) struct GuessTheSongGame {
 }
 
 impl GuessTheSongGame {
-    pub fn player_join(&self, player_id: String, player_username: String) {
+    pub fn player_join(&self, player_id: String, player_username: String) -> Result<(), &str> {
         let mut lobby = self.lobby_state.lock().unwrap();
+        if lobby.status != crate::state::LobbyStatus::Waiting {
+            return Err("Cannot join game in progresss");
+        }
         lobby.player_join(player_id.clone(), player_username);
         let mut state = self.state.lock().unwrap();
         state.scores.insert(player_id.clone(), 0);
+        Ok(())
     }
 
     pub fn player_ready(&self, user_id: &str) {
@@ -84,7 +88,10 @@ impl GuessTheSongGame {
     }
 
     pub fn increment_player_score(&self, player_id: &str, points: u32) {
-        self.state.lock().unwrap().increment_player_score(player_id, points);
+        self.state
+            .lock()
+            .unwrap()
+            .increment_player_score(player_id, points);
     }
 }
 
@@ -171,7 +178,9 @@ impl GuessTheSongGameState {
         Some(Song {
             title: self.songs[self.song_index - 1].title.0.clone(),
             artists: self.songs[self.song_index - 1]
-                .artists.iter().map(|(artist, _)| artist)
+                .artists
+                .iter()
+                .map(|(artist, _)| artist)
                 .cloned()
                 .collect(),
             url: self.songs[self.song_index - 1].url.clone(),
@@ -190,8 +199,13 @@ impl GuessTheSongGameState {
     }
 
     pub fn is_correct_song(&mut self, guess: &str) -> Option<String> {
-        if !self.songs[self.song_index - 1].title.1 && self.songs[self.song_index - 1].title.0.trim().to_lowercase()
-            == guess.trim().to_lowercase()
+        if !self.songs[self.song_index - 1].title.1
+            && self.songs[self.song_index - 1]
+                .title
+                .0
+                .trim()
+                .to_lowercase()
+                == guess.trim().to_lowercase()
         {
             self.songs[self.song_index - 1].title.1 = true;
             return Some(self.songs[self.song_index - 1].title.0.clone());
@@ -269,9 +283,9 @@ pub(crate) enum GuessTheSongUserEvent {
     UpdateGameSettings {
         settings: GuessTheSongGameSettings,
     },
-    Guess { 
+    Guess {
         content: String,
-    }
+    },
 }
 /// ===============================================
 /// Helper Structs

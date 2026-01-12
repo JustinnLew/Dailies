@@ -58,7 +58,11 @@ pub async fn load_songs(
     playlist_items.items.shuffle(&mut rng);
 
     // First obtain isrc, then make another request to deezer endpoint to get preview URLs
-    for item in playlist_items.items.iter().take(game.get_num_songs() as usize) {
+    for item in playlist_items
+        .items
+        .iter()
+        .take(game.get_num_songs() as usize)
+    {
         if let Some(rspotify::model::PlayableItem::Track(track)) = &item.track {
             if let Some(isrc) = track.external_ids.get("isrc") {
                 let deezer_url = format!("https://api.deezer.com/track/isrc:{}", isrc);
@@ -71,7 +75,11 @@ pub async fn load_songs(
 
                             game.state.lock().unwrap().add_song(SongState {
                                 title: (track.name.clone(), false),
-                                artists: track.artists.iter().map(|a| (a.name.clone(), false)).collect(),
+                                artists: track
+                                    .artists
+                                    .iter()
+                                    .map(|a| (a.name.clone(), false))
+                                    .collect(),
                                 url: preview_url.to_string(),
                             });
                         } else {
