@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use crate::{
     AppState, generate_lobby_code,
-    spotify::load_songs,
     state::{GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, LobbyStatus, GuessTheSongUserEvent},
 };
 use axum::{
@@ -18,6 +17,7 @@ use tokio::{
     sync::broadcast,
     time::{Duration, sleep},
 };
+pub mod api;
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
@@ -166,7 +166,6 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             continue;
                         }
                     };
-                    println!("{:?}", req);
                     match req {
                         GuessTheSongUserEvent::Ready => {
                             game_obj.player_ready(&player_id);
@@ -183,7 +182,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 let l = game_obj.clone();
                                 let spotify_client = state.spotify_client.clone();
                                 tokio::spawn(async move {
-                                    load_songs(&spotify_client, &playlist_link, l.clone()).await;
+                                    api::load_songs(&spotify_client, &playlist_link, l.clone()).await;
                                     run_guess_the_song_game(l).await;
                                 });
                             }
@@ -239,14 +238,16 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
 
     for _ in 0..settings.num_songs {
         let song = {
-            let songs = &mut game.state.lock().unwrap().songs;
-            if songs.is_empty() {
-                println!("No songs left, ending game");
-                // state.status = LobbyStatus::Finished;
-                let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
-                break;
+            let mut state = game.state.lock().unwrap();
+            match state.get_next_song() {
+                Some(s) => s,
+                None => {
+                    println!("No songs left, ending game");
+                    // state.status = LobbyStatus::Finished;
+                    let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
+                    break;
+                }
             }
-            songs.pop().unwrap()
         };
 
         // --- 2. Broadcast song start ---

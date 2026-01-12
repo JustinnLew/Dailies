@@ -147,9 +147,12 @@ impl GuessTheSongGameState {
         self.songs.push(song);
     }
 
-    pub fn shuffle_songs(&mut self) {
-        let mut rng = rand::rng();
-        self.songs.shuffle(&mut rng);
+    pub fn get_next_song(&mut self) -> Option<Song> {
+        self.song_index += 1;
+        if self.songs.is_empty() || self.song_index - 1 >= self.songs.len() {
+            return None;
+        }
+        Some(self.songs[self.song_index - 1].clone())
     }
 }
 
@@ -215,7 +218,7 @@ pub(crate) enum GuessTheSongUserEvent {
 /// Helper Structs
 /// ===============================================
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Song {
     pub title: String,
     pub artists: Vec<String>,
