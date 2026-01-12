@@ -2,7 +2,7 @@ use std::{env, sync::Arc};
 
 // src/spotify.rs
 use dotenv::dotenv;
-use rand::{Rng, SeedableRng, rngs::StdRng, seq::SliceRandom};
+use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::PlaylistId};
 
 use crate::state::{GuessTheSongGame, Song};
