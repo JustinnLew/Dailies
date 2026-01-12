@@ -18,4 +18,9 @@ type Song = {
 	src: string,
 }
 
-export type { Player, GuessTheSongGameSettings, Song }
+type ChatMessage = {
+  user: string;
+  message: string;
+}
+
+export type { Player, GuessTheSongGameSettings, Song, ChatMessage }

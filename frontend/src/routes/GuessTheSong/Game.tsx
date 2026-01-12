@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
 import { getUserId, getUserName } from "../../utils/util";
-import type { Player, GuessTheSongGameSettings } from "../../utils/types";
+import type { Player, GuessTheSongGameSettings, ChatMessage } from "../../utils/types";
 
 export default function Game() {
 	const params = useParams();
@@ -33,7 +33,7 @@ export default function Game() {
 	}, []);
 	const [previewUrl, setPreviewUrl] = useState<string>("");
 	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing" | "finished">("waiting");
-
+	const [chat, setChat] = useState<ChatMessage[]>([]);
 	
 	useEffect(() => {
 		const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
@@ -100,6 +100,9 @@ export default function Game() {
 				case "GameEnd":
 					console.log("Game ended");
 					break;
+				case "PlayerGuess":
+					setChat(c => [...c, { user: msg.data.username, message: msg.data.content }]);
+					break;
 				default:
 					console.log("Unknown event received: ", msg);
 					break;
@@ -143,7 +146,8 @@ export default function Game() {
 		<Gameplay 
 			sendGuess={sendGuess}
 			previewUrl={previewUrl}
-			players={players} 
+			players={players}
+			chat={chat} 
 		/>
 	);
 }

@@ -1,22 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./AudioPlayer";
 import type { Player } from "../../utils/types";
-
-type ChatMessage = {
-  user: string;
-  message: string;
-};
+import type { ChatMessage } from "../../utils/types";
 
 export default function Gameplay({ 
     sendGuess,
   	previewUrl,
-	players } 
+	players,
+	chat,} 
   : { 
     sendGuess: (guess: string) => void,
     previewUrl: string,
-	players: Map<string, Player>,}) {
+	players: Map<string, Player>,
+	chat: ChatMessage[],}) {
 	const [songHint] = useState("🎵 Guess the song");
-	const [chat, setChat] = useState<ChatMessage[]>([]);
 	const [message, setMessage] = useState("");
 
 	const chatEndRef = useRef<HTMLDivElement>(null);
@@ -33,11 +30,6 @@ export default function Gameplay({
 	const sendMessage = () => {
 		if (message === ""|| previewUrl === "") return;
 		sendGuess(message);
-
-		setChat((prev) => [
-		...prev,
-		{ user: "You", message },
-		]);
 		setMessage("");
 	};
 

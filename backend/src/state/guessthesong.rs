@@ -192,6 +192,10 @@ pub(crate) enum GuessTheSongServerEvent {
         correct_artists: Vec<String>,
     },
     GameEnd,
+    PlayerGuess {
+        username: String,
+        content: String,
+    }
 }
 
 /// ===============================================
