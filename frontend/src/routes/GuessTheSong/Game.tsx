@@ -109,6 +109,9 @@ export default function Game() {
 				case "CorrectGuess":
 					setChat(c => [...c, { user: "", message: msg.data.msg }]);
 					break;
+				case "JoinError":
+					navigate('/guess-the-song', { state: { error: msg.message } });
+					break;
 				default:
 					console.log("Unknown event received: ", msg);
 					break;

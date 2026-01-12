@@ -105,7 +105,15 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     match game_obj.player_join(player_id.clone(), player_username.clone()) {
         Ok(_) => {}
         Err(e) => {
-            let _ = sender.send(Message::Text(e.into())).await;
+            let _ = sender
+                .send(Message::Text(
+                    serde_json::to_string(&GuessTheSongServerEvent::JoinError {
+                        message: e.to_string(),
+                    })
+                    .unwrap()
+                    .into(),
+                ))
+                .await;
             return;
         }
     }
