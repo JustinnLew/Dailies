@@ -7,12 +7,15 @@ export default function Gameplay({
     sendGuess,
   	previewUrl,
 	players,
-	chat,} 
+	chat, 
+	leaderboard
+	} 
   : { 
     sendGuess: (guess: string) => void,
     previewUrl: string,
 	players: Map<string, Player>,
-	chat: ChatMessage[],}) {
+	chat: ChatMessage[],
+	leaderboard: Map<string, number>}) {
 	const [songHint] = useState("🎵 Guess the song");
 	const [message, setMessage] = useState("");
 
@@ -42,23 +45,33 @@ export default function Gameplay({
 				</div>
 
 				{/* Leaderboard */}
-				<div className="bg-gray-800 rounded-lg p-4 w-1/3">
+				<div className="bg-gray-800 rounded-lg p-4 w-1/3 flex flex-col">
 					<h2 className="text-lg font-bold mb-3">🏆 Leaderboard</h2>
-					<ul className="space-y-2">
-					{Array.from(players.values())
-						.sort((a, b) => (b.score || 0) - (a.score || 0))
-						.map((p, i) => (
-							<li
-								key={p.username}
-								className="flex justify-between bg-gray-700 px-3 py-1 rounded"
-							>
-								<div className="flex gap-2">
-									<span className="text-gray-400">#{i + 1}</span>
-									<span className="font-medium">{p.username}</span>
-								</div>
-								<span className="text-emerald-400 font-mono">{p.score || 0}</span>
-							</li>
-						))}
+					<ul className="space-y-2 overflow-y-auto">
+						{Array.from(players.entries())
+							.map(([id, player]) => ({
+								id,
+								username: player.username,
+								// Look up score from leaderboard Map, default to 0
+								score: leaderboard.get(id) || 0, 
+							}))
+							.sort((a, b) => b.score - a.score)
+							.map((player, i) => (
+								<li
+									key={player.id}
+									className="flex justify-between bg-gray-700 px-3 py-1 rounded transition-all duration-300"
+								>
+									<div className="flex gap-2">
+										<span className="text-gray-400 w-6">#{i + 1}</span>
+										<span className="font-medium truncate max-w-[100px]">
+											{player.username}
+										</span>
+									</div>
+									<span className="text-emerald-400 font-mono font-bold">
+										{player.score}
+									</span>
+								</li>
+							))}
 					</ul>
 				</div>
 			</div>

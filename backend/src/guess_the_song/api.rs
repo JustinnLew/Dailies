@@ -5,7 +5,7 @@ use dotenv::dotenv;
 use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::PlaylistId};
 
-use crate::state::{GuessTheSongGame, Song};
+use crate::state::{GuessTheSongGame, SongState};
 
 pub async fn get_spotify_client() -> ClientCredsSpotify {
     dotenv().ok();
@@ -69,9 +69,9 @@ pub async fn load_songs(
                         if let Some(preview_url) = json["preview"].as_str() {
                             println!("Success! Preview URL for {}: {}", track.name, preview_url);
 
-                            game.state.lock().unwrap().add_song(Song {
-                                title: track.name.clone(),
-                                artists: track.artists.iter().map(|a| a.name.clone()).collect(),
+                            game.state.lock().unwrap().add_song(SongState {
+                                title: (track.name.clone(), false),
+                                artists: track.artists.iter().map(|a| (a.name.clone(), false)).collect(),
                                 url: preview_url.to_string(),
                             });
                         } else {

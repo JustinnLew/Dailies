@@ -110,23 +110,23 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     // Subscribe to the broadcast channel to aquire a (Receiver)
     let mut rx = tx.subscribe();
 
-    {
-        // Extract the gamestate
-        let _ = sender
-            .send(Message::Text(
-                serde_json::to_string(&GuessTheSongServerEvent::SyncState {
-                    players: game_obj.get_players(),
-                    num_songs: game_obj.get_num_songs(),
-                    playlist_link: game_obj.get_playlist_link(),
-                    round_length_seconds: game_obj.get_round_length_seconds(),
-                    answer_delay_seconds: game_obj.get_answer_delay_seconds(),
-                    round_delay_seconds: game_obj.get_round_delay_seconds(),
-                })
-                .expect("Failed to parse SyncState event")
-                .into(),
-            ))
-            .await;
-    }
+    
+    // Extract the gamestate
+    let _ = sender
+        .send(Message::Text(
+            serde_json::to_string(&GuessTheSongServerEvent::SyncState {
+                players: game_obj.get_players(),
+                num_songs: game_obj.get_num_songs(),
+                playlist_link: game_obj.get_playlist_link(),
+                round_length_seconds: game_obj.get_round_length_seconds(),
+                answer_delay_seconds: game_obj.get_answer_delay_seconds(),
+                round_delay_seconds: game_obj.get_round_delay_seconds(),
+            })
+            .expect("Failed to parse SyncState event")
+            .into(),
+        ))
+        .await;
+    
 
     // Create the send_task
     let mut send_task = tokio::spawn(async move {
@@ -210,8 +210,22 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                         GuessTheSongUserEvent::Guess { content } => {
                             let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerGuess {
                                 username: player_username.clone(),
-                                content,
+                                content: content.clone(),
                             });
+                            if let Some(s) = game_obj.is_correct_song(&content) {
+                                game_obj.increment_player_score(&player_id, 2);
+                                let _ = game_obj.broadcast.send(GuessTheSongServerEvent::CorrectGuess {
+                                    player_id: player_id.clone(),
+                                    msg: format!("{} guessed the song correctly! The song was '{}'.", player_username, s),
+                                });
+                            }
+                            if let Some(a) = game_obj.is_correct_artist(&content) {
+                                game_obj.increment_player_score(&player_id, 2);
+                                let _ = game_obj.broadcast.send(GuessTheSongServerEvent::CorrectGuess {
+                                    player_id: player_id.clone(),
+                                    msg: format!("{} guessed the artist correctly! The artist was '{}'.", player_username, a),
+                                });
+                            }
                         }
                         _ => {
                             continue;
@@ -268,6 +282,7 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundEnd {
             correct_title: song.title.clone(),
             correct_artists: song.artists.clone(),
+            leaderboard: game.get_leaderboard()
         });
         sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
     }

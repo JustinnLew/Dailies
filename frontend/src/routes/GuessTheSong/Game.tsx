@@ -34,6 +34,7 @@ export default function Game() {
 	const [previewUrl, setPreviewUrl] = useState<string>("");
 	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing" | "finished">("waiting");
 	const [chat, setChat] = useState<ChatMessage[]>([]);
+	const [leaderboard, setLeaderboard] = useState<Map<string, number>>(new Map());
 	
 	useEffect(() => {
 		const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
@@ -66,7 +67,7 @@ export default function Game() {
 					})
 					break;
 				case "PlayerJoin":
-						setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false, score: 0 }]]));
+					setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
 					break;
 				case "PlayerReady":
 					setPlayers(p => new Map([...p].map(pl => pl[0] === msg.data.player_id ? [pl[0], { ...pl[1], ready: true }] : pl)));
@@ -95,6 +96,7 @@ export default function Game() {
 					break;
 				case "RoundEnd":
 					console.log("Round ended. Correct title: ", msg.data.correct_title, " Correct artists: ", msg.data.correct_artists);
+					setLeaderboard(new Map(Object.entries(msg.data.leaderboard)));
 					setPreviewUrl("");
 					break;
 				case "GameEnd":
@@ -147,7 +149,8 @@ export default function Game() {
 			sendGuess={sendGuess}
 			previewUrl={previewUrl}
 			players={players}
-			chat={chat} 
+			chat={chat}
+			leaderboard={leaderboard}
 		/>
 	);
 }

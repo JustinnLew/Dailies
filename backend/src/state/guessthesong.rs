@@ -18,7 +18,9 @@ pub(crate) struct GuessTheSongGame {
 impl GuessTheSongGame {
     pub fn player_join(&self, player_id: String, player_username: String) {
         let mut lobby = self.lobby_state.lock().unwrap();
-        lobby.player_join(player_id, player_username);
+        lobby.player_join(player_id.clone(), player_username);
+        let mut state = self.state.lock().unwrap();
+        state.scores.insert(player_id.clone(), 0);
     }
 
     pub fn player_ready(&self, user_id: &str) {
@@ -66,6 +68,23 @@ impl GuessTheSongGame {
     pub fn update_game_settings(&self, settings: GuessTheSongGameSettings) {
         let mut game_settings = self.settings.lock().unwrap();
         game_settings.update_game_settings(settings);
+    }
+
+    pub fn is_correct_artist(&self, guess: &str) -> Option<String> {
+        self.state.lock().unwrap().is_correct_artist(guess)
+    }
+
+    pub fn is_correct_song(&self, guess: &str) -> Option<String> {
+        self.state.lock().unwrap().is_correct_song(guess)
+    }
+
+    pub fn get_leaderboard(&self) -> HashMap<String, u32> {
+        let state = self.state.lock().unwrap();
+        state.scores.clone()
+    }
+
+    pub fn increment_player_score(&self, player_id: &str, points: u32) {
+        self.state.lock().unwrap().increment_player_score(player_id, points);
     }
 }
 
@@ -127,8 +146,7 @@ impl GuessTheSongGameSettings {
 /// ===============================================
 pub(crate) struct GuessTheSongGameState {
     pub scores: HashMap<String, u32>,
-    pub songs: Vec<Song>,
-    pub chat: Vec<(String, String)>,
+    pub songs: Vec<SongState>,
     pub song_index: usize,
 }
 
@@ -137,12 +155,11 @@ impl GuessTheSongGameState {
         GuessTheSongGameState {
             scores: HashMap::new(),
             songs: Vec::new(),
-            chat: Vec::new(),
             song_index: 0,
         }
     }
 
-    pub fn add_song(&mut self, song: Song) {
+    pub fn add_song(&mut self, song: SongState) {
         self.songs.push(song);
     }
 
@@ -151,7 +168,41 @@ impl GuessTheSongGameState {
         if self.songs.is_empty() || self.song_index - 1 >= self.songs.len() {
             return None;
         }
-        Some(self.songs[self.song_index - 1].clone())
+        Some(Song {
+            title: self.songs[self.song_index - 1].title.0.clone(),
+            artists: self.songs[self.song_index - 1]
+                .artists.iter().map(|(artist, _)| artist)
+                .cloned()
+                .collect(),
+            url: self.songs[self.song_index - 1].url.clone(),
+        })
+    }
+
+    pub fn is_correct_artist(&mut self, guess: &str) -> Option<String> {
+        let guess = guess.trim().to_lowercase();
+        for (artist, found) in self.songs[self.song_index - 1].artists.iter_mut() {
+            if !*found && artist.trim().to_lowercase() == guess {
+                *found = true;
+                return Some(artist.clone());
+            }
+        }
+        None
+    }
+
+    pub fn is_correct_song(&mut self, guess: &str) -> Option<String> {
+        if !self.songs[self.song_index - 1].title.1 && self.songs[self.song_index - 1].title.0.trim().to_lowercase()
+            == guess.trim().to_lowercase()
+        {
+            self.songs[self.song_index - 1].title.1 = true;
+            return Some(self.songs[self.song_index - 1].title.0.clone());
+        }
+        None
+    }
+
+    pub fn increment_player_score(&mut self, player_id: &str, points: u32) {
+        if let Some(score) = self.scores.get_mut(player_id) {
+            *score += points;
+        }
     }
 }
 
@@ -190,12 +241,17 @@ pub(crate) enum GuessTheSongServerEvent {
     RoundEnd {
         correct_title: String,
         correct_artists: Vec<String>,
+        leaderboard: HashMap<String, u32>,
     },
     GameEnd,
     PlayerGuess {
         username: String,
         content: String,
-    }
+    },
+    CorrectGuess {
+        player_id: String,
+        msg: String,
+    },
 }
 
 /// ===============================================
@@ -220,6 +276,13 @@ pub(crate) enum GuessTheSongUserEvent {
 /// ===============================================
 /// Helper Structs
 /// ===============================================
+
+#[derive(Debug)]
+pub(crate) struct SongState {
+    pub title: (String, bool),
+    pub artists: Vec<(String, bool)>,
+    pub url: String,
+}
 
 #[derive(Debug, Clone)]
 pub(crate) struct Song {
