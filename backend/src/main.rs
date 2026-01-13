@@ -7,6 +7,7 @@ use axum::{
     routing::{any, post},
 };
 use rand::{Rng, distr::Alphanumeric};
+use tokio::sync::mpsc;
 use tower_http::cors::{Any, CorsLayer};
 
 mod guess_the_song;
@@ -15,7 +16,16 @@ mod state;
 #[tokio::main]
 async fn main() {
     let s = guess_the_song::api::get_spotify_client().await;
-    let state = AppState::new(s);
+    let (clean_tx, mut clean_rx) = mpsc::unbounded_channel();
+    let state = AppState::new(s, clean_tx);
+    let cleanup_state = state.clone();
+    // Spawn cleanup thread
+    tokio::spawn(async move  {
+        while let Some(lobby_code) = clean_rx.recv().await {
+            println!("Cleaning up lobby: {}", lobby_code);
+            cleanup_state.games.remove_lobby(&lobby_code);
+        }
+    });
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])

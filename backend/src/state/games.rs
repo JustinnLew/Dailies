@@ -38,6 +38,16 @@ impl Games {
             .insert(lobby_code.to_string(), GameType::GuessTheSong);
     }
 
+    pub fn remove_lobby(&self, lobby_code: &str) {
+        if let Some(game_type) = self.registry.get(lobby_code) {
+            match *game_type {
+                GameType::GuessTheSong => {
+                    self.guess_the_song.remove(lobby_code);
+                }
+            }
+        }
+    }
+
     pub fn valid_lobby_code(&self, lobby_code: &str) -> bool {
         self.registry.contains_key(lobby_code)
     }

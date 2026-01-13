@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc};
 
 use crate::{
     AppState, generate_lobby_code,
@@ -17,7 +17,7 @@ use axum::{
 };
 use futures_util::{SinkExt, stream::StreamExt};
 use tokio::{
-    sync::broadcast,
+    sync::{broadcast, mpsc},
     time::{Duration, sleep},
 };
 pub mod api;
@@ -26,13 +26,15 @@ pub mod api;
 struct CreateLobbyResponse {
     lobby_code: String,
 }
-struct GuessTheSongConnectionGuard {
+struct GuessTheSongConnectionGuard<'a> {
     game: Arc<GuessTheSongGame>,
     player_id: String,
     broadcast: broadcast::Sender<GuessTheSongServerEvent>,
+    cleanup_tx: mpsc::UnboundedSender<String>,
+    lobby_code: &'a String,
 }
 
-impl Drop for GuessTheSongConnectionGuard {
+impl<'a> Drop for GuessTheSongConnectionGuard<'a> {
     fn drop(&mut self) {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
@@ -43,6 +45,7 @@ impl Drop for GuessTheSongConnectionGuard {
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
             player_id: self.player_id.clone(),
         });
+        let _ = self.cleanup_tx.send(self.lobby_code.clone());
     }
 }
 
@@ -121,6 +124,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         game: game_obj.clone(),
         player_id: player_id.clone(),
         broadcast: game_obj.broadcast.clone(),
+        cleanup_tx: state.cleanup.clone(),
+        lobby_code: &lobby_code,
     };
     // Clone the broadcast channel into tx (Sender)
     let tx = game_obj.broadcast.clone();
@@ -277,9 +282,8 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 
 async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
     println!("Starting Guess The Song game");
-    game.broadcast
-        .send(GuessTheSongServerEvent::GameStart)
-        .unwrap();
+    let _ = game.broadcast
+        .send(GuessTheSongServerEvent::GameStart);
     sleep(Duration::from_secs(3)).await;
     let settings = {
         let s = game.settings.lock().unwrap();
