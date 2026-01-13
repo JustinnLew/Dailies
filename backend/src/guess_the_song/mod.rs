@@ -45,7 +45,13 @@ impl<'a> Drop for GuessTheSongConnectionGuard<'a> {
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
             player_id: self.player_id.clone(),
         });
-        let _ = self.cleanup_tx.send(self.lobby_code.clone());
+        if lobby_state.players.is_empty() {
+            println!(
+                "Lobby {} is now empty, scheduling for cleanup",
+                self.lobby_code
+            );
+            let _ = self.cleanup_tx.send(self.lobby_code.clone());
+        }
     }
 }
 
