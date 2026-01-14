@@ -55,16 +55,11 @@ export default function Game() {
         }
         s.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+			console.log(msg);
             switch (msg.event) {
 				case "SyncState":
 					setPlayers(new Map(msg.data.players.map((p: [string, string, boolean]) => [p[0], { username: p[1], ready: p[2] }])));
-					setGameSettings({
-						numSongs: msg.data.num_songs,
-						playlistLink: msg.data.playlist_link,
-						roundLengthSeconds: msg.data.round_length_seconds,
-						answerDelaySeconds: msg.data.answer_delay_seconds,
-						roundDelaySeconds: msg.data.round_delay_seconds,
-					})
+					setGameSettings(msg.data.settings);
 					break;
 				case "PlayerJoin":
 					setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
