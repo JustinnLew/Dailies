@@ -11,6 +11,7 @@ use crate::state::{
 pub(crate) enum GameType {
     GuessTheSong,
 }
+
 pub(crate) struct Games {
     pub guess_the_song: DashMap<String, Arc<GuessTheSongGame>>,
     pub registry: DashMap<String, GameType>,

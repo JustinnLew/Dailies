@@ -3,7 +3,7 @@ use std::sync::{Arc};
 use crate::{
     AppState, generate_lobby_code,
     state::{
-        GuessTheSongGame, GuessTheSongGameSettings, GuessTheSongServerEvent, GuessTheSongUserEvent,
+        GuessTheSongGame, GuessTheSongServerEvent, GuessTheSongUserEvent,
         LobbyStatus,
     },
 };
@@ -26,15 +26,15 @@ pub mod api;
 struct CreateLobbyResponse {
     lobby_code: String,
 }
-struct GuessTheSongConnectionGuard<'a> {
+struct GuessTheSongConnectionGuard {
     game: Arc<GuessTheSongGame>,
     player_id: String,
     broadcast: broadcast::Sender<GuessTheSongServerEvent>,
     cleanup_tx: mpsc::UnboundedSender<String>,
-    lobby_code: &'a String,
+    lobby_code: String,
 }
 
-impl<'a> Drop for GuessTheSongConnectionGuard<'a> {
+impl Drop for GuessTheSongConnectionGuard {
     fn drop(&mut self) {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
@@ -131,7 +131,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         player_id: player_id.clone(),
         broadcast: game_obj.broadcast.clone(),
         cleanup_tx: state.cleanup.clone(),
-        lobby_code: &lobby_code,
+        lobby_code: lobby_code.clone(),
     };
     // Clone the broadcast channel into tx (Sender)
     let tx = game_obj.broadcast.clone();
@@ -143,11 +143,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         .send(Message::Text(
             serde_json::to_string(&GuessTheSongServerEvent::SyncState {
                 players: game_obj.get_players(),
-                num_songs: game_obj.get_num_songs(),
-                playlist_link: game_obj.get_playlist_link(),
-                round_length_seconds: game_obj.get_round_length_seconds(),
-                answer_delay_seconds: game_obj.get_answer_delay_seconds(),
-                round_delay_seconds: game_obj.get_round_delay_seconds(),
+                settings: game_obj.get_settings(),
             })
             .expect("Failed to parse SyncState event")
             .into(),
@@ -215,22 +211,10 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             }
                         }
                         GuessTheSongUserEvent::UpdateGameSettings { settings } => {
-                            game_obj.update_game_settings(GuessTheSongGameSettings {
-                                playlist_link: settings.playlist_link.clone(),
-                                num_songs: settings.num_songs,
-                                round_length_seconds: settings.round_length_seconds,
-                                answer_delay_seconds: settings.answer_delay_seconds,
-                                round_delay_seconds: settings.round_delay_seconds,
-                            });
+                            game_obj.update_game_settings(settings.clone());
                             let _ = game_obj.broadcast.send(
                                 GuessTheSongServerEvent::GameSettingsUpdated {
-                                    settings: GuessTheSongGameSettings {
-                                        playlist_link: settings.playlist_link.clone(),
-                                        num_songs: settings.num_songs,
-                                        round_length_seconds: settings.round_length_seconds,
-                                        answer_delay_seconds: settings.answer_delay_seconds,
-                                        round_delay_seconds: settings.round_delay_seconds,
-                                    },
+                                    settings: settings,
                                 },
                             );
                         }

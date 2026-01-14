@@ -57,18 +57,6 @@ impl GuessTheSongGame {
             .to_string()
     }
 
-    pub fn get_round_length_seconds(&self) -> u8 {
-        self.settings.lock().unwrap().get_round_length_seconds()
-    }
-
-    pub fn get_answer_delay_seconds(&self) -> u8 {
-        self.settings.lock().unwrap().get_answer_delay_seconds()
-    }
-
-    pub fn get_round_delay_seconds(&self) -> u8 {
-        self.settings.lock().unwrap().get_round_delay_seconds()
-    }
-
     pub fn update_game_settings(&self, settings: GuessTheSongGameSettings) {
         let mut game_settings = self.settings.lock().unwrap();
         game_settings.update_game_settings(settings);
@@ -92,6 +80,10 @@ impl GuessTheSongGame {
             .lock()
             .unwrap()
             .increment_player_score(player_id, points);
+    }
+
+    pub fn get_settings(&self) -> GuessTheSongGameSettings {
+        self.settings.lock().unwrap().clone()
     }
 }
 
@@ -125,18 +117,6 @@ impl GuessTheSongGameSettings {
 
     pub fn get_num_songs(&self) -> u8 {
         self.num_songs
-    }
-
-    pub fn get_round_length_seconds(&self) -> u8 {
-        self.round_length_seconds
-    }
-
-    pub fn get_answer_delay_seconds(&self) -> u8 {
-        self.answer_delay_seconds
-    }
-
-    pub fn get_round_delay_seconds(&self) -> u8 {
-        self.round_delay_seconds
     }
 
     pub fn update_game_settings(&mut self, settings: GuessTheSongGameSettings) {
@@ -199,6 +179,9 @@ impl GuessTheSongGameState {
     }
 
     pub fn is_correct_song(&mut self, guess: &str) -> Option<String> {
+        if self.song_index == 0 || self.songs.is_empty() {
+            return None;
+        }
         if !self.songs[self.song_index - 1].title.1
             && self.songs[self.song_index - 1]
                 .title
@@ -228,11 +211,7 @@ impl GuessTheSongGameState {
 pub(crate) enum GuessTheSongServerEvent {
     SyncState {
         players: Vec<(String, String, bool)>,
-        num_songs: u8,
-        playlist_link: String,
-        round_length_seconds: u8,
-        answer_delay_seconds: u8,
-        round_delay_seconds: u8,
+        settings: GuessTheSongGameSettings,
     },
     PlayerJoin {
         player_id: String,
