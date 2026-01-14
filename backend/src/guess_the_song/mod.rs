@@ -196,7 +196,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 .send(GuessTheSongServerEvent::PlayerReady {
                                     player_id: player_id.clone(),
                                 });
-                            if game_obj.all_ready() {
+                            if game_obj.all_ready() && game_obj.lobby_state.lock().unwrap().status == LobbyStatus::Waiting {
                                 let _ = game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
                                 game_obj.update_lobby_status(LobbyStatus::Playing);
                                 let playlist_link = game_obj.get_playlist_link();
