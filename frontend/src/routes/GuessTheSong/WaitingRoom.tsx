@@ -14,7 +14,7 @@ export default function Waiting({
     updateGameSettings: (settings: GuessTheSongGameSettings) => void 
 }) {
 
-    const isValidSpotifyLink = (link: string) => /https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+/.test(link);
+    const isValidSpotifyLink = (link: string) => /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
 
     return (
         <div className="h-screen flex p-4 bg-gray-100">
