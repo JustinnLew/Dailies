@@ -22,16 +22,6 @@ export default function Landing() {
 
     const joinLobby = async () => {
         if (lobbyInput.trim() === "") return;
-        // Maybe send a http request here to join as well
-        const res = await fetch(`http://localhost:3000/guess-the-song/join-lobby/${lobbyInput}`, {
-            method: "POST",
-            body: JSON.stringify({ userId }),
-        });
-        if (!res.ok) {
-            alert("Failed to join lobby. Please check the code and try again.");
-            return;
-        }
-
         // navigate to the lobby page
         navigate(`/guess-the-song/${lobbyInput}`);
         setLobbyInput("");

@@ -106,7 +106,11 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
         Some(g) => g.clone(),
         None => {
-            let _ = sender.send(Message::Text("Lobby Not Found".into())).await;
+            let _ = sender.send(Message::Text(serde_json::to_string(&GuessTheSongServerEvent::JoinError {
+                        message: "Lobby not found".to_string()
+                    })
+                    .unwrap()
+                    .into(),)).await;
             return;
         }
     };

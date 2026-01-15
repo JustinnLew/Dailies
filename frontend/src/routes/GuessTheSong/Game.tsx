@@ -32,7 +32,7 @@ export default function Game() {
 		}
 	}, []);
 	const [previewUrl, setPreviewUrl] = useState<string>("");
-	const [gameState, setGameState] = useState<"waiting" | "loading" | "playing" | "finished">("waiting");
+	const [gameState, setGameState] = useState<"connecting" | "waiting" | "loading" | "playing" | "finished">("connecting");
 	const [chat, setChat] = useState<ChatMessage[]>([]);
 	const [leaderboard, setLeaderboard] = useState<Map<string, number>>(new Map());
 	
@@ -55,7 +55,6 @@ export default function Game() {
         }
         s.onmessage = (event) => {
             const msg = JSON.parse(event.data);
-			console.log(msg);
             switch (msg.event) {
 				case "SyncState":
 					setPlayers(new Map(msg.data.players.map((p: [string, string, boolean]) => [p[0], { username: p[1], ready: p[2] }])));
@@ -63,6 +62,7 @@ export default function Game() {
 					break;
 				case "PlayerJoin":
 					setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
+					setGameState("waiting")
 					break;
 				case "PlayerReady":
 					setPlayers(p => new Map([...p].map(pl => pl[0] === msg.data.player_id ? [pl[0], { ...pl[1], ready: true }] : pl)));
@@ -124,6 +124,14 @@ export default function Game() {
 
 	const ready = () => {
 		socket.current.send(JSON.stringify({ event: "Ready"}));
+	}
+
+	if (gameState === "connecting") {
+		return (
+			<div className="h-screen flex items-center justify-center bg-gray-900 text-white">
+				<p>Connecting to lobby...</p>
+			</div>
+		);
 	}
 
 	if (gameState === "waiting") {
