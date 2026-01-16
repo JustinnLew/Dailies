@@ -207,10 +207,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 
                                 let l = game_obj.clone();
                                 let spotify_client = state.spotify_client.clone();
+                                let cleanup_tx = state.cleanup.clone();
+                                let lc = lobby_code.clone();
                                 tokio::spawn(async move {
                                     api::load_songs(&spotify_client, &playlist_link, l.clone())
                                         .await;
-                                    run_guess_the_song_game(l).await;
+                                    run_guess_the_song_game(l, cleanup_tx, &lc).await;
                                 });
                             }
                         }
@@ -274,7 +276,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     println!("Websocket disconnected");
 }
 
-async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
+async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>, cleanup: mpsc::UnboundedSender<String>, lobby_code: &String) {
     println!("Starting Guess The Song game");
     let _ = game.broadcast
         .send(GuessTheSongServerEvent::GameStart);
@@ -314,4 +316,5 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
         sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
     }
     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
+    let _ = cleanup.send(lobby_code.clone());
 }
