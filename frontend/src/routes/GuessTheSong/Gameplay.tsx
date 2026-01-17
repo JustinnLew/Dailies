@@ -5,14 +5,14 @@ import type { ChatMessage } from "../../utils/types";
 
 export default function Gameplay({ 
     sendGuess,
-  	previewUrl,
+  	songState,
 	players,
 	chat, 
 	leaderboard
 	} 
   : { 
     sendGuess: (guess: string) => void,
-    previewUrl: string,
+    songState: {previewUrl: string, roundStartTime: number},
 	players: Map<string, Player>,
 	chat: ChatMessage[],
 	leaderboard: Map<string, number>}) {
@@ -31,7 +31,7 @@ export default function Gameplay({
 	}, [chat]);
 
 	const sendMessage = () => {
-		if (message === ""|| previewUrl === "") return;
+		if (message === ""|| songState.previewUrl === "") return;
 		sendGuess(message);
 		setMessage("");
 	};
@@ -124,7 +124,7 @@ export default function Gameplay({
 				</button>
 				</div>
 			</div>
-			<AudioPlayer previewUrl={previewUrl} />
+			<AudioPlayer songState={songState} />
 		</div>
   	);
 }

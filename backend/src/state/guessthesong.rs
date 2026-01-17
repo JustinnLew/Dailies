@@ -1,9 +1,9 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, sync::Mutex, time::Instant};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
 
-use crate::state::LobbyState;
+use crate::state::{LobbyState, LobbyStatus};
 
 /// ===============================================
 /// Main Parent Struct for Guess The Song Game
@@ -15,16 +15,26 @@ pub(crate) struct GuessTheSongGame {
     pub state: Mutex<GuessTheSongGameState>,
 }
 
+pub(crate) enum PlayerJoinResult{
+    ReJoin,
+    NewJoin
+}
+
 impl GuessTheSongGame {
-    pub fn player_join(&self, player_id: String, player_username: String) -> Result<(), &str> {
+    pub fn player_join(&self, player_id: String, player_username: String) -> Result<PlayerJoinResult, &str> {
         let mut lobby = self.lobby_state.lock().unwrap();
-        if lobby.status != crate::state::LobbyStatus::Waiting {
-            return Err("Cannot join game in progresss");
-        }
-        lobby.player_join(player_id.clone(), player_username);
         let mut state = self.state.lock().unwrap();
-        state.scores.insert(player_id.clone(), 0);
-        Ok(())
+        if state.scores.contains_key(&player_id) {
+            lobby.player_join(player_id.clone(), player_username);
+            return Ok(PlayerJoinResult::ReJoin);
+        } else {
+            if lobby.status != crate::state::LobbyStatus::Waiting {
+                return Err("Cannot join game in progresss");
+            }
+            lobby.player_join(player_id.clone(), player_username);
+            state.scores.insert(player_id.clone(), 0);
+        }
+        Ok(PlayerJoinResult::NewJoin)
     }
 
     pub fn player_ready(&self, user_id: &str) {
@@ -36,7 +46,11 @@ impl GuessTheSongGame {
         self.lobby_state.lock().unwrap().all_ready()
     }
 
-    pub fn update_lobby_status(&self, new_status: crate::state::LobbyStatus) {
+    pub fn get_lobby_status(&self) -> LobbyStatus {
+        self.lobby_state.lock().unwrap().status.clone()
+    }
+
+    pub fn update_lobby_status(&self, new_status: LobbyStatus) {
         let mut lobby = self.lobby_state.lock().unwrap();
         lobby.update_lobby_status(new_status);
     }
@@ -55,6 +69,10 @@ impl GuessTheSongGame {
             .unwrap()
             .get_playlist_link()
             .to_string()
+    }
+
+    pub fn get_current_song(&self) -> Option<Song> {
+        self.state.lock().unwrap().get_current_song()
     }
 
     pub fn update_game_settings(&self, settings: GuessTheSongGameSettings) {
@@ -84,6 +102,10 @@ impl GuessTheSongGame {
 
     pub fn get_settings(&self) -> GuessTheSongGameSettings {
         self.settings.lock().unwrap().clone()
+    }
+
+    pub fn get_round_start_time(&self) -> Option<u64> {
+        self.state.lock().unwrap().get_round_start_time()
     }
 }
 
@@ -135,6 +157,7 @@ pub(crate) struct GuessTheSongGameState {
     pub scores: HashMap<String, u32>,
     pub songs: Vec<SongState>,
     pub song_index: usize,
+    pub round_start_time: Option<u64>,
 }
 
 impl GuessTheSongGameState {
@@ -143,16 +166,16 @@ impl GuessTheSongGameState {
             scores: HashMap::new(),
             songs: Vec::new(),
             song_index: 0,
+            round_start_time: None,
         }
     }
 
-    pub fn add_song(&mut self, song: SongState) {
-        self.songs.push(song);
+    pub fn get_round_start_time(&self) -> Option<u64> {
+        self.round_start_time
     }
 
-    pub fn get_next_song(&mut self) -> Option<Song> {
-        self.song_index += 1;
-        if self.songs.is_empty() || self.song_index - 1 >= self.songs.len() {
+    pub fn get_current_song(&self) -> Option<Song> {
+        if self.songs.is_empty() || self.song_index == 0 || self.song_index - 1 >= self.songs.len() {
             return None;
         }
         Some(Song {
@@ -165,6 +188,15 @@ impl GuessTheSongGameState {
                 .collect(),
             url: self.songs[self.song_index - 1].url.clone(),
         })
+    }
+
+    pub fn add_song(&mut self, song: SongState) {
+        self.songs.push(song);
+    }
+
+    pub fn get_next_song(&mut self) -> Option<Song> {
+        self.song_index += 1;
+        self.get_current_song()
     }
 
     pub fn is_correct_artist(&mut self, guess: &str) -> Option<String> {
@@ -212,6 +244,10 @@ pub(crate) enum GuessTheSongServerEvent {
     SyncState {
         players: Vec<(String, String, bool)>,
         settings: GuessTheSongGameSettings,
+        leaderboard: HashMap<String, u32>,
+        preview_url: Option<String>,
+        status: LobbyStatus,
+        round_start_time: Option<u64>,
     },
     PlayerJoin {
         player_id: String,
@@ -230,6 +266,7 @@ pub(crate) enum GuessTheSongServerEvent {
     },
     RoundStart {
         preview_url: String,
+        round_start_time: u64,
     },
     RoundEnd {
         correct_title: String,
@@ -280,7 +317,7 @@ pub(crate) struct SongState {
     pub url: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub(crate) struct Song {
     pub title: String,
     pub artists: Vec<String>,

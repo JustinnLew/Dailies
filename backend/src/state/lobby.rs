@@ -1,9 +1,14 @@
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "lowercase")]
 pub(crate) enum LobbyStatus {
     Waiting,
+    Loading,
     Playing,
+    Finished,
 }
 
 #[derive(Debug)]

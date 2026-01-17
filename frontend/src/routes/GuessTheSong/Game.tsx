@@ -31,7 +31,7 @@ export default function Game() {
 			}));
 		}
 	}, []);
-	const [previewUrl, setPreviewUrl] = useState<string>("");
+	const [songState, setSongState] = useState<{previewUrl: string, roundStartTime: number}>({previewUrl: "", roundStartTime: 0});
 	const [gameState, setGameState] = useState<"connecting" | "waiting" | "loading" | "playing" | "finished">("connecting");
 	const [chat, setChat] = useState<ChatMessage[]>([]);
 	const [leaderboard, setLeaderboard] = useState<Map<string, number>>(new Map());
@@ -55,14 +55,17 @@ export default function Game() {
         }
         s.onmessage = (event) => {
             const msg = JSON.parse(event.data);
+			console.log(msg);
             switch (msg.event) {
 				case "SyncState":
 					setPlayers(new Map(msg.data.players.map((p: [string, string, boolean]) => [p[0], { username: p[1], ready: p[2] }])));
 					setGameSettings(msg.data.settings);
+					setLeaderboard(new Map(Object.entries(msg.data.leaderboard)));
+					setSongState({previewUrl: msg.data.preview_url || "", roundStartTime: msg.data.round_start_time});
+					setGameState(msg.data.status);
 					break;
 				case "PlayerJoin":
 					setPlayers(p => new Map([...p, [msg.data.player_id, { username: msg.data.player_username, ready: false }]]));
-					setGameState("waiting")
 					break;
 				case "PlayerReady":
 					setPlayers(p => new Map([...p].map(pl => pl[0] === msg.data.player_id ? [pl[0], { ...pl[1], ready: true }] : pl)));
@@ -87,12 +90,12 @@ export default function Game() {
 				break;
 				case "RoundStart":
 					console.log("Round started with preview URL: ", msg.data.preview_url);
-					setPreviewUrl(msg.data.preview_url);
+					setSongState({previewUrl: msg.data.preview_url, roundStartTime: msg.data.round_start_time});
 					break;
 				case "RoundEnd":
 					console.log("Round ended. Correct title: ", msg.data.correct_title, " Correct artists: ", msg.data.correct_artists);
 					setLeaderboard(new Map(Object.entries(msg.data.leaderboard)));
-					setPreviewUrl("");
+					setSongState({previewUrl: "", roundStartTime: 0});
 					setChat(c => [...c, { user: "", message: `The correct song was '${msg.data.correct_title}' by ${msg.data.correct_artists.join(", ")}` }]);
 					break;
 				case "GameEnd":
@@ -157,7 +160,7 @@ export default function Game() {
 	return (
 		<Gameplay 
 			sendGuess={sendGuess}
-			previewUrl={previewUrl}
+			songState={songState}
 			players={players}
 			chat={chat}
 			leaderboard={leaderboard}

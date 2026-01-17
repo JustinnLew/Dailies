@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
 
 use crate::{
     AppState, generate_lobby_code,
@@ -36,7 +36,7 @@ impl Drop for GuessTheSongConnectionGuard {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
         println!(
-            "Player {} disconnected and removed from lobby",
+            "Player {} disconnected from lobby",
             self.player_id
         );
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
@@ -149,6 +149,10 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             serde_json::to_string(&GuessTheSongServerEvent::SyncState {
                 players: game_obj.get_players(),
                 settings: game_obj.get_settings(),
+                leaderboard: game_obj.get_leaderboard(),
+                preview_url: game_obj.get_current_song().map(|s| s.url),
+                status: game_obj.get_lobby_status(),
+                round_start_time: game_obj.get_round_start_time(),
             })
             .expect("Failed to parse SyncState event")
             .into(),
@@ -292,10 +296,14 @@ async fn run_guess_the_song_game(
     };
 
     for _ in 0..settings.num_songs {
-        let song = {
+        let (song, round_start_time) = {
             let mut state = game.state.lock().unwrap();
             match state.get_next_song() {
-                Some(s) => s,
+                Some(s) => {
+                    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+                    state.round_start_time = Some(now);
+                    (s, now)
+                },
                 None => {
                     println!("No songs left, ending game");
                     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
@@ -306,6 +314,7 @@ async fn run_guess_the_song_game(
 
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundStart {
             preview_url: song.url.clone(),
+            round_start_time,
         });
 
         sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
