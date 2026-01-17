@@ -1,4 +1,7 @@
-use std::{sync::Arc, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    sync::Arc,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use crate::{
     AppState, generate_lobby_code,
@@ -35,10 +38,7 @@ impl Drop for GuessTheSongConnectionGuard {
     fn drop(&mut self) {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
-        println!(
-            "Player {} disconnected from lobby",
-            self.player_id
-        );
+        println!("Player {} disconnected from lobby", self.player_id);
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
             player_id: self.player_id.clone(),
         });
@@ -300,10 +300,13 @@ async fn run_guess_the_song_game(
             let mut state = game.state.lock().unwrap();
             match state.get_next_song() {
                 Some(s) => {
-                    let now = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+                    let now = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs();
                     state.round_start_time = Some(now);
                     (s, now)
-                },
+                }
                 None => {
                     println!("No songs left, ending game");
                     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::Mutex, time::Instant};
+use std::{collections::HashMap, sync::Mutex};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
@@ -15,13 +15,17 @@ pub(crate) struct GuessTheSongGame {
     pub state: Mutex<GuessTheSongGameState>,
 }
 
-pub(crate) enum PlayerJoinResult{
+pub(crate) enum PlayerJoinResult {
     ReJoin,
-    NewJoin
+    NewJoin,
 }
 
 impl GuessTheSongGame {
-    pub fn player_join(&self, player_id: String, player_username: String) -> Result<PlayerJoinResult, &str> {
+    pub fn player_join(
+        &self,
+        player_id: String,
+        player_username: String,
+    ) -> Result<PlayerJoinResult, &str> {
         let mut lobby = self.lobby_state.lock().unwrap();
         let mut state = self.state.lock().unwrap();
         if state.scores.contains_key(&player_id) {
@@ -175,7 +179,8 @@ impl GuessTheSongGameState {
     }
 
     pub fn get_current_song(&self) -> Option<Song> {
-        if self.songs.is_empty() || self.song_index == 0 || self.song_index - 1 >= self.songs.len() {
+        if self.songs.is_empty() || self.song_index == 0 || self.song_index - 1 >= self.songs.len()
+        {
             return None;
         }
         Some(Song {
