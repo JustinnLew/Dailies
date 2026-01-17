@@ -20,7 +20,7 @@ async fn main() {
     let state = AppState::new(s, clean_tx);
     let cleanup_state = state.clone();
     // Spawn cleanup thread
-    tokio::spawn(async move  {
+    tokio::spawn(async move {
         while let Some(lobby_code) = clean_rx.recv().await {
             println!("Cleaning up lobby: {}", lobby_code);
             cleanup_state.games.remove_lobby(&lobby_code);

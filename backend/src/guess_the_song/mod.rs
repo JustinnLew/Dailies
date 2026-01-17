@@ -1,11 +1,8 @@
-use std::sync::{Arc};
+use std::sync::Arc;
 
 use crate::{
     AppState, generate_lobby_code,
-    state::{
-        GuessTheSongGame, GuessTheSongServerEvent, GuessTheSongUserEvent,
-        LobbyStatus,
-    },
+    state::{GuessTheSongGame, GuessTheSongServerEvent, GuessTheSongUserEvent, LobbyStatus},
 };
 use axum::{
     Json,
@@ -106,11 +103,15 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
         Some(g) => g.clone(),
         None => {
-            let _ = sender.send(Message::Text(serde_json::to_string(&GuessTheSongServerEvent::JoinError {
-                        message: "Lobby not found".to_string()
+            let _ = sender
+                .send(Message::Text(
+                    serde_json::to_string(&GuessTheSongServerEvent::JoinError {
+                        message: "Lobby not found".to_string(),
                     })
                     .unwrap()
-                    .into(),)).await;
+                    .into(),
+                ))
+                .await;
             return;
         }
     };
@@ -200,7 +201,10 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 .send(GuessTheSongServerEvent::PlayerReady {
                                     player_id: player_id.clone(),
                                 });
-                            if game_obj.all_ready() && game_obj.lobby_state.lock().unwrap().status == LobbyStatus::Waiting {
+                            if game_obj.all_ready()
+                                && game_obj.lobby_state.lock().unwrap().status
+                                    == LobbyStatus::Waiting
+                            {
                                 let _ = game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
                                 game_obj.update_lobby_status(LobbyStatus::Playing);
                                 let playlist_link = game_obj.get_playlist_link();
@@ -219,9 +223,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                         GuessTheSongUserEvent::UpdateGameSettings { settings } => {
                             game_obj.update_game_settings(settings.clone());
                             let _ = game_obj.broadcast.send(
-                                GuessTheSongServerEvent::GameSettingsUpdated {
-                                    settings: settings,
-                                },
+                                GuessTheSongServerEvent::GameSettingsUpdated { settings: settings },
                             );
                         }
                         GuessTheSongUserEvent::Guess { content } => {
@@ -276,10 +278,13 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     println!("Websocket disconnected");
 }
 
-async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>, cleanup: mpsc::UnboundedSender<String>, lobby_code: &String) {
+async fn run_guess_the_song_game(
+    game: Arc<GuessTheSongGame>,
+    cleanup: mpsc::UnboundedSender<String>,
+    lobby_code: &String,
+) {
     println!("Starting Guess The Song game");
-    let _ = game.broadcast
-        .send(GuessTheSongServerEvent::GameStart);
+    let _ = game.broadcast.send(GuessTheSongServerEvent::GameStart);
     sleep(Duration::from_secs(3)).await;
     let settings = {
         let s = game.settings.lock().unwrap();
@@ -299,15 +304,12 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>, cleanup: mpsc::Unb
             }
         };
 
-        // --- 2. Broadcast song start ---
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundStart {
             preview_url: song.url.clone(),
         });
 
-        // --- 3. Wait for round duration ---
         sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
 
-        // --- 4. End round ---
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundEnd {
             correct_title: song.title.clone(),
             correct_artists: song.artists.clone(),

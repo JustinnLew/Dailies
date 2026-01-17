@@ -1,6 +1,6 @@
 use rspotify::ClientCredsSpotify;
+use std::sync::Arc;
 use tokio::sync::mpsc;
-use std::sync::{Arc};
 
 pub mod games;
 pub mod guessthesong;
