@@ -30,8 +30,6 @@ export default function AudioPlayer({ songState }: { songState: { previewUrl: st
             };
             audio.addEventListener('loadedmetadata', onLoadedMetadata, { once: true });
             audio.src = songState.previewUrl;
-            audio.load(); 
-
         } else {
             audio.pause();
             audio.currentTime = 0;
