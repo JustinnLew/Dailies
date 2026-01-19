@@ -19,7 +19,7 @@ export default function HomeGridCell({
       }}
     >
       <div className="flex items-center gap-4 mb-4">
-        <div className="border-2 border-white">{icon}</div>
+        {/* <div className="border-2 border-white">{icon}</div> */}
         <h2 className="text-xl font-bold font-press-start text-white text-shadow-(--text-shadow-icon)">
           {title}
         </h2>
@@ -28,11 +28,7 @@ export default function HomeGridCell({
         {description}
       </p>
       <div
-        className="mt-auto pt-6 text-right font-bold text-sm wave-container"
-        style={{
-          fontFamily: "'Press Start 2P', monospace",
-          color: "oklch(0.55 0.35 340)",
-        }}
+        className="mt-auto pt-6 text-right font-bold text-sm wave-container font-press-start text-red-500"
       >
         <span>&gt;</span>
         <span>&gt;</span>
