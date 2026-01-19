@@ -6,9 +6,8 @@ export default function HomeGrid() {
       title: "Guess The Song",
       description:
         "Test your music knowledge by guessing songs from short clips.",
-      to: "/guess-the-song",
     },
-    { title: "Coming Soon", description: "Maybe...", to: "/not-found" },
+    { title: "Coming Soon", description: "Maybe..."},
   ];
 
   return (
@@ -18,7 +17,7 @@ export default function HomeGrid() {
           key={index}
           title={mode.title}
           description={mode.description}
-          to={mode.to}
+          icon={<div className="text-white">tmp</div>}
         />
       ))}
     </div>
