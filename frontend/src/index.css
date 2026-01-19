@@ -36,7 +36,31 @@
     );
   z-index: 2;
   background-size:
-    100% 2px,
-    3px 100%;
+    100% 4px,
+    4px 100%;
   pointer-events: none;
+}
+
+@keyframes arrow-wave {
+  0%   { transform: translateY(0); }
+  33%  { transform: translateY(-5px); }
+  66% { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
+/* Only animate when the card is hovered */
+.bg-neon-card:hover .wave-container span {
+  display: inline-block;
+  animation: arrow-wave 1.25s ease-in-out infinite;
+}
+
+/* Stagger the wave */
+.bg-neon-card:hover .wave-container span:nth-child(1) {
+  animation-delay: 0s;
+}
+.bg-neon-card:hover .wave-container span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.bg-neon-card:hover .wave-container span:nth-child(3) {
+  animation-delay: 0.4s;
 }

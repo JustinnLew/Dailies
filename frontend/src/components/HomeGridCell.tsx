@@ -27,13 +27,15 @@ export default function HomeGridCell({
       </div>
       <p className="font-vt323 text-neon-yellow text-xl leading-tight">{description}</p>
 			<div 
-        className="mt-auto pt-6 text-right font-bold text-sm"
+        className="mt-auto pt-6 text-right font-bold text-sm wave-container"
         style={{ 
           fontFamily: "'Press Start 2P', monospace",
           color: 'oklch(0.55 0.35 340)'
         }}
       >
-        &gt;&gt;&gt;
+        <span>&gt;</span>
+				<span>&gt;</span>
+				<span>&gt;</span>
       </div>
     </div>
   );
