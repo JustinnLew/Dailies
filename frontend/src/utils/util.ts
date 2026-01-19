@@ -1,11 +1,11 @@
 const getUserId = () => {
-	let id = localStorage.getItem("user_id");
-	if (!id) {
-		id = crypto.randomUUID();
-		localStorage.setItem("user_id", id);
-	}
-	return id;
-}
+  let id = localStorage.getItem("user_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("user_id", id);
+  }
+  return id;
+};
 
 const NAMES = ["Eagle", "Tiger", "Fox", "Panda", "Lion", "Wolf"];
 
@@ -18,8 +18,4 @@ const getUserName = () => {
   return name;
 };
 
-
-export {
-	getUserId,
-	getUserName
-}
+export { getUserId, getUserName };
