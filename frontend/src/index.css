@@ -42,10 +42,18 @@
 }
 
 @keyframes arrow-wave {
-  0%   { transform: translateY(0); }
-  33%  { transform: translateY(-5px); }
-  66% { transform: translateY(0); }
-  100% { transform: translateY(0); }
+  0% {
+    transform: translateY(0);
+  }
+  33% {
+    transform: translateY(-5px);
+  }
+  66% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 /* Only animate when the card is hovered */

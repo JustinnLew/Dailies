@@ -7,7 +7,7 @@ export default function HomeGrid() {
       description:
         "Test your music knowledge by guessing songs from short clips.",
     },
-    { title: "Coming Soon", description: "Maybe..."},
+    { title: "Coming Soon", description: "Maybe..." },
   ];
 
   return (
