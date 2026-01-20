@@ -197,25 +197,25 @@ export default function Game() {
     socket.current.send(JSON.stringify({ event: "Ready" }));
   };
 
-  // if (gameState === "connecting") {
-  //   return <Connecting />;
-  // }
+  if (gameState === "connecting") {
+    return <Connecting />;
+  }
 
-  // if (gameState === "waiting") {
-  //   return (
-  //     <WaitingRoom
-  //       lobbyCode={params.lobbyCode!}
-  //       ready={ready}
-  //       players={players}
-  //       gameSettings={gameSettings}
-  //       updateGameSettings={updateGameSettings}
-  //     />
-  //   );
-  // }
+  if (gameState === "waiting") {
+    return (
+      <WaitingRoom
+        lobbyCode={params.lobbyCode!}
+        ready={ready}
+        players={players}
+        gameSettings={gameSettings}
+        updateGameSettings={updateGameSettings}
+      />
+    );
+  }
 
-  // if (gameState === "loading") {
+  if (gameState === "loading") {
     return <PreparingPlaylist/>
-  // }
+  }
 
   return (
     <Gameplay
