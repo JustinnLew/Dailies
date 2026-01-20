@@ -17,23 +17,39 @@ export default function Waiting({
     /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
 
   return (
-    <div className="h-screen flex p-4 bg-gray-100">
+    <div className="h-screen flex p-4 bg-black font-press-start scanlines">
       {/* Left panel: Game ID + Player List */}
-      <div className="flex flex-col w-1/3 bg-white p-4 rounded shadow-md">
-        <div className="mb-4">
-          <h2 className="text-lg font-bold">Game Code</h2>
-          <p className="text-gray-700 font-mono tracking-widest">{lobbyCode}</p>
+      <div className="flex flex-col gap-6 w-1/3 p-4 rounded shadow-md border-4 border-neon-pink">
+        <h2 className="text-2xl font-bold text-white text-shadow-(--text-shadow-title)">Game Code</h2>
+          <div className="flex">
+          <p className="flex-1 text-neon-yellow font-vt323 text-2xl tracking-widest">{lobbyCode}</p>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(lobbyCode);
+            }}
+            className="p-2 transition-all hover:scale-110 active:scale-95 bg-neon-bg border-2 border-neon-blue"
+            title="Copy Code"
+            >
+            {/* ICON PLACEHOLDER */}
+            <div className="w-5 h-5 flex items-center justify-center text-neon-blue">
+              <span className="text-[10px] font-press-start">C</span> 
+              {/* Replace the span above with <CopyIcon /> later */}
+            </div>
+            </button>
         </div>
 
         <div>
-          <h2 className="text-lg font-bold mb-2">Players</h2>
+          <h2 className="font-bold mb-2 text-white text-shadow-(--text-shadow-icon)">Players</h2>
           <ul className="space-y-2">
             {[...players.entries()].map(([id, p]) => (
               <li
                 key={id}
-                className={`p-2 rounded transition-colors ${p.ready ? "bg-green-200 text-green-900" : "bg-gray-200 text-gray-900"}`}
+                className={`flex text-sm p-2 rounded transition-colors ${p.ready ? "bg-green-200 text-green-900" : "bg-gray-200 text-gray-900"}`}
               >
-                {p.username} {p.ready && "✓"}
+                <p className="flex-1">
+                  {p.username}
+                </p>
+                {p.ready && "✓"}
               </li>
             ))}
           </ul>
@@ -41,10 +57,10 @@ export default function Waiting({
       </div>
 
       {/* Right panel: Settings */}
-      <div className="flex-1 ml-4 flex flex-col justify-between bg-white p-4 rounded shadow-md">
+      <div className="flex-1 ml-4 flex flex-col justify-between text-white p-4 rounded shadow-md
+                      border-4 border-neon-blue">
         <div>
-          <h2 className="text-lg font-bold mb-4">Settings</h2>
-
+          <h2 className="text-2xl font-bold mb-4 text-shadow-(--text-shadow-icon)">Settings</h2>
           <div className="grid grid-cols-2 gap-4">
             {/* Number of Songs */}
             <div className="mb-2">
@@ -52,7 +68,7 @@ export default function Waiting({
                 Number of Songs:
               </label>
               <select
-                className="w-full border rounded p-1 bg-white cursor-pointer"
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.numSongs}
                 onChange={(e) =>
                   updateGameSettings({
@@ -75,7 +91,7 @@ export default function Waiting({
                 Round Length (s):
               </label>
               <select
-                className="w-full border rounded p-1 bg-white cursor-pointer"
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.roundLengthSeconds}
                 onChange={(e) =>
                   updateGameSettings({
@@ -98,7 +114,7 @@ export default function Waiting({
                 Answer Delay (s):
               </label>
               <select
-                className="w-full border rounded p-1 bg-white cursor-pointer"
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.answerDelaySeconds}
                 onChange={(e) =>
                   updateGameSettings({
@@ -121,7 +137,7 @@ export default function Waiting({
                 Round Delay (s):
               </label>
               <select
-                className="w-full border rounded p-1 bg-white cursor-pointer"
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.roundDelaySeconds}
                 onChange={(e) =>
                   updateGameSettings({
@@ -139,14 +155,15 @@ export default function Waiting({
             </div>
           </div>
 
+          {/* Playlist Link */}
           <div className="mt-4">
-            <label className="block mb-1 font-medium text-sm">
+            <label className="block mb-1 text-sm">
               Spotify Playlist Link:
             </label>
             <input
               type="text"
               placeholder="https://open.spotify.com/playlist/..."
-              className="w-full border rounded p-2"
+              className="w-full border rounded p-2 font-vt323 text-xl"
               value={gameSettings.playlistLink}
               onChange={(e) =>
                 updateGameSettings({
@@ -165,8 +182,8 @@ export default function Waiting({
             className={`px-6 py-2 rounded text-white font-bold transition-all
                             ${
                               isValidSpotifyLink(gameSettings.playlistLink)
-                                ? "bg-emerald-500 hover:bg-emerald-600 shadow-lg active:scale-95"
-                                : "bg-gray-400 cursor-not-allowed"
+                                ? "border-green-500 border-4 cursor-pointer"
+                                : "border-red-500 border-4 cursor-not-allowed"
                             }
                         `}
             onClick={ready}

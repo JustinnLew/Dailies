@@ -174,7 +174,7 @@ export default function Game() {
           setChat((c) => [...c, { user: "", message: msg.data.msg }]);
           break;
         case "JoinError":
-          navigate("/guess-the-song", { state: { error: msg.message } });
+          navigate("/", { state: { error: msg.message } });
           break;
         default:
           console.log("Unknown event received: ", msg);

@@ -14,7 +14,7 @@
   --shadow-navbar: 0 4px 0 oklch(0.55 0.25 290);
 
   --text-shadow-title:
-    3px 3px 0 oklch(0.55 0.35 340), 6px 6px 0 oklch(0.55 0.25 290);
+    3px 3px 0 oklch(0.55 0.35 340), 6px 6px 0 oklch(0.6 0.3 240);
   --text-shadow-icon: 2px 2px 0 oklch(0.55 0.35 340);
 }
 
