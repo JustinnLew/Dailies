@@ -8,6 +8,7 @@ import type {
   GuessTheSongGameSettings,
   ChatMessage,
 } from "../../utils/types";
+import Connecting from "../../components/Connecting";
 
 export default function Game() {
   const params = useParams();
@@ -196,16 +197,7 @@ export default function Game() {
   };
 
   if (gameState === "connecting") {
-    return (
-      <div className="scanlines h-screen flex items-center justify-center bg-black text-white font-press-start text-3xl">
-        <p className="pr-3">Connecting to lobby</p>
-        <div className="wave-container tracking-widest">
-          <span>.</span>
-          <span>.</span>
-          <span>.</span>
-        </div>
-      </div>
-    );
+    return <Connecting/>
   }
 
   if (gameState === "waiting") {
