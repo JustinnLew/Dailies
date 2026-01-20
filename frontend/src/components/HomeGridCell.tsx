@@ -19,7 +19,7 @@ export default function HomeGridCell({
     <>
       <div
         onClick={handleOpen}
-        className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid"
+        className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid wave-container"
         style={{
           clipPath:
             "polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))",
@@ -34,7 +34,7 @@ export default function HomeGridCell({
         <p className="font-vt323 text-neon-yellow text-xl leading-tight">
           {description}
         </p>
-        <div className="mt-auto pt-6 text-right font-bold text-sm wave-container font-press-start text-red-500">
+        <div className="mt-auto pt-6 text-right font-bold text-sm font-press-start text-red-500">
           <span>&gt;</span>
           <span>&gt;</span>
           <span>&gt;</span>

@@ -56,18 +56,30 @@
   }
 }
 
-/* Card >>> animation */
-.wave-container span {
+.wave-container-auto span {
   display: inline-block;
   animation: arrow-wave 1.25s ease-in-out infinite;
 }
 
-.wave-container span:nth-child(1) {
+/* Card >>> animation */
+.wave-container span {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.wave-container:hover span {
+  animation: arrow-wave 1.25s ease-in-out infinite;
+}
+
+.wave-container span:nth-child(1),
+.wave-container-auto span:nth-child(1) {
   animation-delay: 0s;
 }
-.wave-container span:nth-child(2) {
+.wave-container span:nth-child(2),
+.wave-container-auto span:nth-child(2) {
   animation-delay: 0.2s;
 }
-.wave-container span:nth-child(3) {
+.wave-container span:nth-child(3),
+.wave-container-auto span:nth-child(3) {
   animation-delay: 0.4s;
 }
