@@ -1,5 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUserId, getUserName } from "../../utils/util";
 
 export default function GTSHomeModal({
   open,
@@ -8,11 +10,27 @@ export default function GTSHomeModal({
   open: boolean;
   onClose: () => void;
 }) {
+
+const navigate = useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
+const userId = getUserId();
+  const userName = getUserName();
   const validLobbyCode = () => {
     return lobbyCode.length == 6
   };
-  const handleJoin = () => {};
+  const createLobby = async () => {
+    const res = await fetch(
+      "http://localhost:3000/guess-the-song/create-lobby",
+      {
+        method: "POST",
+        body: JSON.stringify({ userId, userName }),
+      },
+    );
+    const data = await res.json();
+    console.log(`User ${userName} created lobby ${data.lobby_code}`);
+    navigate(`/guess-the-song/${data.lobby_code}`);
+  };
+
   return (
     <Modal open={open} onClose={onClose}>
       <div
@@ -46,7 +64,8 @@ export default function GTSHomeModal({
           <h2 className="text-sm font-press-start text-neon-yellow">
             &gt; START A NEW GAME
           </h2>
-          <button
+          <button 
+            onClick={createLobby}
             className="px-8 py-4 transition-all hover:scale-105 cursor-pointer bg-neon-pink
               border-4 border-neon-blue w-full"
             style={{
@@ -89,8 +108,8 @@ export default function GTSHomeModal({
               }}
             />
             <button
-              disabled={validLobbyCode()}
-              onClick={handleJoin}
+              disabled={!validLobbyCode()}
+              onClick={() => navigate(`/guess-the-song/${lobbyCode}`)}
               className={`px-8 py-4 transition-all hover:scale-105 
                           ${validLobbyCode() ? "border-4 border-green-500 cursor-pointer" : 
                           "border-4 border-red-500 cursor-not-allowed"}`}
