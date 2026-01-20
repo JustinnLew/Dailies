@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { Player } from "../../utils/types";
+import Crown from "../../icons/Crown";
+import Trophy from "../../icons/Trophy";
 
 export default function Ending({
   players,
@@ -30,10 +32,10 @@ export default function Ending({
         </div>
 
         {/* Top 3 */}
-        <div className="flex items-end justify-center gap-4 mb-2 min-h-48">
+        <div className="flex items-end justify-center gap-4 mb-2 min-h-52">
           {/* 2nd Place */}
-          <div className="w-1/6 h-4/5">
-            {/* <Trophy place={2} /> */}
+          <div className="flex flex-col items-center w-1/6 h-4/5 gap-2">
+            {leaderboard[1] && <Trophy color="white" />}
             {leaderboard[1] && (
               <div
                 className="flex flex-col gap-2 h-full w-full text-center justify-center border-4 border-gray-400"
@@ -54,9 +56,8 @@ export default function Ending({
           </div>
 
           {/* 1st Place */}
-          <div className="w-1/5 h-full">
-            {/* <Crown /> */}
-            {/* <Trophy place={1} /> */}
+          <div className="flex flex-col items-center w-1/5 h-full gap-2">
+            <Crown size={48} color="#FFD700" />
             <div
               className="flex flex-col gap-4 h-full w-full text-center justify-center border-4 border-yellow-500"
               style={{
@@ -75,8 +76,8 @@ export default function Ending({
           </div>
 
           {/* 3rd Place */}
-          <div className="w-1/6 h-4/6">
-            {/* <Trophy place={3} /> */}
+          <div className="w-1/6 h-4/6 flex flex-col items-center gap-2">
+            {leaderboard[2] && <Trophy color="#CD7F32" />}
             {leaderboard[2] && (
               <div
                 className="flex flex-col gap-1 h-full w-full text-center justify-center border-4 border-yellow-700"

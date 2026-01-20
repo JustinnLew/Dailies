@@ -1,10 +1,8 @@
 export default function NotFoundIcon({
   size = 32,
-  className = "",
   color = "#000000",
 }: {
   size?: number;
-  className?: string;
   color?: string;
 }) {
   return (
@@ -12,7 +10,6 @@ export default function NotFoundIcon({
       width={size}
       height={size}
       viewBox="0 0 32 32"
-      className={className}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
