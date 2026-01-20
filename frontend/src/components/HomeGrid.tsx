@@ -13,6 +13,86 @@ export default function HomeGrid() {
       modal: (open: boolean, onClose: () => void) => (
         <GTSHomeModal open={open} onClose={onClose} />
       ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
+    },{
+      title: "Guess The Song",
+      description:
+        "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
     },
     {
       title: "Coming Soon",
@@ -22,7 +102,7 @@ export default function HomeGrid() {
   ];
 
   return (
-    <div className="pt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-8 p-16 w-full">
+    <div className="overflow-y-scroll custom-scrollbar pt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-8 p-16 w-full">
       {modes.map((mode, index) => (
         <HomeGridCell
           key={index}

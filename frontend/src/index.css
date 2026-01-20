@@ -84,18 +84,15 @@
   animation-delay: 0.4s;
 }
 
-/* Base Scrollbar Styling */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px; /* Width of the scrollbar */
+  width: 6px; /* Width of the scrollbar */
 }
 
-/* The Track (Background) */
 .custom-scrollbar::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.3);
   border-left: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-/* The Thumb (Moving Part) */
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #00f3ff;
 }
