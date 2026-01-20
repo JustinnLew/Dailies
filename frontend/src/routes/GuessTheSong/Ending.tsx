@@ -21,7 +21,7 @@ export default function Ending({
   const navigate = useNavigate();
 
   return (
-    <div className="h-screen overflow-y-auto custom-scrollbar flex pt-12 justify-center bg-black">
+    <div className="scanlines h-screen overflow-y-auto custom-scrollbar flex pt-12 justify-center bg-black">
       <div className="max-w-4xl p-4 w-full flex flex-col gap-8">
         {/* Title */}
         <div className="text-center mb-6">
