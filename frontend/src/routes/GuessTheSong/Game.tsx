@@ -214,7 +214,7 @@ export default function Game() {
   }
 
   if (gameState === "loading") {
-    return <PreparingPlaylist/>
+    return <PreparingPlaylist />;
   }
 
   return (

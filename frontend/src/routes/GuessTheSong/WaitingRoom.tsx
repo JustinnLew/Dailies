@@ -50,7 +50,7 @@ export default function Waiting({
             {[...players.entries()].map(([id, p]) => (
               <li
                 key={id}
-                className={`flex text-sm p-2 rounded transition-colors border-2 border-neon-yellow ${p.ready ? "bg-green-200 text-green-900" : "bg-black text-white"}`}
+                className={`flex text-sm p-2 rounded transition-colors border-2 border-neon-yellow text-white ${p.ready ? "bg-neon-green" : "bg-black"}`}
                 style={{
                   clipPath:
                     "polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px))",
