@@ -20,35 +20,43 @@ export default function Waiting({
     <div className="h-screen flex p-4 bg-black font-press-start scanlines">
       {/* Left panel: Game ID + Player List */}
       <div className="flex flex-col gap-6 w-1/3 p-4 rounded shadow-md border-4 border-neon-pink">
-        <h2 className="text-2xl font-bold text-white text-shadow-(--text-shadow-title)">Game Code</h2>
-          <div className="flex">
-          <p className="flex-1 text-neon-yellow font-vt323 text-2xl tracking-widest">{lobbyCode}</p>
+        <h2 className="text-2xl font-bold text-white text-shadow-(--text-shadow-title)">
+          Game Code
+        </h2>
+        <div className="flex">
+          <p className="flex-1 text-neon-yellow font-vt323 text-2xl tracking-widest">
+            {lobbyCode}
+          </p>
           <button
             onClick={() => {
               navigator.clipboard.writeText(lobbyCode);
             }}
             className="p-2 transition-all hover:scale-110 active:scale-95 bg-neon-bg border-2 border-neon-blue"
             title="Copy Code"
-            >
+          >
             {/* ICON PLACEHOLDER */}
             <div className="w-5 h-5 flex items-center justify-center text-neon-blue">
-              <span className="text-[10px] font-press-start">C</span> 
+              <span className="text-[10px] font-press-start">C</span>
               {/* Replace the span above with <CopyIcon /> later */}
             </div>
-            </button>
+          </button>
         </div>
 
         <div>
-          <h2 className="font-bold mb-2 text-white text-shadow-(--text-shadow-icon)">Players</h2>
+          <h2 className="font-bold mb-2 text-white text-shadow-(--text-shadow-icon)">
+            Players
+          </h2>
           <ul className="space-y-2">
             {[...players.entries()].map(([id, p]) => (
               <li
                 key={id}
-                className={`flex text-sm p-2 rounded transition-colors ${p.ready ? "bg-green-200 text-green-900" : "bg-gray-200 text-gray-900"}`}
+                className={`flex text-sm p-2 rounded transition-colors border-2 border-neon-yellow ${p.ready ? "bg-green-200 text-green-900" : "bg-black text-white"}`}
+                style={{
+                  clipPath:
+                    "polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px))",
+                }}
               >
-                <p className="flex-1">
-                  {p.username}
-                </p>
+                <p className="flex-1">{p.username}</p>
                 {p.ready && "✓"}
               </li>
             ))}
@@ -57,10 +65,14 @@ export default function Waiting({
       </div>
 
       {/* Right panel: Settings */}
-      <div className="flex-1 ml-4 flex flex-col justify-between text-white p-4 rounded shadow-md
-                      border-4 border-neon-blue">
+      <div
+        className="flex-1 ml-4 flex flex-col justify-between text-white p-4 rounded shadow-md
+                      border-4 border-neon-blue"
+      >
         <div>
-          <h2 className="text-2xl font-bold mb-4 text-shadow-(--text-shadow-icon)">Settings</h2>
+          <h2 className="text-2xl font-bold mb-4 text-shadow-(--text-shadow-icon)">
+            Settings
+          </h2>
           <div className="grid grid-cols-2 gap-4">
             {/* Number of Songs */}
             <div className="mb-2">
@@ -157,9 +169,7 @@ export default function Waiting({
 
           {/* Playlist Link */}
           <div className="mt-4">
-            <label className="block mb-1 text-sm">
-              Spotify Playlist Link:
-            </label>
+            <label className="block mb-1 text-sm">Spotify Playlist Link:</label>
             <input
               type="text"
               placeholder="https://open.spotify.com/playlist/..."

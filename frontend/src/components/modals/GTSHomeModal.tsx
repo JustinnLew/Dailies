@@ -10,13 +10,12 @@ export default function GTSHomeModal({
   open: boolean;
   onClose: () => void;
 }) {
-
-const navigate = useNavigate();
+  const navigate = useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
-const userId = getUserId();
+  const userId = getUserId();
   const userName = getUserName();
   const validLobbyCode = () => {
-    return lobbyCode.length == 6
+    return lobbyCode.length == 6;
   };
   const createLobby = async () => {
     const res = await fetch(
@@ -64,7 +63,7 @@ const userId = getUserId();
           <h2 className="text-sm font-press-start text-neon-yellow">
             &gt; START A NEW GAME
           </h2>
-          <button 
+          <button
             onClick={createLobby}
             className="px-8 py-4 transition-all hover:scale-105 cursor-pointer bg-neon-pink
               border-4 border-neon-blue w-full"
@@ -111,8 +110,11 @@ const userId = getUserId();
               disabled={!validLobbyCode()}
               onClick={() => navigate(`/guess-the-song/${lobbyCode}`)}
               className={`px-8 py-4 transition-all hover:scale-105 
-                          ${validLobbyCode() ? "border-4 border-green-500 cursor-pointer" : 
-                          "border-4 border-red-500 cursor-not-allowed"}`}
+                          ${
+                            validLobbyCode()
+                              ? "border-4 border-green-500 cursor-pointer"
+                              : "border-4 border-red-500 cursor-not-allowed"
+                          }`}
               style={{
                 clipPath:
                   "polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))",
@@ -123,7 +125,6 @@ const userId = getUserId();
               </span>
             </button>
           </div>
-
         </div>
       </div>
     </Modal>

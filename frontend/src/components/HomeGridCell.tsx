@@ -21,7 +21,6 @@ export default function HomeGridCell({
         onClick={handleOpen}
         className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid"
         style={{
-          boxShadow: "8px 8px 0 oklch(0.60 0.30 240)",
           clipPath:
             "polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))",
         }}

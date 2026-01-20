@@ -197,7 +197,7 @@ export default function Game() {
   };
 
   if (gameState === "connecting") {
-    return <Connecting/>
+    return <Connecting />;
   }
 
   if (gameState === "waiting") {
