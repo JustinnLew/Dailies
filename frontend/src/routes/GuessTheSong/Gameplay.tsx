@@ -8,13 +8,13 @@ export default function Gameplay({
   songState,
   players,
   chat,
-  leaderboard,
+  scores,
 }: {
   sendGuess: (guess: string) => void;
   songState: { previewUrl: string; roundStartTime: number };
   players: Map<string, Player>;
   chat: ChatMessage[];
-  leaderboard: Map<string, number>;
+  scores: Map<string, number>;
 }) {
   const [message, setMessage] = useState("");
 
@@ -91,7 +91,7 @@ export default function Gameplay({
       </div>
 
       <div className="flex flex-col flex-1 gap-6">
-        {/* Leaderboard */}
+        {/* scores */}
         <div className="flex-2 p-4 flex flex-col gap-4 border-4 border-neon-pink">
           <h2 className="text-3xl font-bold mb-3 text-shadow-(--text-shadow-title)">
             Leaderboard
@@ -101,7 +101,7 @@ export default function Gameplay({
               .map(([id, player]) => ({
                 id,
                 username: player.username,
-                score: leaderboard.get(id) || 0,
+                score: scores.get(id) || 0,
               }))
               .sort((a, b) => b.score - a.score)
               .map((player, i) => (
