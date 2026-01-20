@@ -8,9 +8,6 @@ export default function NavBar() {
         boxShadow: "0 4px 0 #8338EC",
       }}
     >
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-10" />
-
       <h1 className="font-bold tracking-wider text-3xl font-press-start text-neon-yellow text-shadow-(--text-shadow-title)">
         DAILIES
       </h1>

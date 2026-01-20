@@ -1,6 +1,7 @@
 import HomeGridCell from "./HomeGridCell";
 import GTSIcon from "../icons/GTSIcon";
 import NotFoundIcon from "../icons/NotFoundIcon";
+import GTSHomeModal from "./modals/GTSHomeModal";
 
 export default function HomeGrid() {
   const modes = [
@@ -9,8 +10,15 @@ export default function HomeGrid() {
       description:
         "Test your music knowledge by guessing songs from short clips.",
       icon: <GTSIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <GTSHomeModal open={open} onClose={onClose} />
+      ),
     },
-    { title: "Coming Soon", description: "Maybe...", icon: <NotFoundIcon color="white" /> },
+    {
+      title: "Coming Soon",
+      description: "",
+      icon: <NotFoundIcon color="white" />,
+    },
   ];
 
   return (
@@ -21,6 +29,7 @@ export default function HomeGrid() {
           title={mode.title}
           description={mode.description}
           icon={mode.icon}
+          renderModal={mode.modal}
         />
       ))}
     </div>

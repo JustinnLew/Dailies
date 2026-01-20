@@ -49,16 +49,10 @@ export default function NotFoundIcon({
           d="M13.7099 7.625V9.145H12.1899V10.665H13.7099V12.195H15.2399V10.665H16.7599V9.145H15.2399V7.625H13.7099Z"
           fill={color}
         />
-        <path
-          d="M13.7099 16.765H12.1899V18.285H13.7099V16.765Z"
-          fill={color}
-        />
+        <path d="M13.7099 16.765H12.1899V18.285H13.7099V16.765Z" fill={color} />
         <path d="M12.19 12.195H9.14001V13.715H12.19V12.195Z" fill={color} />
         <path d="M10.67 15.235H9.14001V16.765H10.67V15.235Z" fill={color} />
-        <path
-          d="M10.67 3.04498H9.14001V4.57498H10.67V3.04498Z"
-          fill={color}
-        />
+        <path d="M10.67 3.04498H9.14001V4.57498H10.67V3.04498Z" fill={color} />
         <path d="M9.14 13.715H7.62V15.235H9.14V13.715Z" fill={color} />
         <path
           d="M3.05 15.235V16.765H4.57V21.335H1.52V19.815H0V22.855H4.57V25.905H6.1V22.855H7.62V21.335H6.1V15.235H3.05Z"
@@ -68,10 +62,7 @@ export default function NotFoundIcon({
           d="M7.61998 9.14496H6.09998V10.665H7.61998V9.14496Z"
           fill={color}
         />
-        <path
-          d="M3.05002 16.765H1.52002V19.815H3.05002V16.765Z"
-          fill={color}
-        />
+        <path d="M3.05002 16.765H1.52002V19.815H3.05002V16.765Z" fill={color} />
         <path
           d="M1.52 4.57501V6.09501H0V7.62501H1.52V9.14501H3.05V7.62501H4.57V6.09501H3.05V4.57501H1.52Z"
           fill={color}
