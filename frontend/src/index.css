@@ -61,7 +61,6 @@
   animation: arrow-wave 1.25s ease-in-out infinite;
 }
 
-/* Card >>> animation */
 .wave-container span {
   display: inline-block;
   transition: transform 0.2s;

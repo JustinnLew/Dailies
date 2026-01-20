@@ -9,6 +9,7 @@ import type {
   ChatMessage,
 } from "../../utils/types";
 import Connecting from "../../components/Connecting";
+import PreparingPlaylist from "../../components/PreparingPlaylist";
 
 export default function Game() {
   const params = useParams();
@@ -196,31 +197,25 @@ export default function Game() {
     socket.current.send(JSON.stringify({ event: "Ready" }));
   };
 
-  if (gameState === "connecting") {
-    return <Connecting />;
-  }
+  // if (gameState === "connecting") {
+  //   return <Connecting />;
+  // }
 
-  if (gameState === "waiting") {
-    return (
-      <WaitingRoom
-        lobbyCode={params.lobbyCode!}
-        ready={ready}
-        players={players}
-        gameSettings={gameSettings}
-        updateGameSettings={updateGameSettings}
-      />
-    );
-  }
+  // if (gameState === "waiting") {
+  //   return (
+  //     <WaitingRoom
+  //       lobbyCode={params.lobbyCode!}
+  //       ready={ready}
+  //       players={players}
+  //       gameSettings={gameSettings}
+  //       updateGameSettings={updateGameSettings}
+  //     />
+  //   );
+  // }
 
-  if (gameState === "loading") {
-    return (
-      <div className="h-screen flex flex-col items-center justify-center bg-gray-900 text-white">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-emerald-500 mb-4"></div>
-        <h2 className="text-2xl font-bold">Preparing Playlist...</h2>
-        <p className="text-gray-400">The game will start in a moment.</p>
-      </div>
-    );
-  }
+  // if (gameState === "loading") {
+    return <PreparingPlaylist/>
+  // }
 
   return (
     <Gameplay
