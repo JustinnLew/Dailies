@@ -56,19 +56,18 @@
   }
 }
 
-/* Only animate when the card is hovered */
-.bg-neon-card:hover .wave-container span {
+/* Card >>> animation */
+.game-card:hover .wave-container span {
   display: inline-block;
   animation: arrow-wave 1.25s ease-in-out infinite;
 }
 
-/* Stagger the wave */
-.bg-neon-card:hover .wave-container span:nth-child(1) {
+.game-card:hover .wave-container span:nth-child(1) {
   animation-delay: 0s;
 }
-.bg-neon-card:hover .wave-container span:nth-child(2) {
+.game-card:hover .wave-container span:nth-child(2) {
   animation-delay: 0.2s;
 }
-.bg-neon-card:hover .wave-container span:nth-child(3) {
+.game-card:hover .wave-container span:nth-child(3) {
   animation-delay: 0.4s;
 }

@@ -11,7 +11,7 @@ export default function HomeGridCell({
 }) {
   return (
     <div
-      className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid"
+      className="game-card p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid"
       style={{
         boxShadow: "8px 8px 0 oklch(0.60 0.30 240)",
         clipPath:
