@@ -93,7 +93,7 @@ export default function Gameplay({
       <div className="flex flex-col flex-1 gap-6">
         {/* Leaderboard */}
         <div className="flex-2 p-4 flex flex-col gap-4 border-4 border-neon-pink">
-          <h2 className="text-2xl font-bold mb-3 text-shadow-(--text-shadow-title)">
+          <h2 className="text-3xl font-bold mb-3 text-shadow-(--text-shadow-title)">
             Leaderboard
           </h2>
           <ul className="space-y-2 overflow-y-auto">
@@ -107,7 +107,7 @@ export default function Gameplay({
               .map((player, i) => (
                 <li
                   key={player.id}
-                  className="flex justify-between px-3 py-1 border-b-2 border-gray-700"
+                  className="text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
                 >
                   <div className="flex gap-6">
                     <span className="text-neon-yellow w-6">#{i + 1}</span>
