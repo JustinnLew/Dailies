@@ -36,7 +36,7 @@ export default function Gameplay({
   };
 
   return (
-    <div className="scanlines h-screen flex gap-4 p-4 bg-black text-white font-press-start">
+    <div className="scanlines h-screen flex gap-4 p-6 bg-black text-white font-press-start">
       <div className="flex-2 flex flex-col h-full">
         {/* Chat Section */}
         <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1 min-h-0">
