@@ -1,4 +1,6 @@
 import HomeGridCell from "./HomeGridCell";
+import GTSIcon from "../icons/GTSIcon";
+import NotFoundIcon from "../icons/NotFoundIcon";
 
 export default function HomeGrid() {
   const modes = [
@@ -6,8 +8,9 @@ export default function HomeGrid() {
       title: "Guess The Song",
       description:
         "Test your music knowledge by guessing songs from short clips.",
+      icon: <GTSIcon color="white" />,
     },
-    { title: "Coming Soon", description: "Maybe..." },
+    { title: "Coming Soon", description: "Maybe...", icon: <NotFoundIcon color="white" /> },
   ];
 
   return (
@@ -17,7 +20,7 @@ export default function HomeGrid() {
           key={index}
           title={mode.title}
           description={mode.description}
-          icon={<div className="text-white">tmp</div>}
+          icon={mode.icon}
         />
       ))}
     </div>

@@ -7,11 +7,11 @@ export default function HomeGridCell({
 }: {
   title?: string;
   description?: string;
-  icon: JSX.Element;
+  icon?: JSX.Element;
 }) {
   return (
     <div
-      className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-card border-6 border-neon-pink border-solid"
+      className="p-6 transition-all hover:scale-105 cursor-pointer flex flex-col bg-neon-bg border-6 border-neon-pink border-solid"
       style={{
         boxShadow: "8px 8px 0 oklch(0.60 0.30 240)",
         clipPath:
@@ -19,7 +19,7 @@ export default function HomeGridCell({
       }}
     >
       <div className="flex items-center gap-4 mb-4">
-        {/* <div className="border-2 border-white">{icon}</div> */}
+        <div>{icon}</div>
         <h2 className="text-xl font-bold font-press-start text-white text-shadow-(--text-shadow-icon)">
           {title}
         </h2>
@@ -27,9 +27,7 @@ export default function HomeGridCell({
       <p className="font-vt323 text-neon-yellow text-xl leading-tight">
         {description}
       </p>
-      <div
-        className="mt-auto pt-6 text-right font-bold text-sm wave-container font-press-start text-red-500"
-      >
+      <div className="mt-auto pt-6 text-right font-bold text-sm wave-container font-press-start text-red-500">
         <span>&gt;</span>
         <span>&gt;</span>
         <span>&gt;</span>
