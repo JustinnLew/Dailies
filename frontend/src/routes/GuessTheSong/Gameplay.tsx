@@ -88,7 +88,7 @@ export default function Gameplay({
             return (
               <div
                 key={i}
-                className={`text-sm break-words p-1 rounded-md transition-all ${
+                className={`text-sm wrap-break-words p-1 rounded-md transition-all ${
                   isSystem
                     ? "bg-emerald-500/10 border-l-4 border-emerald-500 my-1 shadow-sm"
                     : "hover:bg-gray-700/30"
