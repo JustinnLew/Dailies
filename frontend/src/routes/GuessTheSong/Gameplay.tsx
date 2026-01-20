@@ -96,7 +96,7 @@ export default function Gameplay({
           <h2 className="text-3xl font-bold mb-3 text-shadow-(--text-shadow-title)">
             Leaderboard
           </h2>
-          <ul className="space-y-2 overflow-y-auto">
+          <ul className="space-y-2 overflow-y-auto custom-scrollbar">
             {Array.from(players.entries())
               .map(([id, player]) => ({
                 id,

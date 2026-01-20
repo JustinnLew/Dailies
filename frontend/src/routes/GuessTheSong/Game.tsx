@@ -10,6 +10,7 @@ import type {
 } from "../../utils/types";
 import Connecting from "../../components/Connecting";
 import PreparingPlaylist from "../../components/PreparingPlaylist";
+import Ending from "./Ending";
 
 export default function Game() {
   const params = useParams();
@@ -217,13 +218,21 @@ export default function Game() {
     return <PreparingPlaylist />;
   }
 
-  return (
-    <Gameplay
+  if (gameState === "playing") {
+
+    
+    return (
+      <Gameplay
       sendGuess={sendGuess}
       songState={songState}
       players={players}
       chat={chat}
       leaderboard={leaderboard}
-    />
-  );
+      />
+    );
+  }
+
+  return (
+    <Ending/>
+  )
 }
