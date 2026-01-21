@@ -47,7 +47,7 @@ export default function Waiting({
             Players
           </h2>
           <ul className="space-y-2">
-            {[...players.entries()].map(([id, p]) => (
+            {[...players.entries()].sort().map(([id, p]) => (
               <li
                 key={id}
                 className={`flex text-sm p-2 rounded transition-colors border-2 border-neon-yellow text-white ${p.ready ? "bg-neon-green" : "bg-black"}`}
@@ -122,11 +122,12 @@ export default function Waiting({
 
             {/* Answer Delay */}
             <div className="mb-2">
-              <label className="block mb-1 font-medium text-sm">
+              <label className="text-gray-700 block mb-1 font-medium text-sm">
                 Answer Delay (s):
               </label>
               <select
-                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
+                disabled={true}
+                className="w-full border text-gray-700 border-gray-700 rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.answerDelaySeconds}
                 onChange={(e) =>
                   updateGameSettings({
