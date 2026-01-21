@@ -22,4 +22,6 @@ type ChatMessage = {
   message: string;
 };
 
-export type { Player, GuessTheSongGameSettings, Song, ChatMessage };
+type GameState = "playing" | "waiting" | "connecting" | "loading" | "finished";
+
+export type { Player, GameState, GuessTheSongGameSettings, Song, ChatMessage };

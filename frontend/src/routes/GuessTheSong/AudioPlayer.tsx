@@ -13,6 +13,7 @@ export default function AudioPlayer({
     }
     return () => {
       if (audioRef.current) {
+        audioRef.current.volume = 0.5;
         audioRef.current.pause();
         audioRef.current.src = "";
         audioRef.current = null;

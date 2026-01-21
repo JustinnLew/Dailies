@@ -7,6 +7,7 @@ import type {
   Player,
   GuessTheSongGameSettings,
   ChatMessage,
+  GameState
 } from "../../utils/types";
 import Connecting from "../../components/Connecting";
 import PreparingPlaylist from "../../components/PreparingPlaylist";
@@ -48,7 +49,7 @@ export default function Game() {
     roundStartTime: number;
   }>({ previewUrl: "", roundStartTime: 0 });
   const [gameState, setGameState] = useState<
-    "connecting" | "waiting" | "loading" | "playing" | "finished"
+    GameState
   >("connecting");
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [scores, setScores] = useState<Map<string, number>>(new Map());
@@ -229,5 +230,5 @@ export default function Game() {
     );
   }
 
-  return <Ending players={players} scores={scores} />;
+  return <Ending setGameState={setGameState} players={players} scores={scores} />;
 }
