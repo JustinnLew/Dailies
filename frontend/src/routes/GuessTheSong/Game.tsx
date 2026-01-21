@@ -52,6 +52,18 @@ export default function Game() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [scores, setScores] = useState<Map<string, number>>(new Map());
 
+  const resetGame = () => {
+    setGameState("waiting");
+    setPlayers((prev) =>
+    new Map(
+      [...prev.entries()].map(([id, player]) => [
+        id,
+        { ...player, ready: false },
+      ]),
+    ),
+  );
+  }
+
   useEffect(() => {
     const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
     socket.current = s;
@@ -245,6 +257,6 @@ export default function Game() {
   }
 
   return (
-    <Ending setGameState={setGameState} players={players} scores={scores} />
+    <Ending resetGame={resetGame} players={players} scores={scores} />
   );
 }

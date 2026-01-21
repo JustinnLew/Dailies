@@ -1,25 +1,26 @@
 import { useNavigate } from "react-router-dom";
-import type { GameState, Player } from "../../utils/types";
+import type { Player } from "../../utils/types";
 import Crown from "../../icons/Crown";
 import Trophy from "../../icons/Trophy";
-import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 
 export default function Ending({
-  setGameState,
+  resetGame,
   players,
   scores,
 }: {
-  setGameState: Dispatch<SetStateAction<GameState>>;
+  resetGame: () => void;
   players: Map<string, Player>;
   scores: Map<string, number>;
 }) {
-  let leaderboard = Array.from(players.entries())
+  let [leaderboard, _] = useState(Array.from(players.entries())
     .map(([id, player]) => ({
       id,
       username: player.username,
       score: scores.get(id) || 0,
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score)
+  )
 
   const navigate = useNavigate();
 
@@ -136,7 +137,7 @@ export default function Ending({
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center pb-10">
           <button
-            onClick={() => setGameState("waiting")}
+            onClick={resetGame}
             className="font-press-start text-white px-8 py-4 transition-all hover:scale-105 bg-neon-pink border-4 border-neon-blue"
             style={{
               clipPath:
