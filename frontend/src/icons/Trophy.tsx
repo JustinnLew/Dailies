@@ -13,7 +13,7 @@ export default function Trophy({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1128_11556)">
+      <g clipPath="url(#clip0_1128_11556)">
         <path d="M31.2348 5.34H29.7148V12.95H31.2348V5.34Z" fill={color} />
         <path
           d="M26.6649 5.33999H29.7149V3.80999H26.6649V2.28999H25.1449V17.53H26.6649V14.48H29.7149V12.95H26.6649V5.33999Z"

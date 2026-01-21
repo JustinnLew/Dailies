@@ -24,9 +24,12 @@ impl LobbyState {
             status: LobbyStatus::Waiting,
         }
     }
-}
 
-impl LobbyState {
+    pub fn reset(&mut self) {
+        self.status = LobbyStatus::Waiting;
+        self.players.iter_mut().for_each(|(_, v)| v.1 = false);
+    }
+
     pub fn player_join(&mut self, player_id: String, player_username: String) {
         self.players.insert(player_id, (player_username, false));
     }

@@ -13,7 +13,7 @@ export default function GTSIcon({
       fill=""
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1135_1882)">
+      <g clipPath="url(#clip0_1135_1882)">
         <path d="M32 19.8101H30.48V22.8601H32V19.8101Z" fill={color} />
         <path d="M32 13.72H30.48V15.24H32V13.72Z" fill={color} />
         <path d="M32 10.67H30.48V12.19H32V10.67Z" fill={color} />

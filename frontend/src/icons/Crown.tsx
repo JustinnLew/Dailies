@@ -13,7 +13,7 @@ export default function Crown({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1128_14241)">
+      <g clipPath="url(#clip0_1128_14241)">
         <path d="M31.235 9.14502H29.715V12.185H31.235V9.14502Z" fill={color} />
         <path d="M29.715 7.61499H26.665V9.14499H29.715V7.61499Z" fill={color} />
         <path

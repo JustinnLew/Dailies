@@ -21,6 +21,11 @@ pub(crate) enum PlayerJoinResult {
 }
 
 impl GuessTheSongGame {
+    pub fn reset(&self) {
+        self.lobby_state.lock().unwrap().reset();
+        self.state.lock().unwrap().reset();
+    }
+
     pub fn player_join(
         &self,
         player_id: String,
@@ -175,6 +180,13 @@ impl GuessTheSongGameState {
             song_index: 0,
             round_start_time: None,
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.scores.iter_mut().for_each(|(_, score)| *score = 0);
+        self.song_index = 0;
+        self.songs = Vec::new();
+        self.round_start_time = None;
     }
 
     pub fn get_round_start_time(&self) -> Option<u64> {

@@ -13,7 +13,7 @@ export default function NotFoundIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1128_5490)">
+      <g clipPath="url(#clip0_1128_5490)">
         <path d="M32 4.57501H30.48V6.09501H32V4.57501Z" fill={color} />
         <path
           d="M30.48 15.235H27.43V16.765H28.95V21.335H25.9V19.815H24.38V22.855H28.95V27.435H30.48V22.855H32V21.335H30.48V15.235Z"

@@ -54,14 +54,7 @@ export default function Game() {
 
   const resetGame = () => {
     setGameState("waiting");
-    setPlayers((prev) =>
-    new Map(
-      [...prev.entries()].map(([id, player]) => [
-        id,
-        { ...player, ready: false },
-      ]),
-    ),
-  );
+    setChat([]);
   }
 
   useEffect(() => {
@@ -187,6 +180,7 @@ export default function Game() {
           break;
         case "GameEnd":
           console.log("Game ended");
+          socket.current.send(JSON.stringify({ event: "Unready" }))
           setGameState("finished");
           break;
         case "PlayerGuess":
