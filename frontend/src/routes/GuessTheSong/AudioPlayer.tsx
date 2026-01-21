@@ -13,7 +13,6 @@ export default function AudioPlayer({
     }
     return () => {
       if (audioRef.current) {
-        audioRef.current.volume = 0.5;
         audioRef.current.pause();
         audioRef.current.src = "";
         audioRef.current = null;
@@ -31,6 +30,7 @@ export default function AudioPlayer({
         const offset = Math.max(0, nowInSecs - songState.roundStartTime);
 
         audio.currentTime = offset;
+        audio.volume = 0.5;
         audio.play().catch((err) => console.warn("Playback blocked:", err));
       };
       audio.addEventListener("loadedmetadata", onLoadedMetadata, {
