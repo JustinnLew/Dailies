@@ -42,8 +42,11 @@ impl GuessTheSongGame {
     }
 
     pub fn player_ready(&self, user_id: &str) {
-        let mut lobby = self.lobby_state.lock().unwrap();
-        lobby.player_ready(user_id);
+        self.lobby_state.lock().unwrap().player_ready(user_id);
+    }
+
+    pub fn player_unready(&self, user_id: &str) {
+        self.lobby_state.lock().unwrap().player_unready(user_id);
     }
 
     pub fn all_ready(&self) -> bool {
@@ -261,6 +264,9 @@ pub(crate) enum GuessTheSongServerEvent {
     PlayerReady {
         player_id: String,
     },
+    PlayerUnready {
+        player_id: String,
+    },
     PlayerLeave {
         player_id: String,
     },
@@ -304,6 +310,7 @@ pub(crate) enum GuessTheSongUserEvent {
         username: String,
     },
     Ready,
+    Unready,
     UpdateGameSettings {
         settings: GuessTheSongGameSettings,
     },

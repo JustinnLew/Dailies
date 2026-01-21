@@ -32,8 +32,14 @@ impl LobbyState {
     }
 
     pub fn player_ready(&mut self, user_id: &str) {
-        if let Some((_username, ready)) = self.players.get_mut(user_id) {
+        if let Some((_, ready)) = self.players.get_mut(user_id) {
             *ready = true;
+        }
+    }
+
+    pub fn player_unready(&mut self, user_id: &str) {
+        if let Some((_, ready)) = self.players.get_mut(user_id) {
+            *ready = false;
         }
     }
 

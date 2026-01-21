@@ -224,6 +224,10 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 });
                             }
                         }
+                        GuessTheSongUserEvent::Unready => {
+                            game_obj.player_unready(&player_id);
+                            let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerUnready { player_id: player_id.clone(), });
+                        }
                         GuessTheSongUserEvent::UpdateGameSettings { settings } => {
                             game_obj.update_game_settings(settings.clone());
                             let _ = game_obj.broadcast.send(

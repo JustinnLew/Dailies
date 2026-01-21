@@ -116,6 +116,18 @@ export default function Game() {
               ),
           );
           break;
+        case "PlayerUnready":
+          setPlayers(
+            (p) =>
+              new Map(
+                [...p].map((pl) =>
+                  pl[0] === msg.data.player_id
+                    ? [pl[0], { ...pl[1], ready: false }]
+                    : pl,
+                ),
+              ),
+          );
+          break;
         case "PlayerLeave":
           setPlayers((p) => {
             const newPlayers = new Map(p);
@@ -193,7 +205,11 @@ export default function Game() {
   };
 
   const ready = () => {
-    socket.current.send(JSON.stringify({ event: "Ready" }));
+    if (players.get(userId)?.ready) {
+      socket.current.send(JSON.stringify({ event: "Unready" }))
+    } else if (players.get(userId)) {
+      socket.current.send(JSON.stringify({ event: "Ready" }));
+    }
   };
 
   if (gameState === "connecting") {
