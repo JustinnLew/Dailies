@@ -1,5 +1,7 @@
+use std::env;
+
 use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
-use axum::http::{Method, StatusCode};
+use axum::http::{HeaderValue, Method, StatusCode};
 use axum::{
     Router,
     extract::{Path, State, ws::WebSocketUpgrade},
@@ -8,7 +10,7 @@ use axum::{
 };
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{CorsLayer};
 
 mod guess_the_song;
 mod state;
@@ -19,6 +21,7 @@ async fn main() {
     let (clean_tx, mut clean_rx) = mpsc::unbounded_channel();
     let state = AppState::new(s, clean_tx);
     let cleanup_state = state.clone();
+
     // Spawn cleanup thread
     tokio::spawn(async move {
         while let Some(lobby_code) = clean_rx.recv().await {
@@ -27,11 +30,8 @@ async fn main() {
         }
     });
     let cors = CorsLayer::new()
-        // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
-        // allow requests from any origin
-        .allow_origin(Any)
-        .allow_headers(Any);
+        .allow_origin(env::var("FRONTEND_URL").expect("env.FRONTEND_URL not set").parse::<HeaderValue>().unwrap());
 
     let app = Router::new()
         .route(
@@ -42,8 +42,7 @@ async fn main() {
         .layer(cors)
         .with_state(state);
 
-    // run our app with hyper, listening globally on port 3000
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", env::var("PORT").expect("env.PORT not set"))).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
