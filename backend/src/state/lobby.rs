@@ -64,4 +64,8 @@ impl LobbyState {
     pub fn update_lobby_status(&mut self, new_status: LobbyStatus) {
         self.status = new_status;
     }
+
+    pub fn empty(&self) -> bool {
+        self.players.is_empty()
+    }
 }

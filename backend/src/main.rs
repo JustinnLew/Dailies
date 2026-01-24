@@ -1,4 +1,5 @@
 use std::env;
+use std::time::Duration;
 
 use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
 use axum::http::{HeaderValue, Method, StatusCode};
@@ -10,6 +11,7 @@ use axum::{
 };
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
+use tokio::time::interval;
 use tower_http::cors::CorsLayer;
 use tracing::{Instrument, Level, info, instrument};
 
@@ -29,8 +31,9 @@ async fn main() {
     let (clean_tx, mut clean_rx) = mpsc::unbounded_channel();
     let state = AppState::new(s, clean_tx);
     let cleanup_state = state.clone();
+    let scan_state = state.clone();
 
-    // Spawn cleanup thread
+    // Spawn direct cleanup thread
     tokio::spawn(
         async move {
             while let Some(lobby_code) = clean_rx.recv().await {
@@ -40,6 +43,17 @@ async fn main() {
         }
         .instrument(tracing::info_span!("CLEANUP")),
     );
+    // Spawn periodic cleanup
+    tokio::spawn(async move {
+        let mut interval = interval(Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            scan_state
+                .games
+                .guess_the_song
+                .retain(|_, v| !v.lobby_state.lock().unwrap().empty());
+        }
+    });
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
