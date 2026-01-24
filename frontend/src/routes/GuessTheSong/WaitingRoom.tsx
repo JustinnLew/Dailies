@@ -17,9 +17,9 @@ export default function Waiting({
     /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
 
   return (
-    <div className="h-screen flex p-4 bg-black font-press-start scanlines">
+    <div className="flex-col h-fit sm:h-screen flex sm:flex-row p-4 gap-4 bg-black font-press-start scanlines">
       {/* Left panel: Game ID + Player List */}
-      <div className="flex flex-col gap-6 w-1/3 p-4 rounded shadow-md border-4 border-neon-pink">
+      <div className="flex w-full flex-col gap-6 sm:w-1/3 p-4 rounded shadow-md border-4 border-neon-pink">
         <h2 className="text-2xl font-bold text-white text-shadow-(--text-shadow-title)">
           Game Code
         </h2>
@@ -66,8 +66,8 @@ export default function Waiting({
 
       {/* Right panel: Settings */}
       <div
-        className="flex-1 ml-4 flex flex-col justify-between text-white p-4 rounded shadow-md
-                      border-4 border-neon-blue"
+        className="flex-1 flex flex-col justify-between text-white p-4 rounded shadow-md
+                      border-4 border-neon-blue overflow-auto custom-scrollbar"
       >
         <div>
           <h2 className="text-2xl font-bold mb-4 text-shadow-(--text-shadow-icon)">
@@ -187,7 +187,7 @@ export default function Waiting({
         </div>
 
         {/* Start Game button at bottom-right */}
-        <div className="flex justify-end">
+        <div className="flex justify-end mt-4">
           <button
             disabled={!isValidSpotifyLink(gameSettings.playlistLink)}
             className={`px-6 py-2 rounded text-white font-bold transition-all
