@@ -17,15 +17,15 @@ export default function Home() {
 
   useEffect(() => {
     if (errorMessage != "") {
-      setOpen(true); 
+      setOpen(true);
     }
-  }, [errorMessage])
+  }, [errorMessage]);
 
   const handleClose = (
     _?: React.SyntheticEvent | Event,
     reason?: SnackbarCloseReason,
   ) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -33,14 +33,14 @@ export default function Home() {
   };
 
   const handleExited = () => {
-    setErrorMessage("")
+    setErrorMessage("");
     window.history.replaceState({}, document.title);
-  }
+  };
 
   return (
     <div className="flex flex-col items-center h-screen scanlines bg-black">
       <NavBar />
-      <HomeGrid setErrorMessage={setErrorMessage}/>
+      <HomeGrid setErrorMessage={setErrorMessage} />
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
@@ -50,18 +50,24 @@ export default function Home() {
         onClose={handleClose}
         open={open}
         slotProps={{
-          transition: { 
-            onExited: handleExited 
-          }
-        }}>
-        <div className="font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-lg"
-        style={{
-                  clipPath:
-                    "polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px))",
-                }}>
+          transition: {
+            onExited: handleExited,
+          },
+        }}
+      >
+        <div
+          className="font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-lg"
+          style={{
+            clipPath:
+              "polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px))",
+          }}
+        >
           <span className="animate-pulse">&gt;</span>
           {errorMessage}
-          <button onClick={handleClose} className="ml-4 hover:text-white cursor-pointer">
+          <button
+            onClick={handleClose}
+            className="ml-4 hover:text-white cursor-pointer"
+          >
             X
           </button>
         </div>

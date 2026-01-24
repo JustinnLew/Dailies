@@ -111,9 +111,7 @@ export default function Gameplay({
                 >
                   <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
                     <span className="text-neon-yellow w-6">#{i + 1}</span>
-                    <span className="flex-1 truncate">
-                      {player.username}
-                    </span>
+                    <span className="flex-1 truncate">{player.username}</span>
                   </div>
                   <span className="text-emerald-400 font-bold">
                     {player.score}

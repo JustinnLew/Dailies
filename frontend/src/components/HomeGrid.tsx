@@ -4,8 +4,10 @@ import NotFoundIcon from "../icons/NotFoundIcon";
 import GTSHomeModal from "./modals/GTSHomeModal";
 import type { Dispatch, SetStateAction } from "react";
 
-export default function HomeGrid({setErrorMessage}: {
-  setErrorMessage: Dispatch<SetStateAction<string>>
+export default function HomeGrid({
+  setErrorMessage,
+}: {
+  setErrorMessage: Dispatch<SetStateAction<string>>;
 }) {
   const modes = [
     {
@@ -14,7 +16,11 @@ export default function HomeGrid({setErrorMessage}: {
         "Test your music knowledge by guessing songs from short clips.",
       icon: <GTSIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
-        <GTSHomeModal open={open} onClose={onClose} setErrorMessage={setErrorMessage} />
+        <GTSHomeModal
+          open={open}
+          onClose={onClose}
+          setErrorMessage={setErrorMessage}
+        />
       ),
     },
     {

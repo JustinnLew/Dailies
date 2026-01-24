@@ -53,7 +53,7 @@ export default function Game() {
   const resetGame = () => {
     setGameState("waiting");
     setChat([]);
-  }
+  };
 
   useEffect(() => {
     const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
@@ -162,7 +162,7 @@ export default function Game() {
           ]);
           break;
         case "GameEnd":
-          socket.current.send(JSON.stringify({ event: "Unready" }))
+          socket.current.send(JSON.stringify({ event: "Unready" }));
           setGameState("finished");
           break;
         case "PlayerGuess":
@@ -193,7 +193,7 @@ export default function Game() {
 
   const ready = () => {
     if (players.get(userId)?.ready) {
-      socket.current.send(JSON.stringify({ event: "Unready" }))
+      socket.current.send(JSON.stringify({ event: "Unready" }));
     } else if (players.get(userId)) {
       socket.current.send(JSON.stringify({ event: "Ready" }));
     }
@@ -231,7 +231,5 @@ export default function Game() {
     );
   }
 
-  return (
-    <Ending resetGame={resetGame} players={players} scores={scores} />
-  );
+  return <Ending resetGame={resetGame} players={players} scores={scores} />;
 }

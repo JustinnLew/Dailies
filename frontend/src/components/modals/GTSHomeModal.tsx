@@ -6,11 +6,11 @@ import { getUserId, getUserName } from "../../utils/util";
 export default function GTSHomeModal({
   open,
   onClose,
-  setErrorMessage
+  setErrorMessage,
 }: {
   open: boolean;
   onClose: () => void;
-  setErrorMessage: Dispatch<SetStateAction<string>>
+  setErrorMessage: Dispatch<SetStateAction<string>>;
 }) {
   const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();
@@ -90,9 +90,7 @@ export default function GTSHomeModal({
                 "polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))",
             }}
           >
-            <span className="text-sm font-press-start">
-              CREATE LOBBY
-            </span>
+            <span className="text-sm font-press-start">CREATE LOBBY</span>
           </button>
 
           {/* Divider */}

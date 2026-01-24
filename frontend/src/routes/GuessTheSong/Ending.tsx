@@ -13,14 +13,15 @@ export default function Ending({
   players: Map<string, Player>;
   scores: Map<string, number>;
 }) {
-  let [leaderboard, _] = useState(Array.from(players.entries())
-    .map(([id, player]) => ({
-      id,
-      username: player.username,
-      score: scores.get(id) || 0,
-    }))
-    .sort((a, b) => b.score - a.score)
-  )
+  let [leaderboard, _] = useState(
+    Array.from(players.entries())
+      .map(([id, player]) => ({
+        id,
+        username: player.username,
+        score: scores.get(id) || 0,
+      }))
+      .sort((a, b) => b.score - a.score),
+  );
 
   const navigate = useNavigate();
 
@@ -125,7 +126,9 @@ export default function Ending({
                 <div className="w-12 text-center text-neon-yellow">
                   #{i + 1}
                 </div>
-                <div className="flex-1 text-white min-w-0 truncate">{player.username}</div>
+                <div className="flex-1 text-white min-w-0 truncate">
+                  {player.username}
+                </div>
                 <div className="text-right text-neon-yellow">
                   {player.score} pts
                 </div>
