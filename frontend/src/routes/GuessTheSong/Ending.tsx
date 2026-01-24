@@ -36,7 +36,7 @@ export default function Ending({
         </div>
 
         {/* Top 3 */}
-        <div className="flex items-end justify-center gap-4 mb-2 min-h-52">
+        <div className="hidden sm:flex items-end justify-center gap-4 mb-2 min-h-52">
           {/* 2nd Place */}
           <div className="flex flex-col items-center w-1/6 h-4/5 gap-2">
             {leaderboard[1] && <Trophy color="white" />}
@@ -49,10 +49,10 @@ export default function Ending({
                 }}
               >
                 <div className="font-press-start text-gray-400">2ND</div>
-                <div className="font-press-start text-white text-sm">
+                <div className="font-press-start text-white text-sm  px-4 min-w-0 truncate">
                   {leaderboard[1].username}
                 </div>
-                <div className="font-vt323 text-2xl text-neon-yellow">
+                <div className="font-vt323 text-2xl text-neon-yellow px-4 min-w-0 truncate">
                   {leaderboard[1].score}
                 </div>
               </div>
@@ -70,10 +70,10 @@ export default function Ending({
               }}
             >
               <div className="font-press-start text-neon-yellow">WINNER</div>
-              <div className="font-press-start text-sm text-white">
+              <div className="font-press-start text-sm text-white px-4 min-w-0 truncate">
                 {leaderboard[0].username}
               </div>
-              <div className="font-vt323 text-2xl text-neon-yellow">
+              <div className="font-vt323 text-2xl text-neon-yellow px-4 min-w-0 truncate">
                 {leaderboard[0].score}
               </div>
             </div>
@@ -93,10 +93,10 @@ export default function Ending({
                 <div className="font-press-start text-yellow-700 text-xs">
                   3RD
                 </div>
-                <div className="font-press-start text-xs text-white">
+                <div className="font-press-start text-xs text-white px-4 min-w-0 truncate">
                   {leaderboard[2].username}
                 </div>
-                <div className="font-vt323 text-2xl text-neon-yellow">
+                <div className="font-vt323 text-2xl text-neon-yellow px-4 min-w-0 truncate">
                   {leaderboard[2].score}
                 </div>
               </div>
@@ -125,7 +125,7 @@ export default function Ending({
                 <div className="w-12 text-center text-neon-yellow">
                   #{i + 1}
                 </div>
-                <div className="flex-1 text-white">{player.username}</div>
+                <div className="flex-1 text-white min-w-0 truncate">{player.username}</div>
                 <div className="text-right text-neon-yellow">
                   {player.score} pts
                 </div>
