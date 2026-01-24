@@ -193,7 +193,7 @@ export default function Game() {
           setChat((c) => [...c, { user: "", message: msg.data.msg }]);
           break;
         case "JoinError":
-          navigate("/", { state: { error: msg.message } });
+          navigate("/", { state: { error: msg.data.message } });
           break;
         default:
           console.log("Unknown event received: ", msg);
