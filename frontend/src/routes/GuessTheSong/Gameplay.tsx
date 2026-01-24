@@ -52,7 +52,7 @@ export default function Gameplay({
                   key={i}
                   className={`text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
                     isSystem ? "bg-neon-green/50 my-2" : ""
-                  } min-w-0 wrap-word`}
+                  } min-w-0 wrap-anywhere`}
                 >
                   <span
                     className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
