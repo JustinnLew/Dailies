@@ -81,7 +81,16 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let event = match serde_json::from_str::<GuessTheSongUserEvent>(&join_req) {
         Ok(e) => e,
         Err(_) => {
-            let _ = sender.send(Message::Text("Invalid JSON".into())).await;
+            info!("JOIN ERROR");
+            let _ = sender
+                .send(Message::Text(
+                    serde_json::to_string(&GuessTheSongServerEvent::JoinError {
+                        message: "Failed to serialize Inital Request".to_string(),
+                    })
+                    .unwrap()
+                    .into(),
+                ))
+                .await;
             return;
         }
     };
@@ -94,8 +103,15 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             username,
         } => (lobby_code, user_id, username),
         _ => {
+            info!("JOIN ERROR");
             let _ = sender
-                .send(Message::Text("Expected join event".into()))
+                .send(Message::Text(
+                    serde_json::to_string(&GuessTheSongServerEvent::JoinError {
+                        message: "Expected Join Event".to_string(),
+                    })
+                    .unwrap()
+                    .into(),
+                ))
                 .await;
             return;
         }
@@ -110,6 +126,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
         Some(g) => g.clone(),
         None => {
+            info!("JOIN ERROR");
             let _ = sender
                 .send(Message::Text(
                     serde_json::to_string(&GuessTheSongServerEvent::JoinError {
