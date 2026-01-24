@@ -182,7 +182,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                 }
             }
         }
-    });
+    }.instrument(connection_span.clone()));
 
     let _ = game_obj
         .broadcast
