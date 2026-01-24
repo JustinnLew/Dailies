@@ -20,6 +20,7 @@ use tokio::{
     sync::{broadcast, mpsc},
     time::{Duration, sleep},
 };
+use tracing::{Instrument, info, instrument, warn};
 pub mod api;
 
 #[derive(serde::Serialize)]
@@ -31,27 +32,27 @@ struct GuessTheSongConnectionGuard {
     player_id: String,
     broadcast: broadcast::Sender<GuessTheSongServerEvent>,
     cleanup_tx: mpsc::UnboundedSender<String>,
-    lobby_code: String,
 }
 
 impl Drop for GuessTheSongConnectionGuard {
     fn drop(&mut self) {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
-        println!("Player {} disconnected from lobby", self.player_id);
+        info!("Player {} disconnected from lobby: {}", self.player_id, self.game.lobby_code);
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
             player_id: self.player_id.clone(),
         });
         if lobby_state.players.is_empty() {
-            println!(
+            info!(
                 "Lobby {} is now empty, scheduling for cleanup",
-                self.lobby_code
+                self.game.lobby_code
             );
-            let _ = self.cleanup_tx.send(self.lobby_code.clone());
+            let _ = self.cleanup_tx.send(self.game.lobby_code.clone());
         }
     }
 }
 
+#[instrument(name = "CREATE LOBBY", skip(state))]
 pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl IntoResponse {
     let mut lobby_code;
     loop {
@@ -61,7 +62,7 @@ pub async fn guess_the_song_create_lobby(State(state): State<AppState>) -> impl 
         }
     }
     state.games.add_guess_the_song_lobby(&lobby_code);
-    println!("Added lobby {lobby_code}");
+    info!("Added lobby {lobby_code}");
 
     Json(CreateLobbyResponse {
         lobby_code: lobby_code,
@@ -100,6 +101,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         }
     };
 
+    let connection_span = tracing::info_span!(
+        "connection", 
+        lobby=%lobby_code, 
+        player=%player_id, 
+    );
+
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
         Some(g) => g.clone(),
         None => {
@@ -117,7 +124,9 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     };
 
     match game_obj.player_join(player_id.clone(), player_username.clone()) {
-        Ok(_) => {}
+        Ok(_) => {
+            info!("Player: {}, joined lobby: {}", player_id, lobby_code);
+        }
         Err(e) => {
             let _ = sender
                 .send(Message::Text(
@@ -136,7 +145,6 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         player_id: player_id.clone(),
         broadcast: game_obj.broadcast.clone(),
         cleanup_tx: state.cleanup.clone(),
-        lobby_code: lobby_code.clone(),
     };
     // Clone the broadcast channel into tx (Sender)
     let tx = game_obj.broadcast.clone();
@@ -164,13 +172,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         while let Ok(msg) = rx.recv().await {
             match serde_json::to_string(&msg) {
                 Ok(json) => {
-                    println!("Relaying broadcast {:?}", json);
                     if sender.send(Message::Text(json.into())).await.is_err() {
                         break;
                     }
                 }
                 Err(e) => {
-                    eprintln!("Serialization error: {:?}", e);
+                    warn!("Serialization error: {:?}", e);
                     continue;
                 }
             }
@@ -189,17 +196,17 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         while let Some(Ok(msg)) = receiver.next().await {
             match msg {
                 Message::Text(req) => {
-                    println!("Received message from {}: {}", player_id, req);
                     let req: GuessTheSongUserEvent = match serde_json::from_str(&req) {
                         Ok(r) => r,
                         Err(e) => {
-                            eprintln!("Failed to parse user event: {:?}", e);
+                            warn!("Failed to parse user event: {:?}", e);
                             continue;
                         }
                     };
                     match req {
                         GuessTheSongUserEvent::Ready => {
                             game_obj.player_ready(&player_id);
+                            info!("READY");
                             let _ = game_obj
                                 .broadcast
                                 .send(GuessTheSongServerEvent::PlayerReady {
@@ -215,8 +222,6 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 
                                 let l = game_obj.clone();
                                 let spotify_client = state.spotify_client.clone();
-                                // let cleanup_tx = state.cleanup.clone();
-                                // let lc = lobby_code.clone();
                                 tokio::spawn(async move {
                                     api::load_songs(&spotify_client, &playlist_link, l.clone())
                                         .await;
@@ -225,16 +230,19 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             }
                         }
                         GuessTheSongUserEvent::Unready => {
+                            info!("UNREADY");
                             game_obj.player_unready(&player_id);
                             let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerUnready { player_id: player_id.clone(), });
                         }
                         GuessTheSongUserEvent::UpdateGameSettings { settings } => {
+                            info!("UPDATE SETTINGS: {:?}", settings);
                             game_obj.update_game_settings(settings.clone());
                             let _ = game_obj.broadcast.send(
                                 GuessTheSongServerEvent::GameSettingsUpdated { settings: settings },
                             );
                         }
                         GuessTheSongUserEvent::Guess { content } => {
+                            info!(guess=%content, "GUESS:");
                             let _ = game_obj
                                 .broadcast
                                 .send(GuessTheSongServerEvent::PlayerGuess {
@@ -243,6 +251,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 });
                             if let Some(s) = game_obj.is_correct_song(&content) {
                                 game_obj.increment_player_score(&player_id, 2);
+                                info!(guess=%content, "CORRECT SONG:");
                                 let _ = game_obj.broadcast.send(
                                     GuessTheSongServerEvent::CorrectGuess {
                                         player_id: player_id.clone(),
@@ -255,6 +264,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             }
                             if let Some(a) = game_obj.is_correct_artist(&content) {
                                 game_obj.increment_player_score(&player_id, 2);
+                                info!(guess=%content, "CORRECT ARTIST:");
                                 let _ = game_obj.broadcast.send(
                                     GuessTheSongServerEvent::CorrectGuess {
                                         player_id: player_id.clone(),
@@ -276,22 +286,21 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                 }
             }
         }
-    });
+    }.instrument(connection_span));
 
     tokio::select! {
         _ = (&mut send_task) => recv_task.abort(),
         _ = (&mut recv_task) => send_task.abort(),
     }
 
-    println!("Websocket disconnected");
+    info!("Websocket disconnected");
 }
 
+#[instrument(name="GAME LOOP", skip(game), fields(lobby=%game.lobby_code))]
 async fn run_guess_the_song_game(
     game: Arc<GuessTheSongGame>,
-    // cleanup: mpsc::UnboundedSender<String>,
-    // lobby_code: &String,
 ) {
-    println!("Starting Guess The Song game");
+    info!("Starting Guess The Song game");
     let _ = game.broadcast.send(GuessTheSongServerEvent::GameStart);
     sleep(Duration::from_secs(3)).await;
     let settings = {
@@ -312,13 +321,14 @@ async fn run_guess_the_song_game(
                     (s, now)
                 }
                 None => {
-                    println!("No songs left, ending game");
+                    info!("No songs left, ending game");
                     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
                     break;
                 }
             }
         };
 
+        info!(song=%song.title, "ROUNDSTART:");
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundStart {
             preview_url: song.url.clone(),
             round_start_time,
@@ -326,6 +336,7 @@ async fn run_guess_the_song_game(
 
         sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
 
+        info!("ROUNDEND");
         let _ = game.broadcast.send(GuessTheSongServerEvent::RoundEnd {
             correct_title: song.title.clone(),
             correct_artists: song.artists.clone(),
@@ -333,7 +344,7 @@ async fn run_guess_the_song_game(
         });
         sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
     }
+    info!("GAME END");
     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
-    // let _ = cleanup.send(lobby_code.clone());
     game.reset();
 }

@@ -4,6 +4,7 @@ use std::{env, sync::Arc};
 use dotenv::dotenv;
 use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::PlaylistId};
+use tracing::{instrument, warn, info};
 
 use crate::state::{GuessTheSongGame, SongState};
 
@@ -27,6 +28,7 @@ pub async fn get_spotify_client() -> ClientCredsSpotify {
     spotify
 }
 
+#[instrument(skip(game, spotify_client, playlist_link), fields(lobby=%game.lobby_code))]
 pub async fn load_songs(
     spotify_client: &ClientCredsSpotify,
     playlist_link: &str,
@@ -37,15 +39,14 @@ pub async fn load_songs(
     let playlist_id = match playlist_id {
         Some(id) => PlaylistId::from_id(id).unwrap(),
         None => {
-            println!("Failed to extract playlist ID from link");
+            warn!("Failed to extract playlist ID from link");
             return;
         }
     };
-    println!("Loading tracks from playlist: {:?}", playlist_id);
     let mut playlist_items = match spotify_client.playlist(playlist_id, None, None).await {
         Ok(r) => r.tracks,
         Err(e) => {
-            println!("Failed to fetch playlist: {:?}", e);
+            warn!("Failed to fetch playlist: {:?}", e);
             return;
         }
     };
@@ -71,7 +72,7 @@ pub async fn load_songs(
                 if let Ok(resp) = reqwest::get(&deezer_url).await {
                     if let Ok(json) = resp.json::<serde_json::Value>().await {
                         if let Some(preview_url) = json["preview"].as_str() {
-                            println!("Success! Preview URL for {}: {}", track.name, preview_url);
+                            info!("Received URL for {}", track.name);
 
                             game.state.lock().unwrap().add_song(SongState {
                                 title: (track.name.clone(), false),
@@ -84,7 +85,7 @@ pub async fn load_songs(
                             });
                         } else {
                             // ISRC isn't found
-                            println!("No preview found for ISRC: {}", isrc);
+                            warn!("No preview found for ISRC: {}", isrc);
                         }
                     }
                 }

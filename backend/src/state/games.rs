@@ -32,6 +32,7 @@ impl Games {
             broadcast: send,
             settings: Mutex::new(GuessTheSongGameSettings::new()),
             state: Mutex::new(GuessTheSongGameState::new()),
+            lobby_code: lobby_code.to_string(),
         };
         self.guess_the_song
             .insert(lobby_code.to_string(), Arc::new(lobby));

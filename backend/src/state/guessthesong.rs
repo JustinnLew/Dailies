@@ -13,6 +13,7 @@ pub(crate) struct GuessTheSongGame {
     pub broadcast: broadcast::Sender<GuessTheSongServerEvent>,
     pub settings: Mutex<GuessTheSongGameSettings>,
     pub state: Mutex<GuessTheSongGameState>,
+    pub lobby_code: String,
 }
 
 pub(crate) enum PlayerJoinResult {

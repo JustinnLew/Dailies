@@ -11,12 +11,19 @@ use axum::{
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
 use tower_http::cors::{CorsLayer};
+use tracing::{Instrument, Level, info, instrument};
 
 mod guess_the_song;
 mod state;
 
 #[tokio::main]
 async fn main() {
+    // Setup logging
+    tracing_subscriber::fmt()
+        .with_target(false)
+        .with_max_level(Level::INFO).init();
+    info!("Starting server...");
+
     let s = guess_the_song::api::get_spotify_client().await;
     let (clean_tx, mut clean_rx) = mpsc::unbounded_channel();
     let state = AppState::new(s, clean_tx);
@@ -25,10 +32,11 @@ async fn main() {
     // Spawn cleanup thread
     tokio::spawn(async move {
         while let Some(lobby_code) = clean_rx.recv().await {
-            println!("Cleaning up lobby: {}", lobby_code);
+            info!("Cleaning up lobby: {}", lobby_code);
             cleanup_state.games.remove_lobby(&lobby_code);
         }
-    });
+    }.instrument(tracing::info_span!("CLEANUP")));
+
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(env::var("FRONTEND_URL").expect("env.FRONTEND_URL not set").parse::<HeaderValue>().unwrap());
@@ -46,11 +54,13 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
+#[instrument(skip(ws, state))]
 async fn handle_ws(
     ws: WebSocketUpgrade,
     Path(game): Path<String>,
     State(state): State<AppState>,
 ) -> Response {
+    info!("Websocket Connecting");
     match game.as_str() {
         "guess-the-song" => {
             ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state))
