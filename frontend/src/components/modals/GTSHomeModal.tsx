@@ -36,7 +36,6 @@ export default function GTSHomeModal({
         throw new Error("Error creating lobby");
       }
       const data = await res.json();
-      console.log(`User ${userName} created lobby ${data.lobby_code}`);
       navigate(`/guess-the-song/${data.lobby_code}`);
     } catch (error: any) {
       if (connectionError) {

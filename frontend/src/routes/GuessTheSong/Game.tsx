@@ -30,10 +30,8 @@ export default function Game() {
   const updateGameSettings = useCallback(
     (settings: GuessTheSongGameSettings) => {
       setGameSettings(settings);
-      console.log("Updating game settings: ", settings);
 
       if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-        console.log("Sending updated settings to server", settings);
         socket.current.send(
           JSON.stringify({
             event: "UpdateGameSettings",
@@ -62,7 +60,6 @@ export default function Game() {
     socket.current = s;
 
     s.onopen = () => {
-      console.log("Connected to server ", params.lobbyCode);
       socket.current.send(
         JSON.stringify({
           event: "Join",
@@ -73,12 +70,10 @@ export default function Game() {
       );
     };
     s.onclose = () => {
-      console.log("Disconnected from lobby ", params.lobbyCode);
-      // navigate('/');
+      navigate('/');
     };
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log(msg);
       switch (msg.event) {
         case "SyncState":
           setPlayers(
@@ -141,33 +136,21 @@ export default function Game() {
           });
           break;
         case "GameSettingsUpdated":
-          console.log(
-            "Received updated game settings from server: ",
-            msg.data.settings,
-          );
           setGameSettings(msg.data.settings);
           break;
         case "AllReady":
           setGameState("loading");
           break;
         case "GameStart":
-          console.log("Game starting!");
           setGameState("playing");
           break;
         case "RoundStart":
-          console.log("Round started with preview URL: ", msg.data.preview_url);
           setSongState({
             previewUrl: msg.data.preview_url,
             roundStartTime: msg.data.round_start_time,
           });
           break;
         case "RoundEnd":
-          console.log(
-            "Round ended. Correct title: ",
-            msg.data.correct_title,
-            " Correct artists: ",
-            msg.data.correct_artists,
-          );
           setScores(new Map(Object.entries(msg.data.leaderboard)));
           setSongState({ previewUrl: "", roundStartTime: 0 });
           setChat((c) => [
@@ -179,7 +162,6 @@ export default function Game() {
           ]);
           break;
         case "GameEnd":
-          console.log("Game ended");
           socket.current.send(JSON.stringify({ event: "Unready" }))
           setGameState("finished");
           break;
@@ -196,13 +178,12 @@ export default function Game() {
           navigate("/", { state: { error: msg.data.message } });
           break;
         default:
-          console.log("Unknown event received: ", msg);
           break;
       }
     };
     return () => {
       s.close();
-      // navigate('/guess-the-song');
+      navigate('/');
     };
   }, [params.lobbyCode, navigate, userId, username]);
 
