@@ -36,10 +36,10 @@ export default function Gameplay({
   };
 
   return (
-    <div className="flex flex-col md:flex-row scanlines h-screen w-screen gap-4 p-6 bg-black text-white font-press-start">
+    <div className="flex flex-col md:flex-row scanlines h-fit md:h-screen w-screen gap-4 p-6 bg-black text-white font-press-start">
       <div className="flex-2 flex flex-col min-w-0">
         {/* Chat Section */}
-        <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1">
+        <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1 min-h-0">
           <h2 className="text-lg font-bold mb-2">💬</h2>
 
           {/* Message List: This area will now scroll */}
@@ -52,7 +52,7 @@ export default function Gameplay({
                   key={i}
                   className={`text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
                     isSystem ? "bg-neon-green/50 my-2" : ""
-                  }`}
+                  } min-w-0 truncate`}
                 >
                   <span
                     className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
