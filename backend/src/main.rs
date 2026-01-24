@@ -10,7 +10,7 @@ use axum::{
 };
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
-use tower_http::cors::{CorsLayer};
+use tower_http::cors::CorsLayer;
 use tracing::{Instrument, Level, info, instrument};
 
 mod guess_the_song;
@@ -21,7 +21,8 @@ async fn main() {
     // Setup logging
     tracing_subscriber::fmt()
         .with_target(false)
-        .with_max_level(Level::INFO).init();
+        .with_max_level(Level::INFO)
+        .init();
     info!("Starting server...");
 
     let s = guess_the_song::api::get_spotify_client().await;
@@ -30,16 +31,24 @@ async fn main() {
     let cleanup_state = state.clone();
 
     // Spawn cleanup thread
-    tokio::spawn(async move {
-        while let Some(lobby_code) = clean_rx.recv().await {
-            info!("Cleaning up lobby: {}", lobby_code);
-            cleanup_state.games.remove_lobby(&lobby_code);
+    tokio::spawn(
+        async move {
+            while let Some(lobby_code) = clean_rx.recv().await {
+                info!("Cleaning up lobby: {}", lobby_code);
+                cleanup_state.games.remove_lobby(&lobby_code);
+            }
         }
-    }.instrument(tracing::info_span!("CLEANUP")));
+        .instrument(tracing::info_span!("CLEANUP")),
+    );
 
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
-        .allow_origin(env::var("FRONTEND_URL").expect("env.FRONTEND_URL not set").parse::<HeaderValue>().unwrap());
+        .allow_origin(
+            env::var("FRONTEND_URL")
+                .expect("env.FRONTEND_URL not set")
+                .parse::<HeaderValue>()
+                .unwrap(),
+        );
 
     let app = Router::new()
         .route(
@@ -50,7 +59,12 @@ async fn main() {
         .layer(cors)
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{}", env::var("PORT").expect("env.PORT not set"))).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!(
+        "127.0.0.1:{}",
+        env::var("PORT").expect("env.PORT not set")
+    ))
+    .await
+    .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 

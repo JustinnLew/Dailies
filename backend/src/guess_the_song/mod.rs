@@ -38,7 +38,10 @@ impl Drop for GuessTheSongConnectionGuard {
     fn drop(&mut self) {
         let mut lobby_state = self.game.lobby_state.lock().unwrap();
         lobby_state.player_leave(&self.player_id);
-        info!("Player {} disconnected from lobby: {}", self.player_id, self.game.lobby_code);
+        info!(
+            "Player {} disconnected from lobby: {}",
+            self.player_id, self.game.lobby_code
+        );
         let _ = self.broadcast.send(GuessTheSongServerEvent::PlayerLeave {
             player_id: self.player_id.clone(),
         });
@@ -118,9 +121,9 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     };
 
     let connection_span = tracing::info_span!(
-        "connection", 
-        lobby=%lobby_code, 
-        player=%player_id, 
+        "connection",
+        lobby=%lobby_code,
+        player=%player_id,
     );
 
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
@@ -185,21 +188,24 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         .await;
 
     // Create the send_task
-    let mut send_task: tokio::task::JoinHandle<()> = tokio::spawn(async move {
-        while let Ok(msg) = rx.recv().await {
-            match serde_json::to_string(&msg) {
-                Ok(json) => {
-                    if sender.send(Message::Text(json.into())).await.is_err() {
-                        break;
+    let mut send_task: tokio::task::JoinHandle<()> = tokio::spawn(
+        async move {
+            while let Ok(msg) = rx.recv().await {
+                match serde_json::to_string(&msg) {
+                    Ok(json) => {
+                        if sender.send(Message::Text(json.into())).await.is_err() {
+                            break;
+                        }
                     }
-                }
-                Err(e) => {
-                    warn!("Serialization error: {:?}", e);
-                    continue;
+                    Err(e) => {
+                        warn!("Serialization error: {:?}", e);
+                        continue;
+                    }
                 }
             }
         }
-    }.instrument(connection_span.clone()));
+        .instrument(connection_span.clone()),
+    );
 
     let _ = game_obj
         .broadcast
@@ -209,80 +215,90 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         });
 
     //  Create the recv_task
-    let mut recv_task = tokio::spawn(async move {
-        while let Some(Ok(msg)) = receiver.next().await {
-            match msg {
-                Message::Text(req) => {
-                    let req: GuessTheSongUserEvent = match serde_json::from_str(&req) {
-                        Ok(r) => r,
-                        Err(e) => {
-                            warn!("Failed to parse user event: {:?}", e);
-                            continue;
-                        }
-                    };
-                    match req {
-                        GuessTheSongUserEvent::Ready => {
-                            game_obj.player_ready(&player_id);
-                            info!("READY");
-                            let _ = game_obj
-                                .broadcast
-                                .send(GuessTheSongServerEvent::PlayerReady {
-                                    player_id: player_id.clone(),
-                                });
-                            if game_obj.all_ready()
-                                && game_obj.lobby_state.lock().unwrap().status
-                                    == LobbyStatus::Waiting
-                            {
-                                let _ = game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
-                                game_obj.update_lobby_status(LobbyStatus::Playing);
-                                let playlist_link = game_obj.get_playlist_link();
-
-                                let l = game_obj.clone();
-                                let spotify_client = state.spotify_client.clone();
-                                tokio::spawn(async move {
-                                    api::load_songs(&spotify_client, &playlist_link, l.clone())
-                                        .await;
-                                    run_guess_the_song_game(l).await;
-                                });
+    let mut recv_task = tokio::spawn(
+        async move {
+            while let Some(Ok(msg)) = receiver.next().await {
+                match msg {
+                    Message::Text(req) => {
+                        let req: GuessTheSongUserEvent = match serde_json::from_str(&req) {
+                            Ok(r) => r,
+                            Err(e) => {
+                                warn!("Failed to parse user event: {:?}", e);
+                                continue;
                             }
-                        }
-                        GuessTheSongUserEvent::Unready => {
-                            info!("UNREADY");
-                            game_obj.player_unready(&player_id);
-                            let _ = game_obj.broadcast.send(GuessTheSongServerEvent::PlayerUnready { player_id: player_id.clone(), });
-                        }
-                        GuessTheSongUserEvent::UpdateGameSettings { settings } => {
-                            info!("UPDATE SETTINGS: {:?}", settings);
-                            game_obj.update_game_settings(settings.clone());
-                            let _ = game_obj.broadcast.send(
-                                GuessTheSongServerEvent::GameSettingsUpdated { settings: settings },
-                            );
-                        }
-                        GuessTheSongUserEvent::Guess { content } => {
-                            info!(guess=%content, "GUESS:");
-                            let _ = game_obj
-                                .broadcast
-                                .send(GuessTheSongServerEvent::PlayerGuess {
-                                    username: player_username.clone(),
-                                    content: content.clone(),
-                                });
-                            if let Some(s) = game_obj.is_correct_song(&content) {
-                                game_obj.increment_player_score(&player_id, 2);
-                                info!(guess=%content, "CORRECT SONG:");
+                        };
+                        match req {
+                            GuessTheSongUserEvent::Ready => {
+                                game_obj.player_ready(&player_id);
+                                info!("READY");
+                                let _ =
+                                    game_obj
+                                        .broadcast
+                                        .send(GuessTheSongServerEvent::PlayerReady {
+                                            player_id: player_id.clone(),
+                                        });
+                                if game_obj.all_ready()
+                                    && game_obj.lobby_state.lock().unwrap().status
+                                        == LobbyStatus::Waiting
+                                {
+                                    let _ =
+                                        game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
+                                    game_obj.update_lobby_status(LobbyStatus::Playing);
+                                    let playlist_link = game_obj.get_playlist_link();
+
+                                    let l = game_obj.clone();
+                                    let spotify_client = state.spotify_client.clone();
+                                    tokio::spawn(async move {
+                                        api::load_songs(&spotify_client, &playlist_link, l.clone())
+                                            .await;
+                                        run_guess_the_song_game(l).await;
+                                    });
+                                }
+                            }
+                            GuessTheSongUserEvent::Unready => {
+                                info!("UNREADY");
+                                game_obj.player_unready(&player_id);
                                 let _ = game_obj.broadcast.send(
-                                    GuessTheSongServerEvent::CorrectGuess {
+                                    GuessTheSongServerEvent::PlayerUnready {
                                         player_id: player_id.clone(),
-                                        msg: format!(
-                                            "{} guessed the song correctly! The song was '{}'.",
-                                            player_username, s
-                                        ),
                                     },
                                 );
                             }
-                            if let Some(a) = game_obj.is_correct_artist(&content) {
-                                game_obj.increment_player_score(&player_id, 2);
-                                info!(guess=%content, "CORRECT ARTIST:");
+                            GuessTheSongUserEvent::UpdateGameSettings { settings } => {
+                                info!("UPDATE SETTINGS: {:?}", settings);
+                                game_obj.update_game_settings(settings.clone());
                                 let _ = game_obj.broadcast.send(
+                                    GuessTheSongServerEvent::GameSettingsUpdated {
+                                        settings: settings,
+                                    },
+                                );
+                            }
+                            GuessTheSongUserEvent::Guess { content } => {
+                                info!(guess=%content, "GUESS:");
+                                let _ =
+                                    game_obj
+                                        .broadcast
+                                        .send(GuessTheSongServerEvent::PlayerGuess {
+                                            username: player_username.clone(),
+                                            content: content.clone(),
+                                        });
+                                if let Some(s) = game_obj.is_correct_song(&content) {
+                                    game_obj.increment_player_score(&player_id, 2);
+                                    info!(guess=%content, "CORRECT SONG:");
+                                    let _ = game_obj.broadcast.send(
+                                        GuessTheSongServerEvent::CorrectGuess {
+                                            player_id: player_id.clone(),
+                                            msg: format!(
+                                                "{} guessed the song correctly! The song was '{}'.",
+                                                player_username, s
+                                            ),
+                                        },
+                                    );
+                                }
+                                if let Some(a) = game_obj.is_correct_artist(&content) {
+                                    game_obj.increment_player_score(&player_id, 2);
+                                    info!(guess=%content, "CORRECT ARTIST:");
+                                    let _ = game_obj.broadcast.send(
                                     GuessTheSongServerEvent::CorrectGuess {
                                         player_id: player_id.clone(),
                                         msg: format!(
@@ -291,19 +307,21 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                         ),
                                     },
                                 );
+                                }
+                            }
+                            _ => {
+                                continue;
                             }
                         }
-                        _ => {
-                            continue;
-                        }
                     }
-                }
-                _ => {
-                    continue;
+                    _ => {
+                        continue;
+                    }
                 }
             }
         }
-    }.instrument(connection_span));
+        .instrument(connection_span),
+    );
 
     tokio::select! {
         _ = (&mut send_task) => recv_task.abort(),
@@ -314,9 +332,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
 }
 
 #[instrument(name="GAME LOOP", skip(game), fields(lobby=%game.lobby_code))]
-async fn run_guess_the_song_game(
-    game: Arc<GuessTheSongGame>,
-) {
+async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
     info!("Starting Guess The Song game");
     let _ = game.broadcast.send(GuessTheSongServerEvent::GameStart);
     sleep(Duration::from_secs(3)).await;

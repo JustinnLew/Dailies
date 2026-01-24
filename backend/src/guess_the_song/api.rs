@@ -4,7 +4,7 @@ use std::{env, sync::Arc};
 use dotenv::dotenv;
 use rand::{SeedableRng, rngs::StdRng, seq::SliceRandom};
 use rspotify::{ClientCredsSpotify, Credentials, clients::BaseClient, model::PlaylistId};
-use tracing::{instrument, warn, info};
+use tracing::{info, instrument, warn};
 
 use crate::state::{GuessTheSongGame, SongState};
 
