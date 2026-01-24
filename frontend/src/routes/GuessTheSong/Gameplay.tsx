@@ -36,7 +36,7 @@ export default function Gameplay({
   };
 
   return (
-    <div className="scanlines h-screen flex gap-4 p-6 bg-black text-white font-press-start">
+    <div className="scanlines h-screen w-screen flex gap-4 p-6 bg-black text-white font-press-start">
       <div className="flex-2 flex flex-col h-full">
         {/* Chat Section */}
         <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1 min-h-0">
@@ -107,11 +107,11 @@ export default function Gameplay({
               .map((player, i) => (
                 <li
                   key={player.id}
-                  className="text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
+                  className="w-full text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
                 >
                   <div className="flex gap-6">
                     <span className="text-neon-yellow w-6">#{i + 1}</span>
-                    <span className="truncate max-w-[100px]">
+                    <span className="flex-1 truncate max-w-56">
                       {player.username}
                     </span>
                   </div>

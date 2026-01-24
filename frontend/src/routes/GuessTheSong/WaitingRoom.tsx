@@ -56,7 +56,7 @@ export default function Waiting({
                     "polygon(0 4px, 4px 4px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px), calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px), 0 calc(100% - 4px))",
                 }}
               >
-                <p className="flex-1">{p.username}</p>
+                <p className="flex-1 truncate min-w-0">{p.username}</p>
                 {p.ready && "✓"}
               </li>
             ))}
