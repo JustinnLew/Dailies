@@ -39,7 +39,7 @@ impl GuessTheSongGame {
             return Ok(PlayerJoinResult::ReJoin);
         } else {
             if lobby.status != crate::state::LobbyStatus::Waiting {
-                return Err("Cannot join game in progresss");
+                return Err("Cannot join game in progress");
             }
             lobby.player_join(player_id.clone(), player_username);
             state.scores.insert(player_id.clone(), 0);
