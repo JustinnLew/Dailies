@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 export default function Home() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const location = useLocation();
 
