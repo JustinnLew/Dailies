@@ -1,15 +1,18 @@
 import Modal from "@mui/material/Modal";
-import { useState } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserId, getUserName } from "../../utils/util";
 
 export default function GTSHomeModal({
   open,
   onClose,
+  setErrorMessage
 }: {
   open: boolean;
   onClose: () => void;
+  setErrorMessage: Dispatch<SetStateAction<string>>
 }) {
+  const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
   const userId = getUserId();
@@ -18,16 +21,31 @@ export default function GTSHomeModal({
     return lobbyCode.length == 6;
   };
   const createLobby = async () => {
-    const res = await fetch(
-      "http://localhost:3000/guess-the-song/create-lobby",
-      {
-        method: "POST",
-        body: JSON.stringify({ userId, userName }),
-      },
-    );
-    const data = await res.json();
-    console.log(`User ${userName} created lobby ${data.lobby_code}`);
-    navigate(`/guess-the-song/${data.lobby_code}`);
+    setcreateDisabled(true);
+    let connectionError = true;
+    try {
+      const res = await fetch(
+        "http://localhost:3000/guess-the-song/create-lobby",
+        {
+          method: "POST",
+          body: JSON.stringify({ userId, userName }),
+        },
+      );
+      if (!res.ok) {
+        connectionError = false;
+        throw new Error("Error creating lobby");
+      }
+      const data = await res.json();
+      console.log(`User ${userName} created lobby ${data.lobby_code}`);
+      navigate(`/guess-the-song/${data.lobby_code}`);
+    } catch (error: any) {
+      if (connectionError) {
+        setErrorMessage("Failed to connect to server");
+      } else {
+        setErrorMessage(error.message);
+      }
+    }
+    setcreateDisabled(false);
   };
 
   return (
@@ -64,15 +82,16 @@ export default function GTSHomeModal({
             &gt; START A NEW GAME
           </h2>
           <button
+            disabled={createDisabled}
             onClick={createLobby}
-            className="px-8 py-4 transition-all hover:scale-105 cursor-pointer bg-neon-pink
-              border-4 border-neon-blue w-full"
+            className={`px-8 py-4 transition-all cursor-pointer ${createDisabled ? "bg-black text-gray-500" : "text-white bg-neon-pink hover:scale-105"}
+              border-4 border-neon-blue w-full`}
             style={{
               clipPath:
                 "polygon(0 8px, 8px 8px, 8px 0, calc(100% - 8px) 0, calc(100% - 8px) 8px, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 8px calc(100% - 8px), 0 calc(100% - 8px))",
             }}
           >
-            <span className="text-white text-sm font-press-start">
+            <span className="text-sm font-press-start">
               CREATE LOBBY
             </span>
           </button>

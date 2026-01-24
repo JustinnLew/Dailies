@@ -12,10 +12,14 @@ export default function Home() {
   useEffect(() => {
     if (location.state?.error) {
       setErrorMessage(location.state.error);
-      setOpen(true);
-            window.history.replaceState({}, document.title);
     }
   }, [location]);
+
+  useEffect(() => {
+    if (errorMessage != "") {
+      setOpen(true); 
+    }
+  }, [errorMessage])
 
   const handleClose = (
     _?: React.SyntheticEvent | Event,
@@ -28,10 +32,15 @@ export default function Home() {
     setOpen(false);
   };
 
+  const handleExited = () => {
+    setErrorMessage("")
+    window.history.replaceState({}, document.title);
+  }
+
   return (
     <div className="flex flex-col items-center h-screen scanlines bg-black">
       <NavBar />
-      <HomeGrid />
+      <HomeGrid setErrorMessage={setErrorMessage}/>
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",
@@ -39,8 +48,12 @@ export default function Home() {
         }}
         autoHideDuration={10000}
         onClose={handleClose}
-        open={open}>
-        {/* Custom Styled Div instead of <Alert> */}
+        open={open}
+        slotProps={{
+          transition: { 
+            onExited: handleExited 
+          }
+        }}>
         <div className="font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-lg"
         style={{
                   clipPath:
