@@ -36,14 +36,14 @@ export default function Gameplay({
   };
 
   return (
-    <div className="scanlines h-screen w-screen flex gap-4 p-6 bg-black text-white font-press-start">
-      <div className="flex-2 flex flex-col h-full">
+    <div className="flex flex-col md:flex-row scanlines h-screen w-screen gap-4 p-6 bg-black text-white font-press-start">
+      <div className="flex-2 flex flex-col min-w-0">
         {/* Chat Section */}
-        <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1 min-h-0">
+        <div className="border-4 border-neon-blue p-4 flex flex-col tracking-wider flex-1">
           <h2 className="text-lg font-bold mb-2">💬</h2>
 
           {/* Message List: This area will now scroll */}
-          <div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar">
             {chat.map((c, i) => {
               const isSystem = c.user === "";
 
@@ -73,7 +73,7 @@ export default function Gameplay({
         </div>
 
         {/* Input Area: Stays at the bottom */}
-        <div className="flex gap-2 pt-2 border-t border-gray-700 shrink-0">
+        <div className="flex gap-2 pt-2 border-t border-gray-700">
           <input
             className="flex-1 text-xl tracking-widest font-vt323 bg-gray-700 px-3 py-2 text-white focus:outline-none"
             placeholder="Type a guess..."
@@ -90,10 +90,10 @@ export default function Gameplay({
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 gap-6">
+      <div className="flex flex-col flex-1 gap-6 min-w-0">
         {/* scores */}
         <div className="flex-2 p-4 flex flex-col gap-4 border-4 border-neon-pink">
-          <h2 className="text-3xl font-bold mb-3 text-shadow-(--text-shadow-title)">
+          <h2 className="font-bold mb-3 text-shadow-(--text-shadow-title) text-sm md:text-xl lg:text-2xl truncate">
             Leaderboard
           </h2>
           <ul className="space-y-2 overflow-y-auto custom-scrollbar">
@@ -107,11 +107,11 @@ export default function Gameplay({
               .map((player, i) => (
                 <li
                   key={player.id}
-                  className="w-full text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
+                  className="w-full text-xs md:text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
                 >
-                  <div className="flex gap-6">
+                  <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
                     <span className="text-neon-yellow w-6">#{i + 1}</span>
-                    <span className="flex-1 truncate max-w-56">
+                    <span className="flex-1 truncate">
                       {player.username}
                     </span>
                   </div>
