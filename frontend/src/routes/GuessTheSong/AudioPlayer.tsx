@@ -70,10 +70,7 @@ export default function AudioPlayer({
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px" }}>
-      <label htmlFor="volume-slider" style={{ fontSize: "14px", fontWeight: "bold" }}>
-        Volume
-      </label>
+    <div className="flex flex-col gap-2 p-2">
       <input
         id="volume-slider"
         type="range"
@@ -82,8 +79,12 @@ export default function AudioPlayer({
         step="0.01"
         value={volume}
         onChange={handleVolumeChange}
+        style={{
+          writingMode: "vertical-rl",
+          transform: "rotate(180deg)",
+        }}
       />
-      <span>{Math.round(volume * 100)}%</span>
+      <span className="text-xs w-12 text-center">{Math.round(volume * 100)}%</span>
     </div>
   );
 }

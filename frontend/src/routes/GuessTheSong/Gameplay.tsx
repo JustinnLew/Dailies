@@ -121,8 +121,13 @@ export default function Gameplay({
           </ul>
         </div>
 
-        <div className="flex-1 flex-col border-neon-pink border-4 p-6 flex items-center justify-center text-2xl font-semibold text-center">
-          <AudioPlayer songState={songState} />
+        <div className="flex-1 border-neon-pink border-4 p-6 flex items-center justify-start text-2xl font-semibold text-center">
+          <div className="flex-1 h-full border-2 border-white flex items-center">
+            <AudioPlayer songState={songState} />
+          </div>
+          <div className="flex-10 border-2 border-white h-full">
+
+          </div>
         </div>
       </div>
     </div>
