@@ -39,7 +39,7 @@ export default function Ending({
         {/* Top 3 */}
         <div className="hidden sm:flex items-end justify-center gap-4 mb-2 min-h-52">
           {/* 2nd Place */}
-          <div className="flex flex-col items-center w-1/6 h-4/5 gap-2">
+          <div className="flex flex-col items-center w-1/5 h-4/5 gap-2">
             {leaderboard[1] && <Trophy color="white" />}
             {leaderboard[1] && (
               <div
@@ -61,7 +61,7 @@ export default function Ending({
           </div>
 
           {/* 1st Place */}
-          <div className="flex flex-col items-center w-1/5 h-full gap-2">
+          <div className="flex flex-col items-center w-1/4 h-full gap-2">
             <Crown size={48} color="#FFD700" />
             <div
               className="flex flex-col gap-4 h-full w-full text-center justify-center border-4 border-yellow-500"
@@ -81,7 +81,7 @@ export default function Ending({
           </div>
 
           {/* 3rd Place */}
-          <div className="w-1/6 h-4/6 flex flex-col items-center gap-2">
+          <div className="w-1/5 h-4/6 flex flex-col items-center gap-2">
             {leaderboard[2] && <Trophy color="#CD7F32" />}
             {leaderboard[2] && (
               <div

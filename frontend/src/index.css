@@ -85,7 +85,7 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px; /* Width of the scrollbar */
+  width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -107,4 +107,21 @@
 
 .border-neon-pink .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #ff77ff;
+}
+
+
+@keyframes custom-caret-anim {
+  0%,
+  50% {
+    caret-color: red;
+  }
+  75%,
+  100% {
+    caret-color: transparent;
+  }
+}
+
+.custom-caret {
+  caret: block manual white;
+  animation: custom-carat-anim 2s infinite;
 }
