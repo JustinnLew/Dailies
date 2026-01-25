@@ -57,7 +57,7 @@ export default function NavBar() {
         >
           {username}
         </p>
-        <PencilIcon size={18} color={"white"}/>
+        <PencilIcon size={18} color={"white"} />
       </div>
     </div>
   );

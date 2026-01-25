@@ -36,7 +36,7 @@ export default function Waiting({
             title="Copy Code"
           >
             {/* ICON PLACEHOLDER */}
-            <div className="w-5 h-5 flex items-center justify-center text-neon-blue cursor-pointer">
+            <div className="w-5 h-5 flex items-center justify-center cursor-pointer">
               <CopyIcon size={28} color={"white"} />
             </div>
           </button>
