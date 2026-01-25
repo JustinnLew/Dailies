@@ -309,6 +309,9 @@ pub(crate) enum GuessTheSongServerEvent {
     JoinError {
         message: String,
     },
+    PlaylistError {
+        message: String,
+    },
 }
 
 /// ===============================================

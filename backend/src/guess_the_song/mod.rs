@@ -243,14 +243,29 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                 {
                                     let _ =
                                         game_obj.broadcast.send(GuessTheSongServerEvent::AllReady);
-                                    game_obj.update_lobby_status(LobbyStatus::Playing);
                                     let playlist_link = game_obj.get_playlist_link();
-
                                     let l = game_obj.clone();
                                     let spotify_client = state.spotify_client.clone();
+                                    let player_id_c = player_id.clone();
                                     tokio::spawn(async move {
-                                        api::load_songs(&spotify_client, &playlist_link, l.clone())
+                                        let res =  api::load_songs(&spotify_client, &playlist_link, l.clone())
                                             .await;
+                                        match res {
+                                            Ok(_) => {
+                                                l.update_lobby_status(LobbyStatus::Playing);
+                                            }
+                                            Err(msg) => {
+                                                l.update_lobby_status(LobbyStatus::Waiting);
+                                                l.player_unready(&player_id_c);
+                                                let _ = l.broadcast.send(
+                                                    GuessTheSongServerEvent::PlayerUnready {
+                                                        player_id: player_id_c,
+                                                    },
+                                                );
+                                                let _ = l.broadcast.send(GuessTheSongServerEvent::PlaylistError { message: msg });
+                                                return;
+                                            }
+                                        }
                                         run_guess_the_song_game(l).await;
                                     });
                                 }

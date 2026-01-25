@@ -33,21 +33,21 @@ pub async fn load_songs(
     spotify_client: &ClientCredsSpotify,
     playlist_link: &str,
     game: Arc<GuessTheSongGame>,
-) {
+) -> Result<(), String>{
     // Extract playlist ID from link
     let playlist_id = playlist_link.split("playlist/").nth(1);
     let playlist_id = match playlist_id {
         Some(id) => PlaylistId::from_id(id).unwrap(),
         None => {
             warn!("Failed to extract playlist ID from link");
-            return;
+            return Err("Failed to extract playlistID from link".to_string());
         }
     };
     let mut playlist_items = match spotify_client.playlist(playlist_id, None, None).await {
         Ok(r) => r.tracks,
         Err(e) => {
             warn!("Failed to fetch playlist: {:?}", e);
-            return;
+            return Err("Failed to fetch playlist".to_string());
         }
     };
 
@@ -92,4 +92,5 @@ pub async fn load_songs(
             }
         }
     }
+    Ok(())
 }
