@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { Player } from "../../utils/types";
-import Crown from "../../icons/Crown";
+import Crown from "../../icons/CrownIcon";
 import Trophy from "../../icons/Trophy";
 import { useState } from "react";
 

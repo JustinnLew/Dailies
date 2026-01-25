@@ -7,15 +7,4 @@ const getUserId = () => {
   return id;
 };
 
-const NAMES = ["Eagle", "Tiger", "Fox", "Panda", "Lion", "Wolf"];
-
-const getUserName = () => {
-  let name = localStorage.getItem("user_name");
-  if (!name) {
-    name = NAMES[Math.floor(Math.random() * NAMES.length)];
-    localStorage.setItem("user_name", name);
-  }
-  return name;
-};
-
-export { getUserId, getUserName };
+export { getUserId };

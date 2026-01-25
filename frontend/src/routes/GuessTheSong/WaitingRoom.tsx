@@ -1,3 +1,4 @@
+import CopyIcon from "../../icons/CopyIcon";
 import type { Player, GuessTheSongGameSettings } from "../../utils/types";
 
 export default function Waiting({
@@ -31,13 +32,12 @@ export default function Waiting({
             onClick={() => {
               navigator.clipboard.writeText(lobbyCode);
             }}
-            className="p-2 transition-all hover:scale-110 active:scale-95 bg-neon-bg border-2 border-neon-blue"
+            className="p-2 transition-all hover:scale-110 active:scale-95 bg-neon-bg"
             title="Copy Code"
           >
             {/* ICON PLACEHOLDER */}
-            <div className="w-5 h-5 flex items-center justify-center text-neon-blue">
-              <span className="text-[10px] font-press-start">C</span>
-              {/* Replace the span above with <CopyIcon /> later */}
+            <div className="w-5 h-5 flex items-center justify-center text-neon-blue cursor-pointer">
+              <CopyIcon size={28} color={"white"} />
             </div>
           </button>
         </div>

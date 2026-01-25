@@ -1,7 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserId, getUserName } from "../../utils/util";
+import { getUserId } from "../../utils/util";
 
 export default function GTSHomeModal({
   open,
@@ -16,7 +16,7 @@ export default function GTSHomeModal({
   const navigate = useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
   const userId = getUserId();
-  const userName = getUserName();
+  const userName = localStorage.getItem("username");
   const validLobbyCode = () => {
     return lobbyCode.length == 6;
   };

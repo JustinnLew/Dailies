@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
-import { getUserId, getUserName } from "../../utils/util";
+import { getUserId } from "../../utils/util";
 import type {
   Player,
   GuessTheSongGameSettings,
@@ -16,7 +16,7 @@ import Ending from "./Ending";
 export default function Game() {
   const params = useParams();
   const userId = getUserId();
-  const username = getUserName();
+  const username = localStorage.getItem("username");
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
     playlistLink: "",
