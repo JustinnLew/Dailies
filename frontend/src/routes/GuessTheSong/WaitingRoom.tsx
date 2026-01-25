@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import CopyIcon from "../../icons/CopyIcon";
 import type { Player, GuessTheSongGameSettings } from "../../utils/types";
 
@@ -16,6 +17,7 @@ export default function Waiting({
 }) {
   const isValidSpotifyLink = (link: string) =>
     /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
+  const navigate = useNavigate();
 
   return (
     <div className="flex-col h-fit sm:h-screen flex sm:flex-row p-4 gap-4 bg-black font-press-start scanlines">
@@ -187,10 +189,15 @@ export default function Waiting({
         </div>
 
         {/* Start Game button at bottom-right */}
-        <div className="flex justify-end mt-4">
+        <div className="flex pt-4 border-t-2">
+          <button 
+            onClick={() => navigate("/")}
+            className="px-6 py-2 text-white font-bold mr-auto border-red-500 border-4 cursor-pointer">
+            Exit
+          </button>
           <button
             disabled={!isValidSpotifyLink(gameSettings.playlistLink)}
-            className={`px-6 py-2 rounded text-white font-bold transition-all
+            className={`px-6 py-2 text-white font-bold transition-all
                             ${
                               isValidSpotifyLink(gameSettings.playlistLink)
                                 ? "border-green-500 border-4 cursor-pointer"

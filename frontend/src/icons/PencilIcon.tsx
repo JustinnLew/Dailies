@@ -13,7 +13,7 @@ export default function PencilIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1128_12284)">
+      <g clipPath="url(#clip0_1128_12284)">
         <path d="M32 6.1H30.47V10.67H32V6.1Z" fill={color} />
         <path d="M30.4699 10.67H28.95V12.19H30.4699V10.67Z" fill={color} />
         <path d="M30.4699 4.57H28.95V6.1H30.4699V4.57Z" fill={color} />
