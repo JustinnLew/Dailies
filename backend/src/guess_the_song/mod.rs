@@ -342,6 +342,10 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
     };
 
     for _ in 0..settings.num_songs {
+        if game.lobby_state.lock().unwrap().empty() {
+            info!("Game empty, terminating loop");
+            return;
+        }
         let (song, round_start_time) = {
             let mut state = game.state.lock().unwrap();
             match state.get_next_song() {
