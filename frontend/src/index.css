@@ -109,19 +109,7 @@
   background: #ff77ff;
 }
 
-
-@keyframes custom-caret-anim {
-  0%,
-  50% {
-    caret-color: red;
-  }
-  75%,
-  100% {
-    caret-color: transparent;
-  }
-}
-
-.custom-caret {
-  caret: block manual white;
-  animation: custom-carat-anim 2s infinite;
+input {
+  caret-color: inherit;
+  caret-shape: underscore;
 }
