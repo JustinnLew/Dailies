@@ -16,7 +16,7 @@ import Ending from "./Ending";
 export default function Game() {
   const params = useParams();
   const userId = getUserId();
-  const username = localStorage.getItem("username");
+  const username = localStorage.getItem("username") || "PLAYER";
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
     playlistLink: "",

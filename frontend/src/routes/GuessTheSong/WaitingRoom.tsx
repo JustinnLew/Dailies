@@ -190,9 +190,10 @@ export default function Waiting({
 
         {/* Start Game button at bottom-right */}
         <div className="flex pt-4 border-t-2">
-          <button 
+          <button
             onClick={() => navigate("/")}
-            className="px-6 py-2 text-white font-bold mr-auto border-red-500 border-4 cursor-pointer">
+            className="px-6 py-2 text-white font-bold mr-auto border-red-500 border-4 cursor-pointer"
+          >
             Exit
           </button>
           <button
