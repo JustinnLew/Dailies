@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
-import { getUserId } from "../../utils/util";
 import type {
   Player,
   GuessTheSongGameSettings,
@@ -15,7 +14,7 @@ import Ending from "./Ending";
 
 export default function Game() {
   const params = useParams();
-  const userId = getUserId();
+  const [playerReady, setPlayerReady] = useState(false);
   const username = localStorage.getItem("username") || "PLAYER";
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [error, setError] = useState<string>("");
@@ -65,7 +64,6 @@ export default function Game() {
         JSON.stringify({
           event: "Join",
           lobby_code: params.lobbyCode,
-          user_id: userId,
           username: username,
         }),
       );
@@ -75,6 +73,7 @@ export default function Game() {
     };
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
+      console.log(msg);
       switch (msg.event) {
         case "SyncState":
           setPlayers(
@@ -190,17 +189,19 @@ export default function Game() {
       s.close();
       // navigate('/');
     };
-  }, [params.lobbyCode, navigate, userId, username]);
+  }, [params.lobbyCode, navigate, username]);
 
   const sendGuess = (guess: string) => {
     socket.current.send(JSON.stringify({ event: "Guess", content: guess }));
   };
 
   const ready = () => {
-    if (players.get(userId)?.ready) {
+    if (playerReady) {
       socket.current.send(JSON.stringify({ event: "Unready" }));
-    } else if (players.get(userId)) {
+      setPlayerReady(false);
+    } else {
       socket.current.send(JSON.stringify({ event: "Ready" }));
+      setPlayerReady(true);
     }
   };
 

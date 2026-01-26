@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
+use uuid::Uuid;
 
 use crate::state::{LobbyState, LobbyStatus};
 
@@ -27,9 +28,18 @@ impl GuessTheSongGame {
         self.state.lock().unwrap().reset();
     }
 
+    pub fn get_new_player_id(&self) -> Uuid {
+        loop {
+            let id = Uuid::new_v4();
+            if !self.lobby_state.lock().unwrap().players.contains_key(&id) {
+                return id;
+            }
+        }
+    }
+
     pub fn player_join(
         &self,
-        player_id: String,
+        player_id: Uuid,
         player_username: String,
     ) -> Result<PlayerJoinResult, &str> {
         let mut lobby = self.lobby_state.lock().unwrap();
@@ -47,11 +57,11 @@ impl GuessTheSongGame {
         Ok(PlayerJoinResult::NewJoin)
     }
 
-    pub fn player_ready(&self, user_id: &str) {
+    pub fn player_ready(&self, user_id: &Uuid) {
         self.lobby_state.lock().unwrap().player_ready(user_id);
     }
 
-    pub fn player_unready(&self, user_id: &str) {
+    pub fn player_unready(&self, user_id: &Uuid) {
         self.lobby_state.lock().unwrap().player_unready(user_id);
     }
 
@@ -68,7 +78,7 @@ impl GuessTheSongGame {
         lobby.update_lobby_status(new_status);
     }
 
-    pub fn get_players(&self) -> Vec<(String, String, bool)> {
+    pub fn get_players(&self) -> Vec<(Uuid, String, bool)> {
         self.lobby_state.lock().unwrap().get_players()
     }
 
@@ -101,12 +111,12 @@ impl GuessTheSongGame {
         self.state.lock().unwrap().is_correct_song(guess)
     }
 
-    pub fn get_leaderboard(&self) -> HashMap<String, u32> {
+    pub fn get_leaderboard(&self) -> HashMap<Uuid, u32> {
         let state = self.state.lock().unwrap();
         state.scores.clone()
     }
 
-    pub fn increment_player_score(&self, player_id: &str, points: u32) {
+    pub fn increment_player_score(&self, player_id: &Uuid, points: u32) {
         self.state
             .lock()
             .unwrap()
@@ -167,7 +177,7 @@ impl GuessTheSongGameSettings {
 /// State
 /// ===============================================
 pub(crate) struct GuessTheSongGameState {
-    pub scores: HashMap<String, u32>,
+    pub scores: HashMap<Uuid, u32>,
     pub songs: Vec<SongState>,
     pub song_index: usize,
     pub round_start_time: Option<u64>,
@@ -249,7 +259,7 @@ impl GuessTheSongGameState {
         None
     }
 
-    pub fn increment_player_score(&mut self, player_id: &str, points: u32) {
+    pub fn increment_player_score(&mut self, player_id: &Uuid, points: u32) {
         if let Some(score) = self.scores.get_mut(player_id) {
             *score += points;
         }
@@ -263,25 +273,25 @@ impl GuessTheSongGameState {
 #[serde(tag = "event", content = "data")]
 pub(crate) enum GuessTheSongServerEvent {
     SyncState {
-        players: Vec<(String, String, bool)>,
+        players: Vec<(Uuid, String, bool)>,
         settings: GuessTheSongGameSettings,
-        leaderboard: HashMap<String, u32>,
+        leaderboard: HashMap<Uuid, u32>,
         preview_url: Option<String>,
         status: LobbyStatus,
         round_start_time: Option<u64>,
     },
     PlayerJoin {
-        player_id: String,
+        player_id: Uuid,
         player_username: String,
     },
     PlayerReady {
-        player_id: String,
+        player_id: Uuid,
     },
     PlayerUnready {
-        player_id: String,
+        player_id: Uuid,
     },
     PlayerLeave {
-        player_id: String,
+        player_id: Uuid,
     },
     AllReady,
     GameStart,
@@ -295,7 +305,7 @@ pub(crate) enum GuessTheSongServerEvent {
     RoundEnd {
         correct_title: String,
         correct_artists: Vec<String>,
-        leaderboard: HashMap<String, u32>,
+        leaderboard: HashMap<Uuid, u32>,
     },
     GameEnd,
     PlayerGuess {
@@ -303,7 +313,7 @@ pub(crate) enum GuessTheSongServerEvent {
         content: String,
     },
     CorrectGuess {
-        player_id: String,
+        player_id: Uuid,
         msg: String,
     },
     JoinError {
@@ -322,7 +332,6 @@ pub(crate) enum GuessTheSongServerEvent {
 pub(crate) enum GuessTheSongUserEvent {
     Join {
         lobby_code: String,
-        user_id: String,
         username: String,
     },
     Ready,

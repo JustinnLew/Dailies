@@ -21,6 +21,7 @@ use tokio::{
     time::{Duration, sleep},
 };
 use tracing::{Instrument, info, instrument, warn};
+use uuid::Uuid;
 pub mod api;
 
 #[derive(serde::Serialize)]
@@ -29,7 +30,7 @@ struct CreateLobbyResponse {
 }
 struct GuessTheSongConnectionGuard {
     game: Arc<GuessTheSongGame>,
-    player_id: String,
+    player_id: Uuid,
     broadcast: broadcast::Sender<GuessTheSongServerEvent>,
     cleanup_tx: mpsc::UnboundedSender<String>,
 }
@@ -99,12 +100,11 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
     };
 
     // 2. Use Pattern Matching to extract the fields from the Join variant
-    let (lobby_code, player_id, player_username) = match event {
+    let (lobby_code, player_username) = match event {
         GuessTheSongUserEvent::Join {
             lobby_code,
-            user_id,
             username,
-        } => (lobby_code, user_id, username),
+        } => (lobby_code, username),
         _ => {
             info!("JOIN ERROR");
             let _ = sender
@@ -119,12 +119,6 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             return;
         }
     };
-
-    let connection_span = tracing::info_span!(
-        "connection",
-        lobby=%lobby_code,
-        player=%player_id,
-    );
 
     let game_obj = match state.games.guess_the_song.get(&lobby_code) {
         Some(g) => g.clone(),
@@ -142,6 +136,14 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             return;
         }
     };
+
+    let player_id = game_obj.get_new_player_id();
+
+    let connection_span = tracing::info_span!(
+        "connection",
+        lobby=%lobby_code,
+        player=%player_id,
+    );
 
     match game_obj.player_join(player_id.clone(), player_username.clone()) {
         Ok(_) => {
@@ -220,6 +222,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
             while let Some(Ok(msg)) = receiver.next().await {
                 match msg {
                     Message::Text(req) => {
+                        println!("{:?}", req);
                         let req: GuessTheSongUserEvent = match serde_json::from_str(&req) {
                             Ok(r) => r,
                             Err(e) => {
@@ -248,8 +251,12 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                     let spotify_client = state.spotify_client.clone();
                                     let player_id_c = player_id.clone();
                                     tokio::spawn(async move {
-                                        let res =  api::load_songs(&spotify_client, &playlist_link, l.clone())
-                                            .await;
+                                        let res = api::load_songs(
+                                            &spotify_client,
+                                            &playlist_link,
+                                            l.clone(),
+                                        )
+                                        .await;
                                         match res {
                                             Ok(_) => {
                                                 l.update_lobby_status(LobbyStatus::Playing);
@@ -262,7 +269,11 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                                         player_id: player_id_c,
                                                     },
                                                 );
-                                                let _ = l.broadcast.send(GuessTheSongServerEvent::PlaylistError { message: msg });
+                                                let _ = l.broadcast.send(
+                                                    GuessTheSongServerEvent::PlaylistError {
+                                                        message: msg,
+                                                    },
+                                                );
                                                 return;
                                             }
                                         }

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
 #[serde(rename_all = "lowercase")]
@@ -13,7 +14,7 @@ pub(crate) enum LobbyStatus {
 
 #[derive(Debug)]
 pub(crate) struct LobbyState {
-    pub players: HashMap<String, (String, bool)>,
+    pub players: HashMap<Uuid, (String, bool)>,
     pub status: LobbyStatus,
 }
 
@@ -30,23 +31,23 @@ impl LobbyState {
         self.players.iter_mut().for_each(|(_, v)| v.1 = false);
     }
 
-    pub fn player_join(&mut self, player_id: String, player_username: String) {
+    pub fn player_join(&mut self, player_id: Uuid, player_username: String) {
         self.players.insert(player_id, (player_username, false));
     }
 
-    pub fn player_ready(&mut self, user_id: &str) {
+    pub fn player_ready(&mut self, user_id: &Uuid) {
         if let Some((_, ready)) = self.players.get_mut(user_id) {
             *ready = true;
         }
     }
 
-    pub fn player_unready(&mut self, user_id: &str) {
+    pub fn player_unready(&mut self, user_id: &Uuid) {
         if let Some((_, ready)) = self.players.get_mut(user_id) {
             *ready = false;
         }
     }
 
-    pub fn get_players(&self) -> Vec<(String, String, bool)> {
+    pub fn get_players(&self) -> Vec<(Uuid, String, bool)> {
         self.players
             .iter()
             .map(|(id, (username, ready))| (id.clone(), username.clone(), *ready))
@@ -57,7 +58,7 @@ impl LobbyState {
         self.players.values().all(|(_, ready)| *ready)
     }
 
-    pub fn player_leave(&mut self, player_id: &str) {
+    pub fn player_leave(&mut self, player_id: &Uuid) {
         self.players.remove(player_id);
     }
 

@@ -1,7 +1,6 @@
 import Modal from "@mui/material/Modal";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUserId } from "../../utils/util";
 
 export default function GTSHomeModal({
   open,
@@ -15,8 +14,6 @@ export default function GTSHomeModal({
   const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();
   const [lobbyCode, setLobbyCode] = useState("");
-  const userId = getUserId();
-  const userName = localStorage.getItem("username");
   const validLobbyCode = () => {
     return lobbyCode.length == 6;
   };
@@ -28,7 +25,6 @@ export default function GTSHomeModal({
         "http://localhost:3000/guess-the-song/create-lobby",
         {
           method: "POST",
-          body: JSON.stringify({ userId, userName }),
         },
       );
       if (!res.ok) {

@@ -33,7 +33,7 @@ pub async fn load_songs(
     spotify_client: &ClientCredsSpotify,
     playlist_link: &str,
     game: Arc<GuessTheSongGame>,
-) -> Result<(), String>{
+) -> Result<(), String> {
     // Extract playlist ID from link
     let playlist_id = playlist_link.split("playlist/").nth(1);
     let playlist_id = match playlist_id {
