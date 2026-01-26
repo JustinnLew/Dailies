@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import AudioPlayer from "./AudioPlayer";
 import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
+import { useNavigate } from "react-router-dom";
 
 export default function Gameplay({
   sendGuess,
@@ -17,6 +18,7 @@ export default function Gameplay({
   scores: Map<string, number>;
 }) {
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
 
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -122,10 +124,22 @@ export default function Gameplay({
         </div>
 
         <div className="flex-1 border-neon-pink border-4 p-6 flex items-center justify-start text-2xl font-semibold text-center">
-          <div className="flex-1 h-full border-2 border-white flex items-center">
+          <div className="flex-1 h-full flex items-center">
             <AudioPlayer songState={songState} />
           </div>
-          <div className="flex-10 border-2 border-white h-full"></div>
+          <div className="flex-10 flex flex-col h-full">
+              <div className="flex-1">
+                {/* Insert audio visualizer */}
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => navigate("/")}
+                  className="px-6 py-2 text-sm text-white font-bold border-red-500 border-4 cursor-pointer"
+                >
+                  Exit
+                </button>
+              </div>
+          </div>
         </div>
       </div>
     </div>
