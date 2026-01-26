@@ -30,7 +30,11 @@ export default function ErrorSnackbar({
     } else {
       setOpen(false);
     }
-  }, [error]);
+
+    return () => {
+      setError("");
+    }
+  }, [error, setError]);
 
   const handleExited = () => {
     setError("");
