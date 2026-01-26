@@ -69,7 +69,7 @@ export default function Game() {
       );
     };
     s.onclose = () => {
-      // navigate('/');
+      navigate('/');
     };
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
@@ -186,7 +186,7 @@ export default function Game() {
     };
     return () => {
       s.close();
-      // navigate('/');
+      navigate('/');
     };
   }, [params.lobbyCode, navigate, username]);
 
