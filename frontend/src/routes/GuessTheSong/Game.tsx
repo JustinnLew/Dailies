@@ -73,7 +73,6 @@ export default function Game() {
     };
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log(msg);
       switch (msg.event) {
         case "SyncState":
           setPlayers(
