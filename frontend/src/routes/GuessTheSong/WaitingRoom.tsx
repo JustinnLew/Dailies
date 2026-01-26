@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import CopyIcon from "../../icons/CopyIcon";
 import type { Player, GuessTheSongGameSettings } from "../../utils/types";
-import { useEffect } from "react";
+import { type Dispatch, type SetStateAction } from "react";
+import ErrorSnackbar from "../../components/ErrorSnackbar";
 
 export default function Waiting({
   lobbyCode,
@@ -10,13 +11,15 @@ export default function Waiting({
   gameSettings,
   updateGameSettings,
   error,
+  setError,
 }: {
   lobbyCode: string;
   ready: () => void;
   players: Map<string, Player>;
   gameSettings: GuessTheSongGameSettings;
   updateGameSettings: (settings: GuessTheSongGameSettings) => void;
-  error?: String;
+  error: string;
+  setError: Dispatch<SetStateAction<string>>;
 }) {
   const isValidSpotifyLink = (link: string) =>
     /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
@@ -189,21 +192,6 @@ export default function Waiting({
               }
             />
           </div>
-          <div className="mt-4">
-            <label className="block mb-1 text-sm">Spotify Playlist Link:</label>
-            <input
-              type="text"
-              placeholder="https://open.spotify.com/playlist/..."
-              className="w-full border rounded p-2 font-vt323 text-xl"
-              value={gameSettings.playlistLink}
-              onChange={(e) =>
-                updateGameSettings({
-                  ...gameSettings,
-                  playlistLink: e.target.value,
-                })
-              }
-            />
-          </div>
         </div>
 
         {/* Start Game button at bottom-right */}
@@ -228,7 +216,7 @@ export default function Waiting({
             Ready
           </button>
         </div>
-        {/* TODO PUT SOME ERROR MESSAGE POPUP SOMEWHERE */}
+        <ErrorSnackbar error={error} setError={setError}/>
       </div>
     </div>
   );

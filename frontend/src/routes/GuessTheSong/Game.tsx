@@ -18,7 +18,7 @@ export default function Game() {
   const userId = getUserId();
   const username = localStorage.getItem("username") || "PLAYER";
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
-  const [error, setError] = useState<String>();
+  const [error, setError] = useState<string>("");
   const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
     playlistLink: "",
     numSongs: 10,
@@ -217,6 +217,7 @@ export default function Game() {
         gameSettings={gameSettings}
         updateGameSettings={updateGameSettings}
         error={error}
+        setError={setError}
       />
     );
   }
