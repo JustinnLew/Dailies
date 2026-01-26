@@ -62,14 +62,14 @@ export default function ErrorSnackbar({
       style={style || {}}
     >
       <div
-        className="max-w-4/5 text-end bg-black font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-xs sm:text-sm md:text-lg"
+        className="sm:ml-4 text-end bg-black font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-xs sm:text-sm md:text-lg"
         style={{
           clipPath:
             "polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px))",
         }}
       >
-        <span className="animate-pulse">&gt;</span>
-        <p>{error}</p>
+        <span>&gt;</span>
+        <p className="animate-static-noise">{error}</p>
         <button
           onClick={handleClose}
           className="ml-4 hover:text-white cursor-pointer"
