@@ -47,7 +47,7 @@ export default function AudioPlayer({
       const offset = Math.max(0, nowInSecs - songState.roundStartTime);
 
       audio.currentTime = offset;
-      audio.volume = volume; 
+      audio.volume = volume;
       audio.play().catch((err) => console.warn("Playback blocked:", err));
     };
 
@@ -84,7 +84,9 @@ export default function AudioPlayer({
           transform: "rotate(180deg)",
         }}
       />
-      <span className="text-xs w-12 text-center">{Math.round(volume * 100)}%</span>
+      <span className="text-xs w-12 text-center">
+        {Math.round(volume * 100)}%
+      </span>
     </div>
   );
 }

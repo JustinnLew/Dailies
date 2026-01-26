@@ -6,11 +6,11 @@ import { getUserId } from "../../utils/util";
 export default function GTSHomeModal({
   open,
   onClose,
-  setErrorMessage,
+  setError,
 }: {
   open: boolean;
   onClose: () => void;
-  setErrorMessage: Dispatch<SetStateAction<string>>;
+  setError: Dispatch<SetStateAction<string>>;
 }) {
   const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();
@@ -39,9 +39,9 @@ export default function GTSHomeModal({
       navigate(`/guess-the-song/${data.lobby_code}`);
     } catch (error: any) {
       if (connectionError) {
-        setErrorMessage("Failed to connect to server");
+        setError("Failed to connect to server");
       } else {
-        setErrorMessage(error.message);
+        setError(error.message);
       }
     }
     setcreateDisabled(false);

@@ -18,6 +18,7 @@ export default function Game() {
   const userId = getUserId();
   const username = localStorage.getItem("username") || "PLAYER";
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
+  const [error, setError] = useState<String>();
   const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
     playlistLink: "",
     numSongs: 10,
@@ -177,6 +178,10 @@ export default function Game() {
         case "JoinError":
           navigate("/", { state: { error: msg.data.message } });
           break;
+        case "PlaylistError":
+          setGameState("waiting");
+          setError(msg.data.message);
+          break;
         default:
           break;
       }
@@ -211,6 +216,7 @@ export default function Game() {
         players={players}
         gameSettings={gameSettings}
         updateGameSettings={updateGameSettings}
+        error={error}
       />
     );
   }

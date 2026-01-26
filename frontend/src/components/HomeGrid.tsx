@@ -5,9 +5,9 @@ import GTSHomeModal from "./modals/GTSHomeModal";
 import type { Dispatch, SetStateAction } from "react";
 
 export default function HomeGrid({
-  setErrorMessage,
+  setError,
 }: {
-  setErrorMessage: Dispatch<SetStateAction<string>>;
+  setError: Dispatch<SetStateAction<string>>;
 }) {
   const modes = [
     {
@@ -19,7 +19,7 @@ export default function HomeGrid({
         <GTSHomeModal
           open={open}
           onClose={onClose}
-          setErrorMessage={setErrorMessage}
+          setError={setError}
         />
       ),
     },
