@@ -16,11 +16,7 @@ export default function HomeGrid({
         "Test your music knowledge by guessing songs from short clips.",
       icon: <GTSIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
-        <GTSHomeModal
-          open={open}
-          onClose={onClose}
-          setError={setError}
-        />
+        <GTSHomeModal open={open} onClose={onClose} setError={setError} />
       ),
     },
     {

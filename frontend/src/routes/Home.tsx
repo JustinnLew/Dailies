@@ -18,7 +18,7 @@ export default function Home() {
     <div className="flex flex-col items-center h-screen scanlines bg-black">
       <NavBar />
       <HomeGrid setError={setError} />
-      <ErrorSnackbar error={error} setError={setError}/>
+      <ErrorSnackbar error={error} setError={setError} />
     </div>
   );
 }

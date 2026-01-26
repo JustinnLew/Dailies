@@ -1,22 +1,36 @@
-import Snackbar, { type SnackbarCloseReason } from "@mui/material/Snackbar";
-import { useEffect, useState, type Dispatch, type SetStateAction, type SyntheticEvent } from "react";
+import Snackbar, {
+  type SnackbarCloseReason,
+  type SnackbarOrigin,
+} from "@mui/material/Snackbar";
+import {
+  useEffect,
+  useState,
+  type CSSProperties,
+  type Dispatch,
+  type SetStateAction,
+  type SyntheticEvent,
+} from "react";
 
 export default function ErrorSnackbar({
-    error,
-    setError,
+  error,
+  setError,
+  anchorOrigin,
+  style,
 }: {
-    error: string,
-    setError: Dispatch<SetStateAction<string>>,
+  error: string;
+  setError: Dispatch<SetStateAction<string>>;
+  anchorOrigin?: SnackbarOrigin;
+  style?: CSSProperties;
 }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (error !== "") {
-        setOpen(true);
+      setOpen(true);
     } else {
-        setOpen(false);
+      setOpen(false);
     }
-  }, [error])
+  }, [error]);
 
   const handleExited = () => {
     setError("");
@@ -35,11 +49,8 @@ export default function ErrorSnackbar({
 
   return (
     <Snackbar
-        key={error}
-      anchorOrigin={{
-        vertical: "bottom",
-        horizontal: "right",
-      }}
+      key={error}
+      anchorOrigin={anchorOrigin || { vertical: "bottom", horizontal: "right" }}
       autoHideDuration={10000}
       onClose={handleClose}
       open={open}
@@ -48,16 +59,17 @@ export default function ErrorSnackbar({
           onExited: handleExited,
         },
       }}
+      style={style || {}}
     >
       <div
-        className="font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-lg"
+        className="max-w-4/5 text-end bg-black font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-md"
         style={{
           clipPath:
             "polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px))",
         }}
       >
         <span className="animate-pulse">&gt;</span>
-        {error}
+        <p>{error}</p>
         <button
           onClick={handleClose}
           className="ml-4 hover:text-white cursor-pointer"

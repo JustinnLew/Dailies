@@ -74,7 +74,7 @@ export default function Waiting({
 
       {/* Right panel: Settings */}
       <div
-        className="flex-1 flex flex-col justify-between text-white p-4 rounded shadow-md
+        className="relative flex-1 flex flex-col justify-between text-white p-4 rounded shadow-md
                       border-4 border-neon-blue overflow-auto custom-scrollbar"
       >
         <div>
@@ -192,10 +192,15 @@ export default function Waiting({
               }
             />
           </div>
+          <ErrorSnackbar
+            style={{ position: "absolute", bottom: "13.5%" }}
+            error={error}
+            setError={setError}
+          />
         </div>
 
         {/* Start Game button at bottom-right */}
-        <div className="flex pt-4 border-t-2">
+        <div className="flex mt-4 pt-4 border-t-2">
           <button
             onClick={() => navigate("/")}
             className="px-6 py-2 text-white font-bold mr-auto border-red-500 border-4 cursor-pointer"
@@ -216,7 +221,6 @@ export default function Waiting({
             Ready
           </button>
         </div>
-        <ErrorSnackbar error={error} setError={setError}/>
       </div>
     </div>
   );
