@@ -62,7 +62,7 @@ export default function ErrorSnackbar({
       style={style || {}}
     >
       <div
-        className="max-w-4/5 text-end bg-black font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-sm md:text-md"
+        className="max-w-4/5 text-end bg-black font-bold scanlines flex gap-3 font-press-start text-red-500 border-white border-2 p-4 text-xs sm:text-sm md:text-lg"
         style={{
           clipPath:
             "polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px))",
