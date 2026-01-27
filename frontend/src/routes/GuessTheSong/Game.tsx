@@ -8,8 +8,8 @@ import type {
   ChatMessage,
   GameState,
 } from "../../utils/types";
-import Connecting from "../../components/Connecting";
-import PreparingPlaylist from "../../components/PreparingPlaylist";
+import Connecting from "../../components/loading/Connecting";
+import PreparingPlaylist from "../../components/loading/PreparingPlaylist";
 import Ending from "./Ending";
 
 export default function Game() {

@@ -1,8 +1,8 @@
-import NavBar from "../components/NavBar.tsx";
+import NavBar from "../../components/NavBar.tsx";
 import HomeGrid from "../components/HomeGrid.tsx";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import ErrorSnackbar from "../components/ErrorSnackbar.tsx";
+import ErrorSnackbar from "../../components/ErrorSnackbar.tsx";
 
 export default function Home() {
   const [error, setError] = useState("");

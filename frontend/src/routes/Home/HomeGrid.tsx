@@ -1,7 +1,7 @@
 import HomeGridCell from "./HomeGridCell";
-import GTSIcon from "../icons/GTSIcon";
-import NotFoundIcon from "../icons/NotFoundIcon";
-import GTSHomeModal from "./modals/GTSHomeModal";
+import GTSIcon from "../../icons/GTSIcon";
+import NotFoundIcon from "../../icons/NotFoundIcon";
+import GTSHomeModal from "../../components/modals/GTSHomeModal";
 import type { Dispatch, SetStateAction } from "react";
 
 export default function HomeGrid({
