@@ -69,9 +69,7 @@ export default function Game() {
         }),
       );
     };
-    s.onclose = () => {
-      navigate("/");
-    };
+    s.onclose = () => {};
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
       switch (msg.event) {
@@ -185,9 +183,11 @@ export default function Game() {
           break;
       }
     };
+    s.onerror = () => {
+      navigate("/", { state: { error: "Failed to connect to server" } });
+    };
     return () => {
       s.close();
-      navigate("/");
     };
   }, [params.lobbyCode, navigate, username]);
 

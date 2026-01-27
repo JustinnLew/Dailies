@@ -131,7 +131,7 @@ export default function Gameplay({
             <AudioVolumeSlider />
           </div>
           <div className="flex-10 flex flex-col h-full gap-6 border-2 border-white">
-            <AudioVisualizer width="100%" height="60%"/>
+            <AudioVisualizer width="100%" height="60%" />
             <div className="flex justify-end">
               <button
                 onClick={() => navigate("/")}
