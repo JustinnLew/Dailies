@@ -9,7 +9,14 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/guess-the-song/:lobbyCode" element={<AudioProvider><GuessTheSong /></AudioProvider>} />
+        <Route
+          path="/guess-the-song/:lobbyCode"
+          element={
+            <AudioProvider>
+              <GuessTheSong />
+            </AudioProvider>
+          }
+        />
       </Routes>
     </>
   );

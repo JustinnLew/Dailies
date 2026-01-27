@@ -1,5 +1,5 @@
 import NavBar from "../../components/NavBar.tsx";
-import HomeGrid from "../components/HomeGrid.tsx";
+import HomeGrid from "./HomeGrid.tsx";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import ErrorSnackbar from "../../components/ErrorSnackbar.tsx";

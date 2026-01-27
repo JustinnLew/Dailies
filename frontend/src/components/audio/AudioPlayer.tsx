@@ -1,4 +1,4 @@
-import { useEffect} from "react";
+import { useEffect } from "react";
 import { useAudio } from "./AudioProvider";
 
 export default function AudioPlayer({
@@ -6,7 +6,7 @@ export default function AudioPlayer({
 }: {
   songState: { previewUrl: string; roundStartTime: number };
 }) {
-  const audio = useAudio();
+  const audio = useAudio().audio;
 
   useEffect(() => {
     if (!audio) return;
@@ -30,10 +30,9 @@ export default function AudioPlayer({
     return () => {
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.pause();
-      audio.src= "";
+      audio.src = "";
     };
   }, [songState.previewUrl, songState.roundStartTime]);
-
 
   return <></>;
 }
