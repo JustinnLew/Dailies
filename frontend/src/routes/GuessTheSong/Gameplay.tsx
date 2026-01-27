@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import AudioPlayer from "./AudioPlayer";
+import AudioPlayer from "../../components/modals/audio/AudioPlayer";
 import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
 import { useNavigate } from "react-router-dom";
+import AudioVolumeSlider from "../../components/modals/audio/AudioVolumeSlider";
 
 export default function Gameplay({
   sendGuess,
@@ -126,19 +127,18 @@ export default function Gameplay({
         <div className="flex-1 border-neon-pink border-4 p-6 flex items-center justify-start text-2xl font-semibold text-center">
           <div className="flex-1 h-full flex items-center">
             <AudioPlayer songState={songState} />
+            <AudioVolumeSlider/>
           </div>
           <div className="flex-10 flex flex-col h-full">
-              <div className="flex-1">
-                {/* Insert audio visualizer */}
-              </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => navigate("/")}
-                  className="px-6 py-2 text-sm text-white font-bold border-red-500 border-4 cursor-pointer"
-                >
-                  Exit
-                </button>
-              </div>
+            <div className="flex-1">{/* Insert audio visualizer */}</div>
+            <div className="flex justify-end">
+              <button
+                onClick={() => navigate("/")}
+                className="px-6 py-2 text-sm text-white font-bold border-red-500 border-4 cursor-pointer"
+              >
+                Exit
+              </button>
+            </div>
           </div>
         </div>
       </div>
