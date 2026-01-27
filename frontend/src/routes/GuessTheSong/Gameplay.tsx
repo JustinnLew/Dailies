@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import AudioPlayer from "../../components/modals/audio/AudioPlayer";
+import AudioPlayer from "../../components/audio/AudioPlayer";
 import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
 import { useNavigate } from "react-router-dom";
-import AudioVolumeSlider from "../../components/modals/audio/AudioVolumeSlider";
+import AudioVolumeSlider from "../../components/audio/AudioVolumeSlider";
 
 export default function Gameplay({
   sendGuess,
