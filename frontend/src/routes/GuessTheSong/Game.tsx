@@ -53,6 +53,7 @@ export default function Game() {
   const resetGame = () => {
     setGameState("waiting");
     setChat([]);
+    setError("");
   };
 
   useEffect(() => {
