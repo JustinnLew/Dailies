@@ -45,7 +45,6 @@ export default function ErrorSnackbar({
     }
 
     setOpen(false);
-    setError("");
   };
 
   return (
