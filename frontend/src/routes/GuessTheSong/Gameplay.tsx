@@ -4,7 +4,7 @@ import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
 import { useNavigate } from "react-router-dom";
 import AudioVolumeSlider from "../../components/audio/AudioVolumeSlider";
-import AudioVisualizer from "../../components/audio/AudioVisualizer";
+// import AudioVisualizer from "../../components/audio/AudioVisualizer";
 
 export default function Gameplay({
   sendGuess,
@@ -130,8 +130,8 @@ export default function Gameplay({
             <AudioPlayer songState={songState} />
             <AudioVolumeSlider />
           </div>
-          <div className="flex-10 flex flex-col h-full gap-6 border-2 border-white">
-            <AudioVisualizer width="100%" height="60%" />
+          <div className="flex-10 flex flex-col h-full gap-6">
+            {/* <AudioVisualizer width="100%" height="100%" /> */}
             <div className="flex justify-end">
               <button
                 onClick={() => navigate("/")}

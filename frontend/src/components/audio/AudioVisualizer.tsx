@@ -13,46 +13,53 @@ export default function AudioVisualizer({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    if (!canvasRef.current || !canvasRef) return;
+    if (!canvasRef.current) return;
     const source = audio.source;
     const analyser = analyserRef.current;
     const canvasCtx = canvasRef.current.getContext("2d");
     if (!canvasCtx) return;
 
     source.connect(analyser);
-    analyser.fftSize = 2048;
+    analyser.fftSize = 128;
+    analyser.smoothingTimeConstant = 0.8;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-
-    canvasCtx.clearRect(
-      0,
-      0,
-      canvasRef.current.height,
-      canvasRef.current.width,
-    );
+    
 
     function draw() {
       if (!canvasCtx || !canvasRef.current) return;
-      const width = canvasRef.current.width;
-      const height = canvasRef.current.height;
+      const WIDTH = canvasRef.current.width;
+      const HEIGHT = canvasRef.current.height;
+      
       requestAnimationFrame(draw);
-      analyser.getByteTimeDomainData(dataArray);
+      canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
+      analyser.getByteFrequencyData(dataArray);
+      const max = Math.max(...dataArray);
+      const min = Math.min(...dataArray);
+      const range = max - min;
 
-      canvasCtx.fillStyle = "rgb(200 200 200)";
-      canvasCtx.fillRect(0, 0, width, height);
-
-      const barWidth = (width / bufferLength) * 2.5;
-      let barHeight;
+      const barWidth = (WIDTH / bufferLength) * 1.5;
       let x = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i] / 2;
+      for (let i = 0; i < dataArray.length; i++) {
+        const v = range > 0 ? (dataArray[i] - min) / range : 0;
+        const barHeight = v * HEIGHT;
+        
+        // Gradient from pink to yellow
+        const gradient = canvasCtx.createLinearGradient(0, HEIGHT - barHeight, 0, HEIGHT);
+        gradient.addColorStop(0, 'oklch(0.85 0.20 90)'); // yellow
+        gradient.addColorStop(0.5, 'oklch(0.60 0.30 240)'); // blue
+        gradient.addColorStop(1, 'oklch(0.55 0.35 340)'); // pink
 
-        canvasCtx.fillStyle = `rgb(${barHeight + 100} 50 50)`;
-        canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight);
+        canvasCtx.fillStyle = gradient;
+        canvasCtx.shadowBlur = 10;
+        canvasCtx.shadowColor = 'oklch(0.55 0.35 340)';
+        canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth - 2, barHeight);
 
-        x += barWidth + 1;
+        x += barWidth;
       }
+    canvasCtx.shadowBlur = 0;
     }
+    
     draw();
   }, [audio]);
 
