@@ -231,6 +231,9 @@ impl GuessTheSongGameState {
     }
 
     pub fn is_correct_artist(&mut self, guess: &str) -> Option<String> {
+        if self.song_index == 0 || self.songs.is_empty() {
+            return None;
+        }
         let guess = guess.trim().to_lowercase();
         for (artist, found) in self.songs[self.song_index - 1].artists.iter_mut() {
             if !*found && artist.trim().to_lowercase() == guess {

@@ -34,7 +34,7 @@ export default function Gameplay({
   }, [chat]);
 
   const sendMessage = () => {
-    if (message === "" || songState.previewUrl === "") return;
+    if (message === "") return;
     sendGuess(message);
     setMessage("");
   };
