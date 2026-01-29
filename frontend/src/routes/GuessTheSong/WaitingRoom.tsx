@@ -6,20 +6,22 @@ import ErrorSnackbar from "../../components/ErrorSnackbar";
 
 export default function Waiting({
   lobbyCode,
-  ready,
+  onReady,
   players,
   gameSettings,
   updateGameSettings,
   error,
   setError,
+  ready,
 }: {
   lobbyCode: string;
-  ready: () => void;
+  onReady: () => void;
   players: Map<string, Player>;
   gameSettings: GuessTheSongGameSettings;
   updateGameSettings: (settings: GuessTheSongGameSettings) => void;
   error: string;
   setError: Dispatch<SetStateAction<string>>;
+  ready: boolean;
 }) {
   const isValidSpotifyLink = (link: string) =>
     /^https:\/\/open\.spotify\.com\/playlist\/[a-zA-Z0-9]+$/.test(link);
@@ -209,16 +211,16 @@ export default function Waiting({
           </button>
           <button
             disabled={!isValidSpotifyLink(gameSettings.playlistLink)}
-            className={`px-6 py-2 text-white font-bold transition-all
+            className={`px-6 py-2 text-white font-bold transition-all cursor-pointer
                             ${
-                              isValidSpotifyLink(gameSettings.playlistLink)
-                                ? "border-green-500 border-4 cursor-pointer"
-                                : "border-red-500 border-4 cursor-not-allowed"
+                              isValidSpotifyLink(gameSettings.playlistLink) && !ready
+                                ? "border-green-500 border-4"
+                                : "border-red-500 border-4"
                             }
                         `}
-            onClick={ready}
+            onClick={onReady}
           >
-            Ready
+            {ready ? "Unready" : "Ready"}
           </button>
         </div>
       </div>

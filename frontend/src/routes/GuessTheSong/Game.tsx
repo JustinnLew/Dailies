@@ -198,7 +198,7 @@ export default function Game() {
     socket.current.send(JSON.stringify({ event: "Guess", content: guess }));
   };
 
-  const ready = () => {
+  const onReady = () => {
     if (playerReady) {
       socket.current.send(JSON.stringify({ event: "Unready" }));
       setPlayerReady(false);
@@ -216,12 +216,13 @@ export default function Game() {
     return (
       <WaitingRoom
         lobbyCode={params.lobbyCode!}
-        ready={ready}
+        onReady={onReady}
         players={players}
         gameSettings={gameSettings}
         updateGameSettings={updateGameSettings}
         error={error}
         setError={setError}
+        ready={playerReady}
       />
     );
   }
