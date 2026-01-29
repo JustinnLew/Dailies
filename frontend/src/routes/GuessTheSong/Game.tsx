@@ -58,6 +58,7 @@ export default function Game() {
     setScores(new Map(
       [...scores.keys()].map(key => [key, 0])
     ));
+    setPlayerReady(false);
   };
 
   useEffect(() => {
