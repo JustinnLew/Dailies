@@ -22,7 +22,7 @@ export default function GTSHomeModal({
     let connectionError = true;
     try {
       const res = await fetch(
-        "http://localhost:3000/guess-the-song/create-lobby",
+        `${import.meta.env.VITE_API_URL}/guess-the-song/create-lobby`,
         {
           method: "POST",
         },

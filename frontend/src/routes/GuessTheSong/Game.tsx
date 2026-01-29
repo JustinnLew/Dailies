@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import WaitingRoom from "./WaitingRoom";
 import Gameplay from "./Gameplay";
+import.meta.env;
 import type {
   Player,
   GuessTheSongGameSettings,
@@ -60,7 +61,7 @@ export default function Game() {
   };
 
   useEffect(() => {
-    const s = new WebSocket(`ws://localhost:3000/ws/guess-the-song`);
+    const s = new WebSocket(`${import.meta.env.VITE_WS_URL}/guess-the-song`);
     socket.current = s;
 
     s.onopen = () => {

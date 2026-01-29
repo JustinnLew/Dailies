@@ -72,7 +72,7 @@ async fn main() {
             "/guess-the-song/create-lobby",
             post(guess_the_song_create_lobby),
         )
-        .route("/ws/{game}", any(handle_ws))
+        .route("/{game}", any(handle_ws))
         .layer(cors)
         .with_state(state);
 
