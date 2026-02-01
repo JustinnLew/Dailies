@@ -78,7 +78,7 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(format!(
         "0.0.0.0:{}",
-        env::var("PORT").expect("env.PORT not set")
+        env::var("PORT").unwrap_or("3000".to_string())
     ))
     .await
     .unwrap();
