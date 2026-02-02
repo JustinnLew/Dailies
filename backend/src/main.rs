@@ -69,10 +69,10 @@ async fn main() {
 
     let app = Router::new()
         .route(
-            "/guess-the-song/create-lobby",
+            "/api/guess-the-song/create-lobby",
             post(guess_the_song_create_lobby),
         )
-        .route("/{game}", any(handle_ws))
+        .route("/api/{game}", any(handle_ws))
         .layer(cors)
         .with_state(state);
 
