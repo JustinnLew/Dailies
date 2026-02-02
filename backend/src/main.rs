@@ -58,15 +58,6 @@ async fn main() {
         }
     });
 
-    let cors = CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
-        .allow_origin(
-            env::var("FRONTEND_URL")
-                .expect("env.FRONTEND_URL not set")
-                .parse::<HeaderValue>()
-                .unwrap(),
-        );
-
     let app = Router::new()
         .route(
             "/api/guess-the-song/create-lobby",
