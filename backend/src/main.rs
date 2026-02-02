@@ -2,7 +2,7 @@ use std::env;
 use std::time::Duration;
 
 use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
-use axum::http::{HeaderValue, Method, StatusCode};
+use axum::http::StatusCode;
 use axum::{
     Router,
     extract::{Path, State, ws::WebSocketUpgrade},
@@ -12,7 +12,6 @@ use axum::{
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
 use tokio::time::interval;
-use tower_http::cors::CorsLayer;
 use tracing::{Instrument, Level, info, instrument};
 
 mod guess_the_song;
