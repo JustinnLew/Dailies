@@ -1,6 +1,7 @@
 import Modal from "@mui/material/Modal";
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../apiConfig";
 
 export default function GTSHomeModal({
   open,
@@ -22,7 +23,7 @@ export default function GTSHomeModal({
     let connectionError = true;
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/guess-the-song/create-lobby`,
+        `${API_URL}/guess-the-song/create-lobby`,
         {
           method: "POST",
         },

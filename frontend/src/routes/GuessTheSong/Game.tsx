@@ -12,6 +12,7 @@ import type {
 import Connecting from "../../components/loading/Connecting";
 import PreparingPlaylist from "../../components/loading/PreparingPlaylist";
 import Ending from "./Ending";
+import { WS_URL } from "../../apiConfig";
 
 export default function Game() {
   const params = useParams();
@@ -62,7 +63,7 @@ export default function Game() {
   };
 
   useEffect(() => {
-    const s = new WebSocket(`${import.meta.env.VITE_WS_URL}/guess-the-song`);
+    const s = new WebSocket(`${WS_URL}/guess-the-song`);
     socket.current = s;
 
     s.onopen = () => {
