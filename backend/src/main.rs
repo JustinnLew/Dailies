@@ -64,7 +64,6 @@ async fn main() {
             post(guess_the_song_create_lobby),
         )
         .route("/api/{game}", any(handle_ws))
-        .layer(cors)
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(format!(
