@@ -47,7 +47,6 @@ async fn main() {
         let mut interval = interval(Duration::from_secs(60));
         loop {
             interval.tick().await;
-            info!("Running Game Scan");
             // WILL NEED TO BE CHANGED FOR FUTURE GAMES
             // PROBABLY USE THE REGISTRY TO MAP FROM ID TO GAME THEN RETAIN
             scan_state
