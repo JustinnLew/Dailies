@@ -12,6 +12,7 @@ use axum::{
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
 use tokio::time::interval;
+use tower_http::cors::{CorsLayer};
 use tracing::{Instrument, Level, info, instrument};
 
 mod guess_the_song;
@@ -62,6 +63,7 @@ async fn main() {
             post(guess_the_song_create_lobby),
         )
         .route("/api/{game}", any(handle_ws))
+        .layer(CorsLayer::very_permissive())
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(format!(

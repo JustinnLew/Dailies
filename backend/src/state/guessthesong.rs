@@ -2,6 +2,7 @@ use std::{collections::HashMap, sync::Mutex};
 
 use serde::{Deserialize, Serialize};
 use tokio::sync::broadcast;
+use strsim::damerau_levenshtein;
 use uuid::Uuid;
 
 use crate::state::{LobbyState, LobbyStatus};
@@ -236,7 +237,7 @@ impl GuessTheSongGameState {
         }
         let guess = guess.trim().to_lowercase();
         for (artist, found) in self.songs[self.song_index - 1].artists.iter_mut() {
-            if !*found && artist.trim().to_lowercase() == guess {
+            if !*found && damerau_levenshtein(&artist.trim().to_lowercase(), &guess) <= 1{
                 *found = true;
                 return Some(artist.clone());
             }
@@ -249,12 +250,11 @@ impl GuessTheSongGameState {
             return None;
         }
         if !self.songs[self.song_index - 1].title.1
-            && self.songs[self.song_index - 1]
+            && damerau_levenshtein(&self.songs[self.song_index - 1]
                 .title
                 .0
                 .trim()
-                .to_lowercase()
-                == guess.trim().to_lowercase()
+                .to_lowercase(), &guess.trim().to_lowercase()) <= 1
         {
             self.songs[self.song_index - 1].title.1 = true;
             return Some(self.songs[self.song_index - 1].title.0.clone());
