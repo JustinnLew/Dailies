@@ -303,23 +303,32 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             GuessTheSongUserEvent::Guess { content } => {
                                 info!(guess=%content, "GUESS:");
                                 let cur_guess_time_stamp = Instant::now();
-                                if cur_guess_time_stamp.duration_since(prev_guess_time_stamp).as_secs() < game_obj.get_settings().answer_delay_seconds {
-                                    let _ =
-                                        game_obj
-                                        .broadcast
-                                        .send(GuessTheSongServerEvent::PlayerGuess {
+                                let duration_since_last_guess = cur_guess_time_stamp
+                                    .duration_since(prev_guess_time_stamp)
+                                    .as_secs_f64();
+                                if duration_since_last_guess
+                                    < game_obj.get_settings().answer_delay_seconds as f64
+                                {
+                                    let _ = game_obj.broadcast.send(
+                                        GuessTheSongServerEvent::PlayerGuess {
                                             username: "ERROR".to_string(),
-                                            content: content.clone(),
-                                        });
+                                            content: format!(
+                                                "{} - {:.2}s: {}",
+                                                player_username.clone(),
+                                                game_obj.get_settings().answer_delay_seconds as f64
+                                                    - duration_since_last_guess,
+                                                content.clone()
+                                            ),
+                                        },
+                                    );
                                     continue;
                                 } else {
-                                    let _ =
-                                        game_obj
-                                        .broadcast
-                                        .send(GuessTheSongServerEvent::PlayerGuess {
+                                    let _ = game_obj.broadcast.send(
+                                        GuessTheSongServerEvent::PlayerGuess {
                                             username: player_username.clone(),
                                             content: content.clone(),
-                                        });
+                                        },
+                                    );
                                 }
                                 prev_guess_time_stamp = cur_guess_time_stamp;
                                 if let Some(s) = game_obj.is_correct_song(&content) {
