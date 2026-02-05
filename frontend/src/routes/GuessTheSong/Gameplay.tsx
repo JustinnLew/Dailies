@@ -50,22 +50,26 @@ export default function Gameplay({
           <div className="flex-1 overflow-y-auto space-y-1 mb-3 pr-2 custom-scrollbar">
             {chat.map((c, i) => {
               const isSystem = c.user === "";
+              const isError = c.user === "ERROR";
 
               return (
                 <div
                   key={i}
                   className={`text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
                     isSystem ? "bg-neon-green/50 my-2" : ""
+                  } ${
+                    isError ? "bg-red-500/50 my-2" : ""
                   } min-w-0 wrap-anywhere`}
                 >
                   <span
                     className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
                   >
                     {isSystem ? "🎵" : ""}
-                    {c.user}
+                    {isError ? "🕒" : ""}
+                    {!isError && !isSystem ? c.user : ""}
                   </span>
                   <span className={"ml-1"}>
-                    {isSystem ? "" : ": "}
+                    {isSystem || isError ? "" : ": "}
                     {c.message}
                   </span>
                 </div>
