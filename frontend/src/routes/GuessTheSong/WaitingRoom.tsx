@@ -132,12 +132,11 @@ export default function Waiting({
 
             {/* Answer Delay */}
             <div className="mb-2">
-              <label className="text-gray-700 block mb-1 font-medium text-sm">
+              <label className="block mb-1 font-medium text-sm">
                 Answer Delay (s):
               </label>
               <select
-                disabled={true}
-                className="w-full border text-gray-700 border-gray-700 rounded mt-2 p-2 cursor-pointer bg-black text-sm"
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
                 value={gameSettings.answerDelaySeconds}
                 onChange={(e) =>
                   updateGameSettings({
@@ -146,7 +145,7 @@ export default function Waiting({
                   })
                 }
               >
-                {[0, 1, 2, 3].map((val) => (
+                {[0, 1, 3, 5].map((val) => (
                   <option key={val} value={val}>
                     {val}s
                   </option>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import PencilIcon from "../icons/PencilIcon";
+import { reservedUsernames } from "../utils/types";
 
 export default function NavBar() {
   const [username, setUsername] = useState("");
@@ -11,9 +12,13 @@ export default function NavBar() {
 
   const handleNameChange = (event: React.FormEvent<HTMLDivElement>) => {
     const newName = event.currentTarget.innerText.trim();
-    if (newName) {
+    const savedName = localStorage.getItem("username") || "PLAYER"
+    if (newName && !reservedUsernames.includes(newName)) {
       setUsername(newName);
       localStorage.setItem("username", newName);
+    } else {
+      event.currentTarget.innerText = savedName;
+      setUsername(savedName);
     }
   };
 
@@ -24,7 +29,6 @@ export default function NavBar() {
     }
     if (event.key === "Escape") {
       event.preventDefault();
-      event.currentTarget.innerText = username;
       event.currentTarget.blur();
     }
   };
