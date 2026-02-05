@@ -330,7 +330,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                         },
                                     );
                                 }
-                                prev_guess_time_stamp = cur_guess_time_stamp;
+                                let mut correct = false;
                                 if let Some(s) = game_obj.is_correct_song(&content) {
                                     game_obj.increment_player_score(&player_id, 2);
                                     info!(guess=%content, "CORRECT SONG:");
@@ -343,6 +343,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                             ),
                                         },
                                     );
+                                    correct = true;
                                 }
                                 if let Some(a) = game_obj.is_correct_artist(&content) {
                                     game_obj.increment_player_score(&player_id, 2);
@@ -353,9 +354,13 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                                         msg: format!(
                                             "{} guessed the artist correctly! The artist was '{}'.",
                                             player_username, a
-                                        ),
-                                    },
-                                );
+                                            ),
+                                        },
+                                    );
+                                    correct = true;
+                                }
+                                if !correct {
+                                    prev_guess_time_stamp = cur_guess_time_stamp;
                                 }
                             }
                             _ => {
