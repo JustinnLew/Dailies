@@ -52,7 +52,6 @@ export default function NavBar() {
           style={{
             minWidth: "100px",
             maxWidth: "300px",
-            caretShape: "underscore",
           }}
         >
           {username}
