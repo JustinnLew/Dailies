@@ -18,7 +18,7 @@ use axum::{
 use futures_util::{SinkExt, stream::StreamExt};
 use tokio::{
     sync::{broadcast, mpsc},
-    time::{Duration, sleep},
+    time::{Duration, Instant, sleep},
 };
 use tracing::{Instrument, info, instrument, warn};
 use uuid::Uuid;
@@ -217,6 +217,7 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
         });
 
     //  Create the recv_task
+    let mut prev_guess_time_stamp = Instant::now();
     let mut recv_task = tokio::spawn(
         async move {
             while let Some(Ok(msg)) = receiver.next().await {
@@ -301,13 +302,26 @@ pub async fn handle_guess_the_song(socket: WebSocket, state: AppState) {
                             }
                             GuessTheSongUserEvent::Guess { content } => {
                                 info!(guess=%content, "GUESS:");
-                                let _ =
-                                    game_obj
+                                let cur_guess_time_stamp = Instant::now();
+                                if cur_guess_time_stamp.duration_since(prev_guess_time_stamp).as_secs() < game_obj.get_settings().answer_delay_seconds {
+                                    let _ =
+                                        game_obj
+                                        .broadcast
+                                        .send(GuessTheSongServerEvent::PlayerGuess {
+                                            username: "ERROR".to_string(),
+                                            content: content.clone(),
+                                        });
+                                    continue;
+                                } else {
+                                    let _ =
+                                        game_obj
                                         .broadcast
                                         .send(GuessTheSongServerEvent::PlayerGuess {
                                             username: player_username.clone(),
                                             content: content.clone(),
                                         });
+                                }
+                                prev_guess_time_stamp = cur_guess_time_stamp;
                                 if let Some(s) = game_obj.is_correct_song(&content) {
                                     game_obj.increment_player_score(&player_id, 2);
                                     info!(guess=%content, "CORRECT SONG:");
