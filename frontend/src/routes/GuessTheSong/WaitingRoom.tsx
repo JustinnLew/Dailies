@@ -212,7 +212,8 @@ export default function Waiting({
             disabled={!isValidSpotifyLink(gameSettings.playlistLink)}
             className={`px-6 py-2 text-white font-bold transition-all cursor-pointer
                             ${
-                              isValidSpotifyLink(gameSettings.playlistLink) && !ready
+                              isValidSpotifyLink(gameSettings.playlistLink) &&
+                              !ready
                                 ? "border-green-500 border-4"
                                 : "border-red-500 border-4"
                             }

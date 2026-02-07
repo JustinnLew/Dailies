@@ -24,6 +24,6 @@ type ChatMessage = {
 
 type GameState = "playing" | "waiting" | "connecting" | "loading" | "finished";
 
-export const reservedUsernames = ["SYSTEM" , "ERROR"]
+export const reservedUsernames = ["SYSTEM", "ERROR"];
 
 export type { Player, GameState, GuessTheSongGameSettings, Song, ChatMessage };

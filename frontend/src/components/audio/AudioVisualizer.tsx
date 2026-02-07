@@ -24,13 +24,12 @@ export default function AudioVisualizer({
     analyser.smoothingTimeConstant = 0.8;
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    
 
     function draw() {
       if (!canvasCtx || !canvasRef.current) return;
       const WIDTH = canvasRef.current.width;
       const HEIGHT = canvasRef.current.height;
-      
+
       requestAnimationFrame(draw);
       canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
       analyser.getByteFrequencyData(dataArray);
@@ -43,23 +42,28 @@ export default function AudioVisualizer({
       for (let i = 0; i < dataArray.length; i++) {
         const v = range > 0 ? (dataArray[i] - min) / range : 0;
         const barHeight = v * HEIGHT;
-        
+
         // Gradient from pink to yellow
-        const gradient = canvasCtx.createLinearGradient(0, HEIGHT - barHeight, 0, HEIGHT);
-        gradient.addColorStop(0, 'oklch(0.85 0.20 90)'); // yellow
-        gradient.addColorStop(0.5, 'oklch(0.60 0.30 240)'); // blue
-        gradient.addColorStop(1, 'oklch(0.55 0.35 340)'); // pink
+        const gradient = canvasCtx.createLinearGradient(
+          0,
+          HEIGHT - barHeight,
+          0,
+          HEIGHT,
+        );
+        gradient.addColorStop(0, "oklch(0.85 0.20 90)"); // yellow
+        gradient.addColorStop(0.5, "oklch(0.60 0.30 240)"); // blue
+        gradient.addColorStop(1, "oklch(0.55 0.35 340)"); // pink
 
         canvasCtx.fillStyle = gradient;
         canvasCtx.shadowBlur = 10;
-        canvasCtx.shadowColor = 'oklch(0.55 0.35 340)';
+        canvasCtx.shadowColor = "oklch(0.55 0.35 340)";
         canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth - 2, barHeight);
 
         x += barWidth;
       }
-    canvasCtx.shadowBlur = 0;
+      canvasCtx.shadowBlur = 0;
     }
-    
+
     draw();
   }, [audio]);
 

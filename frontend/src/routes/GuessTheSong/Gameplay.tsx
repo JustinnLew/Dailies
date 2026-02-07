@@ -4,6 +4,7 @@ import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
 import { useNavigate } from "react-router-dom";
 import AudioVolumeSlider from "../../components/audio/AudioVolumeSlider";
+import { AnimatePresence, motion } from "motion/react";
 // import AudioVisualizer from "../../components/audio/AudioVisualizer";
 
 export default function Gameplay({
@@ -105,27 +106,39 @@ export default function Gameplay({
             Leaderboard
           </h2>
           <ul className="space-y-2 overflow-y-auto custom-scrollbar">
-            {Array.from(players.entries())
-              .map(([id, player]) => ({
-                id,
-                username: player.username,
-                score: scores.get(id) || 0,
-              }))
-              .sort((a, b) => b.score - a.score)
-              .map((player, i) => (
-                <li
-                  key={player.id}
-                  className="w-full text-xs md:text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
-                >
-                  <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
-                    <span className="text-neon-yellow w-6">#{i + 1}</span>
-                    <span className="flex-1 truncate">{player.username}</span>
-                  </div>
-                  <span className="text-emerald-400 font-bold">
-                    {player.score}
-                  </span>
-                </li>
-              ))}
+            <AnimatePresence>
+              {Array.from(players.entries())
+                .map(([id, player]) => ({
+                  id,
+                  username: player.username,
+                  score: scores.get(id) || 0,
+                }))
+                .sort((a, b) => b.score - a.score)
+                .map((player, i) => (
+                  <motion.li
+                    layout
+                    key={player.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                      opacity: { duration: 0.2 },
+                    }}
+                    className="w-full text-xs md:text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700 bg-black/20"
+                  >
+                    <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
+                      <span className="text-neon-yellow w-6">#{i + 1}</span>
+                      <span className="flex-1 truncate">{player.username}</span>
+                    </div>
+                    <span className="text-emerald-400 font-bold">
+                      {player.score}
+                    </span>
+                  </motion.li>
+                ))}
+            </AnimatePresence>
           </ul>
         </div>
 

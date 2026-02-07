@@ -56,9 +56,7 @@ export default function Game() {
     setGameState("waiting");
     setChat([]);
     setError("");
-    setScores(new Map(
-      [...scores.keys()].map(key => [key, 0])
-    ));
+    setScores(new Map([...scores.keys()].map((key) => [key, 0])));
     setPlayerReady(false);
   };
 

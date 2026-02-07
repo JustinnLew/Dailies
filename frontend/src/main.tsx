@@ -6,10 +6,10 @@ import { StyledEngineProvider } from "@mui/material/styles";
 import GlobalStyles from "@mui/material/GlobalStyles";
 
 createRoot(document.getElementById("root")!).render(
-    <StyledEngineProvider enableCssLayer>
-      <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </StyledEngineProvider>
+  <StyledEngineProvider enableCssLayer>
+    <GlobalStyles styles="@layer theme, base, mui, components, utilities;" />
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </StyledEngineProvider>,
 );

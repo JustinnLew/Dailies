@@ -8,7 +8,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (location.state?.error) {
       setError(location.state.error);
@@ -17,7 +17,7 @@ export default function Home() {
 
   useEffect(() => {
     navigate({}, { replace: true });
-  }, [navigate])
+  }, [navigate]);
 
   return (
     <div className="flex flex-col items-center h-screen scanlines bg-black">
