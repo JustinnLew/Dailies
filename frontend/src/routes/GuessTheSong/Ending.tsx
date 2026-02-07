@@ -3,6 +3,7 @@ import type { Player } from "../../utils/types";
 import Crown from "../../icons/CrownIcon";
 import Trophy from "../../icons/Trophy";
 import { useState } from "react";
+import { motion } from "motion/react";
 
 export default function Ending({
   resetGame,
@@ -118,8 +119,12 @@ export default function Ending({
           </h3>
           <div className="space-y-2">
             {leaderboard.map((player, i) => (
-              <div
-                key={i}
+              <motion.div
+                key={player.id}
+                initial={{ x: -50, opacity: 0 }}
+                whileInView={{ x: 0, opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
                 className={`font-vt323 text-2xl flex items-center gap-4 p-3 ${i < 3 ? "bg-neon-pink/20" : "bg-neon-card"}
                             border-2 ${i < 3 ? "border-neon-pink" : "border-neon-blue"}`}
               >
@@ -132,7 +137,7 @@ export default function Ending({
                 <div className="text-right text-neon-yellow">
                   {player.score} pts
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
