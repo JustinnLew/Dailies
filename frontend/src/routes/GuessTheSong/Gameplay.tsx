@@ -54,26 +54,50 @@ export default function Gameplay({
               const isError = c.user === "ERROR";
 
               return (
-                <div
+                <motion.div
                   key={i}
-                  className={`text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
-                    isSystem ? "bg-neon-green/50 my-2" : ""
+                  initial={{ opacity: 0, y: 3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`relative overflow-hidden text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
+                    isSystem
+                      ? "bg-neon-green/50 my-2 border border-neon-green/30"
+                      : ""
                   } ${
                     isError ? "bg-red-500/50 my-2" : ""
                   } min-w-0 wrap-anywhere`}
                 >
-                  <span
-                    className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
-                  >
-                    {isSystem ? "🎵" : ""}
-                    {isError ? "🕒" : ""}
-                    {!isError && !isSystem ? c.user : ""}
-                  </span>
-                  <span className={"ml-1"}>
-                    {isSystem || isError ? "" : ": "}
-                    {c.message}
-                  </span>
-                </div>
+                  {/* Sheen Effect Layer */}
+                  {isSystem && (
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "200%" }}
+                      transition={{
+                        duration: 1.5,
+                        ease: "easeIn",
+                      }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                      }}
+                      className="absolute inset-0 z-0 pointer-events-none"
+                    />
+                  )}
+
+                  {/* Message Content */}
+                  <div className="relative z-10">
+                    <span
+                      className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
+                    >
+                      {isSystem ? "🎵" : ""}
+                      {isError ? "🕒" : ""}
+                      {!isError && !isSystem ? c.user : ""}
+                    </span>
+                    <span className={"ml-1"}>
+                      {isSystem || isError ? "" : ": "}
+                      {c.message}
+                    </span>
+                  </div>
+                </motion.div>
               );
             })}
             {/* Auto-scroll anchor */}
