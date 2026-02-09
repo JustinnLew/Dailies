@@ -182,6 +182,7 @@ export default function Game() {
         case "PlaylistError":
           setGameState("waiting");
           setError(msg.data.message);
+          setPlayerReady(false);
           break;
         default:
           break;
