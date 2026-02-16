@@ -22,12 +22,9 @@ export default function GTSHomeModal({
     setcreateDisabled(true);
     let connectionError = true;
     try {
-      const res = await fetch(
-        `${API_URL}/guess-the-song/create-lobby`,
-        {
-          method: "POST",
-        },
-      );
+      const res = await fetch(`${API_URL}/guess-the-song/create-lobby`, {
+        method: "POST",
+      });
       if (!res.ok) {
         connectionError = false;
         throw new Error("Error creating lobby");

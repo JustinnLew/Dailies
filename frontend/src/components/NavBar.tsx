@@ -12,7 +12,7 @@ export default function NavBar() {
 
   const handleNameChange = (event: React.FormEvent<HTMLDivElement>) => {
     const newName = event.currentTarget.innerText.trim();
-    const savedName = localStorage.getItem("username") || "PLAYER"
+    const savedName = localStorage.getItem("username") || "PLAYER";
     if (newName && !reservedUsernames.includes(newName)) {
       setUsername(newName);
       localStorage.setItem("username", newName);
