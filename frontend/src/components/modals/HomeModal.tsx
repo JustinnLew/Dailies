@@ -122,8 +122,8 @@ export default function HomeModal({
             />
             <button
               disabled={!validLobbyCode()}
-              onClick={() => navigate(`/guess-the-song/${lobbyCode}`)}
-              className={`px-8 py-4 transition-all hover:scale-105 
+              onClick={() => navigate(`/${game_code}]/${lobbyCode}`)}
+              className={`px-8 py-4 transition-all hover:scale-105
                           ${
                             validLobbyCode()
                               ? "border-4 border-green-500 cursor-pointer"
