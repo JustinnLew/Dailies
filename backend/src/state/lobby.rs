@@ -12,6 +12,25 @@ pub(crate) enum LobbyStatus {
     Finished,
 }
 
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub(crate) enum LobbyServerEvent {
+    PlayerJoin { player_id: Uuid, player_username: String },
+    PlayerLeave { player_id: Uuid },
+    PlayerReady { player_id: Uuid },
+    PlayerUnready { player_id: Uuid },
+    UpdateLobbyStatus { new_status: LobbyStatus },
+    JoinError { message: String },
+}
+
+#[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub(crate) enum LobbyUserEvent {
+    Join { lobby_code: String, username: String },
+    Ready,
+    Unready,
+}
+
 #[derive(Debug)]
 pub(crate) struct LobbyState {
     pub players: HashMap<Uuid, (String, bool)>,
@@ -68,5 +87,14 @@ impl LobbyState {
 
     pub fn empty(&self) -> bool {
         self.players.is_empty()
+    }
+
+    pub fn get_new_player_id(&self) -> Uuid {
+        loop {
+            let new_id = Uuid::new_v4();
+            if !self.players.contains_key(&new_id) {
+                return new_id;
+            }
+        }
     }
 }

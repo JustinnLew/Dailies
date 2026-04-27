@@ -1,6 +1,7 @@
 use std::env;
 use std::time::Duration;
 
+use crate::geo_guessr::create_geo_guessr_lobby;
 use crate::{guess_the_song::guess_the_song_create_lobby, state::AppState};
 use axum::http::StatusCode;
 use axum::{
@@ -12,11 +13,13 @@ use axum::{
 use rand::{Rng, distr::Alphanumeric};
 use tokio::sync::mpsc;
 use tokio::time::interval;
-// use tower_http::cors::CorsLayer;
+use tower_http::cors::CorsLayer;
 use tracing::{Instrument, Level, info, instrument};
 
 mod guess_the_song;
+mod geo_guessr;
 mod state;
+mod connections;
 
 #[tokio::main]
 async fn main() {
@@ -62,8 +65,11 @@ async fn main() {
             "/api/guess-the-song/create-lobby",
             post(guess_the_song_create_lobby),
         )
+        .route("/api/geo-guessr/create-lobby",
+        post(create_geo_guessr_lobby),
+        )
         .route("/api/{game}", any(handle_ws))
-        // .layer(CorsLayer::very_permissive())
+        .layer(CorsLayer::very_permissive())
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(format!(
@@ -85,6 +91,9 @@ async fn handle_ws(
     match game.as_str() {
         "guess-the-song" => {
             ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state))
+        }
+        "geo-guessr" => {
+            ws.on_upgrade(move |socket| geo_guessr::handle_geo_guessr(socket, state))
         }
         _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response(),
     }
