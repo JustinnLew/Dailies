@@ -102,7 +102,7 @@ impl GeoGuessr {
                     return;
                 }
                 self.settings.lock().unwrap().update_game_settings(settings.clone());
-                let _ = self.broadcast.send(GeoGuessrServerEvent::GeoGuessrGameEvent(GeoGuessrGameEvent::GameSettingsUpdated {
+                let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameSettingsUpdated {
                     settings
                 }));
             },
@@ -232,7 +232,7 @@ impl GeoGuessrState {
 /// Server Events
 /// ===============================================
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "event", content = "data")]
+#[serde(tag = "event")]
 pub(crate) enum GeoGuessrGameEvent {
     SyncState {
         players: Vec<(Uuid, String, bool)>,
@@ -262,10 +262,10 @@ pub(crate) enum GeoGuessrGameEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "event", content = "data")]
+#[serde(tag = "type", content = "data")]
 pub(crate) enum GeoGuessrServerEvent {
     LobbyEvent(LobbyServerEvent),
-    GeoGuessrGameEvent(GeoGuessrGameEvent),
+    GameEvent(GeoGuessrGameEvent),
 }
 
 /// ===============================================
@@ -284,10 +284,10 @@ pub(crate) enum GeoGuessrUserGameEvent {
 }
 
 #[derive(Deserialize, Debug)]
-#[serde(tag = "event", content = "data")]
+#[serde(tag = "type", content = "data")]
 pub(crate) enum GeoGuesserClientEvent {
     LobbyEvent(LobbyUserEvent),
-    GeoGuessrUserGameEvent(GeoGuessrUserGameEvent),
+    GameEvent(GeoGuessrUserGameEvent),
 }
 /// ===============================================
 /// Helper Structs

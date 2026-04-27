@@ -13,7 +13,7 @@ pub(crate) enum LobbyStatus {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(tag = "event")]
 pub(crate) enum LobbyServerEvent {
     PlayerJoin { player_id: Uuid, player_username: String },
     PlayerLeave { player_id: Uuid },
@@ -24,7 +24,7 @@ pub(crate) enum LobbyServerEvent {
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
-#[serde(rename_all = "camelCase")]
+#[serde(tag = "event")]
 pub(crate) enum LobbyUserEvent {
     Join { lobby_code: String, username: String },
     Ready,

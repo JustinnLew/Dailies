@@ -2,7 +2,7 @@ use axum::{Json, extract::{State, ws::{Message, WebSocket}}, response::IntoRespo
 use futures_util::{SinkExt, StreamExt};
 use tracing::{Instrument, info, instrument, warn};
 
-use crate::{connections::ConnectionGuard, generate_lobby_code, state::{AppState, GuessTheSongServerEvent, LobbyServerEvent, LobbyUserEvent, geoguessr::{GeoGuesserClientEvent, GeoGuessr, GeoGuessrGameEvent, GeoGuessrServerEvent}}};
+use crate::{connections::ConnectionGuard, generate_lobby_code, state::{AppState, LobbyServerEvent, geoguessr::{GeoGuesserClientEvent, GeoGuessr, GeoGuessrGameEvent, GeoGuessrServerEvent}}};
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
@@ -88,7 +88,7 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
     // Extract the gamestate
     let _ = sender
         .send(Message::Text(
-            serde_json::to_string(&GeoGuessrServerEvent::GeoGuessrGameEvent(GeoGuessrGameEvent::SyncState{
+            serde_json::to_string(&GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::SyncState{
                 players: game_obj.get_players(),
                 settings: game_obj.get_settings(),
                 leaderboard: game_obj.get_leaderboard(),
@@ -143,7 +143,7 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
                             GeoGuesserClientEvent::LobbyEvent(e) => {
                                 game_obj.handle_lobby_event(player_id, player_username.clone(), e);
                             }
-                            GeoGuesserClientEvent::GeoGuessrUserGameEvent(e) => {
+                            GeoGuesserClientEvent::GameEvent(e) => {
                                 game_obj.handle_game_event(player_id, player_username.clone(), e);
                             }
                         }
