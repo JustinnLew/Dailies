@@ -3,9 +3,9 @@ use std::sync::Arc;
 use tokio::sync::mpsc;
 
 pub mod games;
+pub mod geoguessr;
 pub mod guessthesong;
 pub mod lobby;
-pub mod geoguessr;
 
 pub(crate) use games::*;
 pub(crate) use guessthesong::*;

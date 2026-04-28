@@ -16,10 +16,10 @@ use tokio::time::interval;
 use tower_http::cors::CorsLayer;
 use tracing::{Instrument, Level, info, instrument};
 
-mod guess_the_song;
-mod geo_guessr;
-mod state;
 mod connections;
+mod geo_guessr;
+mod guess_the_song;
+mod state;
 
 #[tokio::main]
 async fn main() {
@@ -65,8 +65,9 @@ async fn main() {
             "/api/guess-the-song/create-lobby",
             post(guess_the_song_create_lobby),
         )
-        .route("/api/geo-guessr/create-lobby",
-        post(create_geo_guessr_lobby),
+        .route(
+            "/api/geo-guessr/create-lobby",
+            post(create_geo_guessr_lobby),
         )
         .route("/api/{game}", any(handle_ws))
         .layer(CorsLayer::very_permissive())
@@ -92,9 +93,7 @@ async fn handle_ws(
         "guess-the-song" => {
             ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state))
         }
-        "geo-guessr" => {
-            ws.on_upgrade(move |socket| geo_guessr::handle_geo_guessr(socket, state))
-        }
+        "geo-guessr" => ws.on_upgrade(move |socket| geo_guessr::handle_geo_guessr(socket, state)),
         _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response(),
     }
 }

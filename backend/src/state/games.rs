@@ -4,7 +4,9 @@ use dashmap::DashMap;
 use tokio::sync::{Notify, broadcast};
 
 use crate::state::{
-    GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState, geoguessr::{GeoGuessr, GeoGuessrServerEvent, GeoGuessrSettings, GeoGuessrState}, guessthesong::GuessTheSongGameSettings
+    GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState,
+    geoguessr::{GeoGuessr, GeoGuessrServerEvent, GeoGuessrSettings, GeoGuessrState},
+    guessthesong::GuessTheSongGameSettings,
 };
 
 pub(crate) enum GameType {

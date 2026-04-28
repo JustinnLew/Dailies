@@ -15,18 +15,34 @@ pub(crate) enum LobbyStatus {
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
 #[serde(tag = "event")]
 pub(crate) enum LobbyServerEvent {
-    PlayerJoin { player_id: Uuid, player_username: String },
-    PlayerLeave { player_id: Uuid },
-    PlayerReady { player_id: Uuid },
-    PlayerUnready { player_id: Uuid },
-    UpdateLobbyStatus { new_status: LobbyStatus },
-    JoinError { message: String },
+    PlayerJoin {
+        player_id: Uuid,
+        player_username: String,
+    },
+    PlayerLeave {
+        player_id: Uuid,
+    },
+    PlayerReady {
+        player_id: Uuid,
+    },
+    PlayerUnready {
+        player_id: Uuid,
+    },
+    UpdateLobbyStatus {
+        new_status: LobbyStatus,
+    },
+    JoinError {
+        message: String,
+    },
 }
 
 #[derive(Debug, PartialEq, Deserialize, Serialize, Clone)]
 #[serde(tag = "event")]
 pub(crate) enum LobbyUserEvent {
-    Join { lobby_code: String, username: String },
+    Join {
+        lobby_code: String,
+        username: String,
+    },
     Ready,
     Unready,
 }

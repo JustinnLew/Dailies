@@ -1,8 +1,22 @@
-use axum::{Json, extract::{State, ws::{Message, WebSocket}}, response::IntoResponse};
+use axum::{
+    Json,
+    extract::{
+        State,
+        ws::{Message, WebSocket},
+    },
+    response::IntoResponse,
+};
 use futures_util::{SinkExt, StreamExt};
 use tracing::{Instrument, info, instrument, warn};
 
-use crate::{connections::ConnectionGuard, generate_lobby_code, state::{AppState, LobbyServerEvent, geoguessr::{GeoGuesserClientEvent, GeoGuessr, GeoGuessrGameEvent, GeoGuessrServerEvent}}};
+use crate::{
+    connections::ConnectionGuard,
+    generate_lobby_code,
+    state::{
+        AppState, LobbyServerEvent,
+        geoguessr::{GeoGuesserClientEvent, GeoGuessr, GeoGuessrGameEvent, GeoGuessrServerEvent},
+    },
+};
 
 #[derive(serde::Serialize)]
 struct CreateLobbyResponse {
@@ -21,15 +35,18 @@ pub async fn create_geo_guessr_lobby(State(state): State<AppState>) -> impl Into
     state.games.add_geo_guessr_lobby(&lobby_code);
     info!("Added lobby {lobby_code}");
 
-    Json(CreateLobbyResponse { lobby_code: lobby_code })
+    Json(CreateLobbyResponse {
+        lobby_code: lobby_code,
+    })
 }
 
 pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
     let (mut sender, mut receiver) = socket.split();
-    let (lobby_code, player_username) = match GeoGuessr::await_join_req(&mut receiver, &mut sender).await {
-        Ok((lobby_code, player_username)) => (lobby_code, player_username),
-        Err(_) => return,
-    };
+    let (lobby_code, player_username) =
+        match GeoGuessr::await_join_req(&mut receiver, &mut sender).await {
+            Ok((lobby_code, player_username)) => (lobby_code, player_username),
+            Err(_) => return,
+        };
 
     let game_obj = match state.games.geo_guessr.get(&lobby_code) {
         Some(game) => game.clone(),
@@ -37,9 +54,11 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
             info!("Lobby not found: {}", lobby_code);
             let _ = sender
                 .send(Message::Text(
-                    serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::JoinError {
-                        message: "Lobby not found".to_string(),
-                    }))
+                    serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(
+                        LobbyServerEvent::JoinError {
+                            message: "Lobby not found".to_string(),
+                        },
+                    ))
                     .unwrap()
                     .into(),
                 ))
@@ -63,9 +82,11 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
         Err(e) => {
             let _ = sender
                 .send(Message::Text(
-                    serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::JoinError {
-                        message: e.to_string(),
-                    }))
+                    serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(
+                        LobbyServerEvent::JoinError {
+                            message: e.to_string(),
+                        },
+                    ))
                     .unwrap()
                     .into(),
                 ))
@@ -88,12 +109,14 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
     // Extract the gamestate
     let _ = sender
         .send(Message::Text(
-            serde_json::to_string(&GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::SyncState{
-                players: game_obj.get_players(),
-                settings: game_obj.get_settings(),
-                leaderboard: game_obj.get_leaderboard(),
-                status: game_obj.get_lobby_status(),
-            }))
+            serde_json::to_string(&GeoGuessrServerEvent::GameEvent(
+                GeoGuessrGameEvent::SyncState {
+                    players: game_obj.get_players(),
+                    settings: game_obj.get_settings(),
+                    leaderboard: game_obj.get_leaderboard(),
+                    status: game_obj.get_lobby_status(),
+                },
+            ))
             .expect("Failed to parse SyncState event")
             .into(),
         ))
@@ -119,12 +142,12 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
         .instrument(connection_span.clone()),
     );
 
-    let _ = game_obj
-        .broadcast
-        .send(GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerJoin {
+    let _ = game_obj.broadcast.send(GeoGuessrServerEvent::LobbyEvent(
+        LobbyServerEvent::PlayerJoin {
             player_id: player_id.clone(),
             player_username: player_username.clone(),
-        }));
+        },
+    ));
 
     // Create the receive task
     let mut recv_task = tokio::spawn(

@@ -1,26 +1,37 @@
-use std::{collections::HashMap, sync::{Arc, LazyLock, Mutex}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, LazyLock, Mutex},
+};
 
 use axum::extract::ws::{Message, WebSocket};
-use futures_util::{SinkExt, StreamExt, stream::{SplitSink, SplitStream}};
+use futures_util::{
+    SinkExt, StreamExt,
+    stream::{SplitSink, SplitStream},
+};
 use rand::seq::IndexedRandom;
 use serde::{Deserialize, Serialize};
 use tokio::{
-    sync::{broadcast, Notify},
+    sync::{Notify, broadcast},
     time::{Duration, sleep},
 };
 use tracing::info;
 use uuid::Uuid;
 
-use crate::{connections::ConnectionManager, state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent}};
+use crate::{
+    connections::ConnectionManager,
+    state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent},
+};
 
 static LOCATIONS: LazyLock<Vec<Location>> = LazyLock::new(|| {
     let data = include_str!("../geo_data/world.json");
     let raw: Vec<Location> = serde_json::from_str(&data).expect("Failed to parse json");
-    raw.into_iter().map(|r| Location {
-        image_id: r.image_id,
-        lat: r.lat as f32,
-        lng: r.lng as f32,
-    }).collect()
+    raw.into_iter()
+        .map(|r| Location {
+            image_id: r.image_id,
+            lat: r.lat as f32,
+            lng: r.lng as f32,
+        })
+        .collect()
 });
 
 /// ===============================================
@@ -40,7 +51,10 @@ impl GeoGuessr {
         self.state.lock().unwrap().reset();
     }
 
-    pub async fn await_join_req(receiver: &mut SplitStream<WebSocket>, sender: &mut SplitSink<WebSocket, Message>) -> Result<(String, String), ()>{
+    pub async fn await_join_req(
+        receiver: &mut SplitStream<WebSocket>,
+        sender: &mut SplitSink<WebSocket, Message>,
+    ) -> Result<(String, String), ()> {
         let join_req = match receiver.next().await {
             Some(Ok(Message::Text(m))) => m,
             _ => return Err(()),
@@ -51,9 +65,11 @@ impl GeoGuessr {
                 info!("JOIN ERROR");
                 let _ = sender
                     .send(Message::Text(
-                        serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::JoinError {
-                            message: "Failed to serialize Inital Request".to_string(),
-                        }))
+                        serde_json::to_string(&GeoGuessrServerEvent::LobbyEvent(
+                            LobbyServerEvent::JoinError {
+                                message: "Failed to serialize Inital Request".to_string(),
+                            },
+                        ))
                         .unwrap()
                         .into(),
                     ))
@@ -63,7 +79,10 @@ impl GeoGuessr {
         };
 
         let (lobby_code, player_username) = match event {
-            GeoGuesserClientEvent::LobbyEvent(LobbyUserEvent::Join { lobby_code, username }) => (lobby_code, username),
+            GeoGuesserClientEvent::LobbyEvent(LobbyUserEvent::Join {
+                lobby_code,
+                username,
+            }) => (lobby_code, username),
             _ => {
                 info!("JOIN ERROR");
                 let _ = sender
@@ -81,11 +100,7 @@ impl GeoGuessr {
         Ok((lobby_code, player_username))
     }
 
-    pub fn player_join(
-        &self,
-        player_id: Uuid,
-        player_username: String,
-    ) -> Result<(), &str> {
+    pub fn player_join(&self, player_id: Uuid, player_username: String) -> Result<(), &str> {
         let mut lobby = self.lobby.lock().unwrap();
         let mut state = self.state.lock().unwrap();
         if lobby.status != crate::state::LobbyStatus::Waiting {
@@ -139,11 +154,14 @@ impl GeoGuessr {
                 if lobby.status != crate::state::LobbyStatus::Waiting {
                     return;
                 }
-                self.settings.lock().unwrap().update_game_settings(settings.clone());
-                let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameSettingsUpdated {
-                    settings
-                }));
-            },
+                self.settings
+                    .lock()
+                    .unwrap()
+                    .update_game_settings(settings.clone());
+                let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                    GeoGuessrGameEvent::GameSettingsUpdated { settings },
+                ));
+            }
             GeoGuessrUserGameEvent::Guess { lat, lng } => {
                 if self.lobby.lock().unwrap().status != LobbyStatus::Playing {
                     return;
@@ -158,20 +176,20 @@ impl GeoGuessr {
                     state.all_players_guessed(player_count)
                 };
 
-                let _ = self.broadcast.send(
-                    GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::PlayerGuess {
+                let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                    GeoGuessrGameEvent::PlayerGuess {
                         player_id,
                         lat,
                         lng,
-                    })
-                );
+                    },
+                ));
 
                 // If everyone has guessed, wake up the round timer in run_game
                 if all_guessed {
                     info!("All players guessed — ending round early");
                     self.round_notify.lock().unwrap().notify_one();
                 }
-            },
+            }
         }
     }
 
@@ -179,44 +197,54 @@ impl GeoGuessr {
         match event {
             LobbyUserEvent::Ready => {
                 self.lobby.lock().unwrap().player_ready(&player_id);
-                let _ = self.broadcast.send(
-                    GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerReady {
+                let _ = self.broadcast.send(GeoGuessrServerEvent::LobbyEvent(
+                    LobbyServerEvent::PlayerReady {
                         player_id: player_id.clone(),
                     },
                 ));
-                if self.lobby.lock().unwrap().all_ready() && self.lobby.lock().unwrap().status == LobbyStatus::Waiting {
-                    let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::AllReady));
+                if self.lobby.lock().unwrap().all_ready()
+                    && self.lobby.lock().unwrap().status == LobbyStatus::Waiting
+                {
+                    let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                        GeoGuessrGameEvent::AllReady,
+                    ));
                     let l = Arc::clone(self);
                     tokio::spawn(async move {
                         let res = l.load_locations().await;
                         info!("Locations loaded: {:?}", l.state.lock().unwrap().locations);
                         match res {
-                            Ok(_) => { l.update_lobby_status(LobbyStatus::Playing); }
+                            Ok(_) => {
+                                l.update_lobby_status(LobbyStatus::Playing);
+                            }
                             Err(e) => {
                                 l.update_lobby_status(LobbyStatus::Waiting);
                                 l.lobby.lock().unwrap().player_unready(&player_id);
-                                let _ = l.broadcast.send(GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerUnready {
-                                    player_id,
-                                }));
-                                let _ = l.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::LoadingError {
-                                    message: format!("Failed to load locations: {}", e),
-                                }));
+                                let _ = l.broadcast.send(GeoGuessrServerEvent::LobbyEvent(
+                                    LobbyServerEvent::PlayerUnready { player_id },
+                                ));
+                                let _ = l.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                                    GeoGuessrGameEvent::LoadingError {
+                                        message: format!("Failed to load locations: {}", e),
+                                    },
+                                ));
                                 return;
                             }
                         }
                         GeoGuessr::run_game(l).await;
                     });
                 }
-            },
+            }
             LobbyUserEvent::Unready => {
                 self.lobby.lock().unwrap().player_unready(&player_id);
-                let _ = self.broadcast.send(
-                    GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerUnready {
+                let _ = self.broadcast.send(GeoGuessrServerEvent::LobbyEvent(
+                    LobbyServerEvent::PlayerUnready {
                         player_id: player_id.clone(),
                     },
                 ));
-            },
-            _ => { return; }
+            }
+            _ => {
+                return;
+            }
         }
     }
 
@@ -226,7 +254,9 @@ impl GeoGuessr {
             let s = game.settings.lock().unwrap();
             s.clone()
         };
-        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameStart));
+        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(
+            GeoGuessrGameEvent::GameStart,
+        ));
 
         for _ in 0..settings.num_rounds {
             if game.lobby.lock().unwrap().empty() {
@@ -240,7 +270,9 @@ impl GeoGuessr {
                     Some(s) => s,
                     None => {
                         info!("No locations left, ending game");
-                        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
+                        let _ = game
+                            .broadcast
+                            .send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
                         break;
                     }
                 }
@@ -252,9 +284,11 @@ impl GeoGuessr {
             game.state.lock().unwrap().begin_round();
 
             info!(location=%location.image_id, "ROUNDSTART");
-            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundStart {
-                image_id: location.image_id.clone(),
-            }));
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                GeoGuessrGameEvent::RoundStart {
+                    image_id: location.image_id.clone(),
+                },
+            ));
 
             tokio::select! {
                 _ = sleep(Duration::from_secs(settings.round_length_seconds as u64)) => {
@@ -272,12 +306,14 @@ impl GeoGuessr {
                 state.current_round_guesses.clone()
             };
 
-            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
-                correct_lat: location.lat,
-                correct_lng: location.lng,
-                leaderboard: game.get_leaderboard(),
-                guesses: round_guesses,
-            }));
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                GeoGuessrGameEvent::RoundEnd {
+                    correct_lat: location.lat,
+                    correct_lng: location.lng,
+                    leaderboard: game.get_leaderboard(),
+                    guesses: round_guesses,
+                },
+            ));
 
             info!("{:?}", settings.round_delay_seconds);
             sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
@@ -287,7 +323,9 @@ impl GeoGuessr {
         if (settings.round_delay_seconds as u64) < 3 {
             sleep(Duration::from_secs(3 - settings.round_delay_seconds as u64)).await;
         }
-        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
+        let _ = game
+            .broadcast
+            .send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
         game.reset();
     }
 }
@@ -299,12 +337,14 @@ impl ConnectionManager for GeoGuessr {
             "Player {} disconnected from lobby: {}",
             player_id, self.lobby_code
         );
-        let _ = self.broadcast.send(GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerLeave {
-            player_id: player_id.clone(),
-        }));
+        let _ = self.broadcast.send(GeoGuessrServerEvent::LobbyEvent(
+            LobbyServerEvent::PlayerLeave {
+                player_id: player_id.clone(),
+            },
+        ));
     }
     fn lobby_code(&self) -> String {
-        return self.lobby_code.clone()
+        return self.lobby_code.clone();
     }
     fn no_connections(&self) -> bool {
         self.lobby.lock().unwrap().empty()
@@ -375,7 +415,9 @@ impl GeoGuessrState {
     }
 
     pub fn record_guess(&mut self, player_id: Uuid, lat: f32, lng: f32) {
-        self.current_round_guesses.entry(player_id).or_insert((lat, lng));
+        self.current_round_guesses
+            .entry(player_id)
+            .or_insert((lat, lng));
     }
 
     pub fn all_players_guessed(&self, player_count: usize) -> bool {
@@ -397,7 +439,9 @@ impl GeoGuessrState {
     }
 
     pub fn get_current_location(&self) -> Option<Location> {
-        if self.locations.is_empty() || self.location_index == 0 || self.location_index - 1 >= self.locations.len()
+        if self.locations.is_empty()
+            || self.location_index == 0
+            || self.location_index - 1 >= self.locations.len()
         {
             return None;
         }
@@ -422,12 +466,7 @@ impl GeoGuessrState {
 
 fn haversine_km(lat1: f32, lng1: f32, lat2: f32, lng2: f32) -> f64 {
     const EARTH_RADIUS_KM: f64 = 6371.0;
-    let (lat1, lng1, lat2, lng2) = (
-        lat1 as f64,
-        lng1 as f64,
-        lat2 as f64,
-        lng2 as f64,
-    );
+    let (lat1, lng1, lat2, lng2) = (lat1 as f64, lng1 as f64, lat2 as f64, lng2 as f64);
     let d_lat = (lat2 - lat1).to_radians();
     let d_lng = (lng2 - lng1).to_radians();
     let a = (d_lat / 2.0).sin().powi(2)
@@ -492,13 +531,8 @@ pub(crate) enum GeoGuessrServerEvent {
 #[derive(Deserialize, Debug)]
 #[serde(tag = "event")]
 pub(crate) enum GeoGuessrUserGameEvent {
-    UpdateGameSettings {
-        settings: GeoGuessrSettings,
-    },
-    Guess {
-        lat: f32,
-        lng: f32,
-    },
+    UpdateGameSettings { settings: GeoGuessrSettings },
+    Guess { lat: f32, lng: f32 },
 }
 
 #[derive(Deserialize, Debug)]
