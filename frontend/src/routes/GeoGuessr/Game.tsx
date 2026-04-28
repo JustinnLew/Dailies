@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// import Gameplay from "./Gameplay";
 import.meta.env;
 import type {
   Player,
@@ -12,6 +11,7 @@ import { WS_URL } from "../../apiConfig";
 import Waiting from "./WaitingRoom";
 import GameLoading from "../../components/loading/GameLoading";
 import Ending from "../../components/Ending";
+import Gameplay from "./Gameplay";
 
 export default function Game() {
   const params = useParams();
@@ -46,6 +46,7 @@ export default function Game() {
   );
   const [gameState, setGameState] = useState<GameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
+  const [imageId, setImageId] = useState(null);
 
   const resetGame = () => {
     setGameState("waiting");
@@ -190,36 +191,31 @@ export default function Game() {
     return <Connecting />;
   }
 
-  if (gameState === "waiting") {
-    return (
-      <Waiting
-        lobbyCode={params.lobbyCode!}
-        onReady={onReady}
-        players={players}
-        gameSettings={gameSettings}
-        updateGameSettings={updateGameSettings}
-        error={error}
-        setError={setError}
-        ready={playerReady}
-      />
-    );
-  }
+  // if (gameState === "waiting") {
+  //   return (
+  //     <Waiting
+  //       lobbyCode={params.lobbyCode!}
+  //       onReady={onReady}
+  //       players={players}
+  //       gameSettings={gameSettings}
+  //       updateGameSettings={updateGameSettings}
+  //       error={error}
+  //       setError={setError}
+  //       ready={playerReady}
+  //     />
+  //   );
+  // }
 
   if (gameState === "loading") {
     return <GameLoading text={"Loading map"}/>;
   }
 
-  // if (gameState === "playing") {
-  //   return (
-  //     <Gameplay
-  //       sendGuess={sendGuess}
-  //       songState={songState}
-  //       players={players}
-  //       chat={chat}
-  //       scores={scores}
-  //     />
-  //   );
-  // }
+  if (gameState === "waiting") {
+    return (
+      <Gameplay imageId="1607255130507987"
+      />
+    );
+  }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;
 }
