@@ -43,7 +43,7 @@ export default function Game() {
   }, []);
   const [gameState, setGameState] = useState<GameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
-  const [imageId, setImageId] = useState(null);
+  const [imageId, setImageId] = useState<string>("");
 
   const resetGame = () => {
     setGameState("waiting");
@@ -138,6 +138,7 @@ export default function Game() {
           setGameState("playing");
           break;
         case "RoundStart":
+          setImageId(msg.data.image_id)
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
@@ -214,7 +215,7 @@ export default function Game() {
   }
 
   if (gameState === "playing") {
-    return <Gameplay imageId="311497858152441" />;
+    return <Gameplay imageId={imageId} />;
   }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;

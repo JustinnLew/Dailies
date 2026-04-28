@@ -16,7 +16,7 @@ export default function Gameplay({ imageId }: { imageId: string }) {
         setPosition([e.latlng.lat, e.latlng.lng])
       },
     });
-    return false;
+    return null;
   };
 
   const MapResizer = ({ expanded }: { expanded: boolean }) => {
@@ -28,12 +28,19 @@ export default function Gameplay({ imageId }: { imageId: string }) {
   };
 
   useEffect(() => {
+    if (viewerRef.current && imageId) {
+      viewerRef.current.moveTo(imageId).catch((error) => {
+        console.warn("Failed to move to imageId:", error);
+      });
+    }
+  }, [imageId]);
+
+  useEffect(() => {
     if (!containerRef.current || viewerRef.current) return;
 
     viewerRef.current = new Viewer({
       accessToken: "MLY|27623692320552297|6e04b1092adbc64d5d6eeb79a69570d6",
       container: containerRef.current,
-      imageId: imageId,
       component: {
         cover: false,
         keyboard: false,
