@@ -97,4 +97,8 @@ impl LobbyState {
             }
         }
     }
+
+    pub fn player_count(&self) -> usize {
+        self.players.len()
+    }
 }

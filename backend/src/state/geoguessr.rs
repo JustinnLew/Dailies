@@ -5,7 +5,7 @@ use futures_util::{SinkExt, StreamExt, stream::{SplitSink, SplitStream}};
 use rand::seq::IndexedRandom;
 use serde::{Deserialize, Serialize};
 use tokio::{
-    sync::{broadcast},
+    sync::{broadcast, Notify},
     time::{Duration, sleep},
 };
 use tracing::info;
@@ -32,6 +32,7 @@ pub(crate) struct GeoGuessr {
     pub settings: Mutex<GeoGuessrSettings>,
     pub state: Mutex<GeoGuessrState>,
     pub lobby_code: String,
+    pub round_notify: Mutex<Arc<Notify>>,
 }
 
 impl GeoGuessr {
@@ -144,16 +145,34 @@ impl GeoGuessr {
                 }));
             },
             GeoGuessrUserGameEvent::Guess { lat, lng } => {
+                if self.lobby.lock().unwrap().status != LobbyStatus::Playing {
+                    return;
+                }
+
+                let all_guessed = {
+                    let mut state = self.state.lock().unwrap();
+                    state.record_guess(player_id, lat, lng);
+
+                    // Check if all lobby members have now guessed
+                    let player_count = self.lobby.lock().unwrap().player_count();
+                    state.all_players_guessed(player_count)
+                };
+
                 let _ = self.broadcast.send(
                     GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::PlayerGuess {
-                        player_id: player_id.clone(),
+                        player_id,
                         lat,
                         lng,
-                    },
-                ));
+                    })
+                );
+
+                // If everyone has guessed, wake up the round timer in run_game
+                if all_guessed {
+                    info!("All players guessed — ending round early");
+                    self.round_notify.lock().unwrap().notify_one();
+                }
             },
-            _ => { return; }
-       }
+        }
     }
 
     pub fn handle_lobby_event(self: &Arc<Self>, player_id: Uuid, event: LobbyUserEvent) {
@@ -172,12 +191,12 @@ impl GeoGuessr {
                         let res = l.load_locations().await;
                         info!("Locations loaded: {:?}", l.state.lock().unwrap().locations);
                         match res {
-                            Ok(_) => {l.update_lobby_status(LobbyStatus::Playing); }
+                            Ok(_) => { l.update_lobby_status(LobbyStatus::Playing); }
                             Err(e) => {
                                 l.update_lobby_status(LobbyStatus::Waiting);
                                 l.lobby.lock().unwrap().player_unready(&player_id);
                                 let _ = l.broadcast.send(GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerUnready {
-                                    player_id: player_id,
+                                    player_id,
                                 }));
                                 let _ = l.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::LoadingError {
                                     message: format!("Failed to load locations: {}", e),
@@ -214,10 +233,11 @@ impl GeoGuessr {
                 info!("Game empty, terminating loop");
                 return;
             }
-            let location= {
+
+            let location = {
                 let mut state = game.state.lock().unwrap();
                 match state.get_next_location() {
-                    Some(s) => {s}
+                    Some(s) => s,
                     None => {
                         info!("No locations left, ending game");
                         let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
@@ -226,18 +246,44 @@ impl GeoGuessr {
                 }
             };
 
-            info!(location=%location.image_id, "ROUNDSTART:");
+            // Fresh notifier each round — prevents a stale notify_one from a
+            // previous round immediately firing in the next select!
+            let round_notify = Arc::new(Notify::new());
+            *game.round_notify.lock().unwrap() = Arc::clone(&round_notify);
+
+            // Also clear any guesses from the previous round
+            game.state.lock().unwrap().begin_round();
+
+            info!(location=%location.image_id, "ROUNDSTART");
             let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundStart {
                 image_id: location.image_id.clone(),
             }));
-            sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
-            info!("ROUNDEND");
 
-             let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
+            // Race: countdown timer vs all players guessing early
+            tokio::select! {
+                _ = sleep(Duration::from_secs(settings.round_length_seconds as u64)) => {
+                    info!("ROUNDEND (timeout)");
+                }
+                _ = round_notify.notified() => {
+                    info!("ROUNDEND (all players guessed)");
+                }
+            }
+
+            // Score everyone based on their guess for this round (0 if no guess)
+            let round_guesses = {
+                let mut state = game.state.lock().unwrap();
+                let player_ids: Vec<Uuid> = state.scores.keys().cloned().collect();
+                state.calculate_and_apply_scores(&location, &player_ids);
+                state.current_round_guesses.clone() // grab after scoring, before next begin_round()
+            };
+
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
                 correct_lat: location.lat,
                 correct_lng: location.lng,
                 leaderboard: game.get_leaderboard(),
+                guesses: round_guesses,
             }));
+
             sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
         }
 
@@ -289,10 +335,6 @@ impl GeoGuessrSettings {
         }
     }
 
-    pub fn get_num_rounds(&self) -> u8 {
-        self.num_rounds
-    }
-
     pub fn update_game_settings(&mut self, settings: GeoGuessrSettings) {
         self.num_rounds = settings.num_rounds;
         self.round_length_seconds = settings.round_length_seconds;
@@ -305,6 +347,10 @@ impl GeoGuessrSettings {
 /// ===============================================
 pub(crate) struct GeoGuessrState {
     pub scores: HashMap<Uuid, u32>,
+    // Current round's guesses: player_id -> (lat, lng)
+    pub current_round_guesses: HashMap<Uuid, (f32, f32)>,
+    // All rounds' guesses (accumulated for history/replay if needed)
+    pub guesses: Vec<HashMap<Uuid, (f32, f32)>>,
     pub locations: Vec<Location>,
     pub location_index: usize,
 }
@@ -313,6 +359,8 @@ impl GeoGuessrState {
     pub fn new() -> Self {
         GeoGuessrState {
             scores: HashMap::new(),
+            current_round_guesses: HashMap::new(),
+            guesses: Vec::new(),
             locations: Vec::new(),
             location_index: 0,
         }
@@ -322,6 +370,34 @@ impl GeoGuessrState {
         self.scores.iter_mut().for_each(|(_, score)| *score = 0);
         self.location_index = 0;
         self.locations = Vec::new();
+        self.current_round_guesses.clear();
+        self.guesses.clear();
+    }
+
+    pub fn begin_round(&mut self) {
+        self.current_round_guesses.clear();
+    }
+
+    pub fn record_guess(&mut self, player_id: Uuid, lat: f32, lng: f32) {
+        self.current_round_guesses.entry(player_id).or_insert((lat, lng));
+    }
+
+    pub fn all_players_guessed(&self, player_count: usize) -> bool {
+        player_count > 0 && self.current_round_guesses.len() >= player_count
+    }
+
+    /// Scores all players for the current round using Haversine distance,
+    /// then saves the round's guesses into history.
+    pub fn calculate_and_apply_scores(&mut self, correct: &Location, player_ids: &[Uuid]) {
+        for player_id in player_ids {
+            let points = match self.current_round_guesses.get(player_id) {
+                Some(&(lat, lng)) => haversine_score(lat, lng, correct.lat, correct.lng),
+                // No guess submitted — 0 points
+                None => 0,
+            };
+            self.increment_player_score(player_id, points);
+        }
+        self.guesses.push(self.current_round_guesses.clone());
     }
 
     pub fn get_current_location(&self) -> Option<Location> {
@@ -336,10 +412,6 @@ impl GeoGuessrState {
         })
     }
 
-    pub fn add_location(&mut self, location: Location) {
-        self.locations.push(location);
-    }
-
     pub fn get_next_location(&mut self) -> Option<Location> {
         self.location_index += 1;
         self.get_current_location()
@@ -350,6 +422,28 @@ impl GeoGuessrState {
             *score += points;
         }
     }
+}
+
+fn haversine_km(lat1: f32, lng1: f32, lat2: f32, lng2: f32) -> f64 {
+    const EARTH_RADIUS_KM: f64 = 6371.0;
+    let (lat1, lng1, lat2, lng2) = (
+        lat1 as f64,
+        lng1 as f64,
+        lat2 as f64,
+        lng2 as f64,
+    );
+    let d_lat = (lat2 - lat1).to_radians();
+    let d_lng = (lng2 - lng1).to_radians();
+    let a = (d_lat / 2.0).sin().powi(2)
+        + lat1.to_radians().cos() * lat2.to_radians().cos() * (d_lng / 2.0).sin().powi(2);
+    let c = 2.0 * a.sqrt().asin();
+    EARTH_RADIUS_KM * c
+}
+
+fn haversine_score(lat1: f32, lng1: f32, lat2: f32, lng2: f32) -> u32 {
+    let distance_km = haversine_km(lat1, lng1, lat2, lng2);
+    let score = 5000.0 * (-distance_km / 2000.0_f64).exp();
+    score.round() as u32
 }
 
 /// ===============================================
@@ -376,6 +470,7 @@ pub(crate) enum GeoGuessrGameEvent {
         correct_lat: f32,
         correct_lng: f32,
         leaderboard: HashMap<Uuid, u32>,
+        guesses: HashMap<Uuid, (f32, f32)>,
     },
     GameEnd,
     PlayerGuess {
@@ -416,6 +511,7 @@ pub(crate) enum GeoGuesserClientEvent {
     LobbyEvent(LobbyUserEvent),
     GameEvent(GeoGuessrUserGameEvent),
 }
+
 /// ===============================================
 /// Helper Structs
 /// ===============================================

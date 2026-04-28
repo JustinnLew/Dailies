@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use dashmap::DashMap;
-use tokio::sync::broadcast;
+use tokio::sync::{Notify, broadcast};
 
 use crate::state::{
     GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState, geoguessr::{GeoGuessr, GeoGuessrServerEvent, GeoGuessrSettings, GeoGuessrState}, guessthesong::GuessTheSongGameSettings
@@ -50,6 +50,7 @@ impl Games {
             settings: Mutex::new(GeoGuessrSettings::new()),
             state: Mutex::new(GeoGuessrState::new()),
             lobby_code: lobby_code.to_string(),
+            round_notify: Mutex::new(Arc::new(Notify::new())),
         };
         self.geo_guessr
             .insert(lobby_code.to_string(), Arc::new(lobby));
