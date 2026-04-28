@@ -1,10 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Viewer } from "mapillary-js";
 import "mapillary-js/dist/mapillary.css";
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import { motion } from "motion/react";
 
-export default function Gameplay({ imageId, sendGuess }: { imageId: string, sendGuess: (guess: [number, number]) => void }) {
+export default function Gameplay({
+  imageId,
+  sendGuess,
+}: {
+  imageId: string;
+  sendGuess: (guess: [number, number]) => void;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
@@ -13,7 +25,7 @@ export default function Gameplay({ imageId, sendGuess }: { imageId: string, send
   const MapEvents = () => {
     useMapEvents({
       click(e) {
-        setPosition([e.latlng.lat, e.latlng.lng])
+        setPosition([e.latlng.lat, e.latlng.lng]);
       },
     });
     return null;
@@ -66,7 +78,11 @@ export default function Gameplay({ imageId, sendGuess }: { imageId: string, send
         className="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000"
       />
       <motion.div
-        animate={mapExpanded ? { width: "60%", height: "75%" } : { width: "25%", height: "33%" }}
+        animate={
+          mapExpanded
+            ? { width: "60%", height: "75%" }
+            : { width: "25%", height: "33%" }
+        }
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="fixed bottom-4 left-4 border-2 border-white/20 rounded-lg shadow-2xl overflow-hidden"
       >
@@ -74,18 +90,23 @@ export default function Gameplay({ imageId, sendGuess }: { imageId: string, send
           onClick={() => setMapExpanded(!mapExpanded)}
           className="absolute top-2 right-2 z-1000 bg-black/50 hover:bg-black/70 text-white rounded p-1 transition-colors"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            {mapExpanded
-              ? <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-              : <path d="M15 3h6m0 0v6m0-6-7 7M9 21H3m0 0v-6m0 6 7-7" />
-            }
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            {mapExpanded ? (
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+            ) : (
+              <path d="M15 3h6m0 0v6m0-6-7 7M9 21H3m0 0v-6m0 6 7-7" />
+            )}
           </svg>
         </button>
-        <MapContainer
-          className="w-full h-full"
-          center={[0, 0]}
-          zoom={3}
-        >
+        <MapContainer className="w-full h-full" center={[0, 0]} zoom={3}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

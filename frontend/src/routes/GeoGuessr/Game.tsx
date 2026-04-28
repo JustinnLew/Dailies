@@ -138,7 +138,7 @@ export default function Game() {
           setGameState("playing");
           break;
         case "RoundStart":
-          setImageId(msg.data.image_id)
+          setImageId(msg.data.image_id);
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
@@ -174,14 +174,16 @@ export default function Game() {
   }, [params.lobbyCode, navigate, username]);
 
   const sendGuess = (guess: [number, number]) => {
-    socket.current.send(JSON.stringify(
-      { type: "GameEvent",
+    socket.current.send(
+      JSON.stringify({
+        type: "GameEvent",
         data: {
           event: "Guess",
           lat: guess[0],
           lng: guess[1],
-        }}
-    ));
+        },
+      }),
+    );
   };
 
   const onReady = () => {
