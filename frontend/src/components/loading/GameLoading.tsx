@@ -1,8 +1,8 @@
-export default function PreparingPlaylist() {
+export default function GameLoading({text} : {text: string}) {
   return (
     <div className="scanlines h-screen flex flex-col gap-6 items-center justify-center bg-black text-white wave-container-auto ">
       <div className="flex text-2xl font-bold font-press-start text-shadow-(--text-shadow-icon)">
-        <h2 className="pr-3">Preparing Playlist</h2>
+        <h2 className="pr-3">{text}</h2>
         <span>.</span>
         <span>.</span>
         <span>.</span>

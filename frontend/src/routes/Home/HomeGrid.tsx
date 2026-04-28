@@ -1,8 +1,9 @@
 import HomeGridCell from "./HomeGridCell";
 import GTSIcon from "../../icons/GTSIcon";
 import NotFoundIcon from "../../icons/NotFoundIcon";
-import GTSHomeModal from "../../components/modals/GTSHomeModal";
 import type { Dispatch, SetStateAction } from "react";
+import HomeModal from "../../components/modals/HomeModal";
+import GeoIcon from "../../icons/GeoIcon";
 
 export default function HomeGrid({
   setError,
@@ -16,7 +17,16 @@ export default function HomeGrid({
         "Test your music knowledge by guessing songs from short clips.",
       icon: <GTSIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
-        <GTSHomeModal open={open} onClose={onClose} setError={setError} />
+        <HomeModal open={open} onClose={onClose} setError={setError} game_code={"guess-the-song"} title={"GUESS THE SONG"} />
+      ),
+    },
+    {
+      title: "Geo Guessr",
+      description:
+        "Guess locations around the world.",
+      icon: <GeoIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <HomeModal open={open} onClose={onClose} setError={setError} game_code={"geo-guessr"} title={"GEO GUESSR"} />
       ),
     },
     {

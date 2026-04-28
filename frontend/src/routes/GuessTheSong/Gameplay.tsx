@@ -4,6 +4,7 @@ import type { Player } from "../../utils/types";
 import type { ChatMessage } from "../../utils/types";
 import { useNavigate } from "react-router-dom";
 import AudioVolumeSlider from "../../components/audio/AudioVolumeSlider";
+import { AnimatePresence, motion } from "motion/react";
 // import AudioVisualizer from "../../components/audio/AudioVisualizer";
 
 export default function Gameplay({
@@ -53,26 +54,50 @@ export default function Gameplay({
               const isError = c.user === "ERROR";
 
               return (
-                <div
+                <motion.div
                   key={i}
-                  className={`text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
-                    isSystem ? "bg-neon-green/50 my-2" : ""
+                  initial={{ opacity: 0, y: 3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`relative overflow-hidden text-xl font-vt323 wrap-break-words p-1 rounded-md transition-all ${
+                    isSystem
+                      ? "bg-neon-green/50 my-2 border border-neon-green/30"
+                      : ""
                   } ${
                     isError ? "bg-red-500/50 my-2" : ""
                   } min-w-0 wrap-anywhere`}
                 >
-                  <span
-                    className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
-                  >
-                    {isSystem ? "🎵" : ""}
-                    {isError ? "🕒" : ""}
-                    {!isError && !isSystem ? c.user : ""}
-                  </span>
-                  <span className={"ml-1"}>
-                    {isSystem || isError ? "" : ": "}
-                    {c.message}
-                  </span>
-                </div>
+                  {/* Sheen Effect Layer */}
+                  {isSystem && (
+                    <motion.div
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "200%" }}
+                      transition={{
+                        duration: 1.5,
+                        ease: "easeIn",
+                      }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                      }}
+                      className="absolute inset-0 z-0 pointer-events-none"
+                    />
+                  )}
+
+                  {/* Message Content */}
+                  <div className="relative z-10">
+                    <span
+                      className={`font-bold ${isSystem ? "" : "text-blue-400"}`}
+                    >
+                      {isSystem ? "🎵" : ""}
+                      {isError ? "🕒" : ""}
+                      {!isError && !isSystem ? c.user : ""}
+                    </span>
+                    <span className={"ml-1"}>
+                      {isSystem || isError ? "" : ": "}
+                      {c.message}
+                    </span>
+                  </div>
+                </motion.div>
               );
             })}
             {/* Auto-scroll anchor */}
@@ -105,27 +130,39 @@ export default function Gameplay({
             Leaderboard
           </h2>
           <ul className="space-y-2 overflow-y-auto custom-scrollbar">
-            {Array.from(players.entries())
-              .map(([id, player]) => ({
-                id,
-                username: player.username,
-                score: scores.get(id) || 0,
-              }))
-              .sort((a, b) => b.score - a.score)
-              .map((player, i) => (
-                <li
-                  key={player.id}
-                  className="w-full text-xs md:text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700"
-                >
-                  <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
-                    <span className="text-neon-yellow w-6">#{i + 1}</span>
-                    <span className="flex-1 truncate">{player.username}</span>
-                  </div>
-                  <span className="text-emerald-400 font-bold">
-                    {player.score}
-                  </span>
-                </li>
-              ))}
+            <AnimatePresence>
+              {Array.from(players.entries())
+                .map(([id, player]) => ({
+                  id,
+                  username: player.username,
+                  score: scores.get(id) || 0,
+                }))
+                .sort((a, b) => b.score - a.score)
+                .map((player, i) => (
+                  <motion.li
+                    layout
+                    key={player.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                      opacity: { duration: 0.2 },
+                    }}
+                    className="w-full text-xs md:text-lg flex justify-between px-3 py-1 border-b-2 border-gray-700 bg-black/20"
+                  >
+                    <div className="flex gap-2 md:gap-6 lg:gap-8 truncate">
+                      <span className="text-neon-yellow w-6">#{i + 1}</span>
+                      <span className="flex-1 truncate">{player.username}</span>
+                    </div>
+                    <span className="text-emerald-400 font-bold">
+                      {player.score}
+                    </span>
+                  </motion.li>
+                ))}
+            </AnimatePresence>
           </ul>
         </div>
 

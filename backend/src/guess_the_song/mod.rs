@@ -436,6 +436,7 @@ async fn run_guess_the_song_game(game: Arc<GuessTheSongGame>) {
         sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
     }
     info!("GAME END");
+    sleep(Duration::from_secs(3 - settings.round_delay_seconds as u64)).await;
     let _ = game.broadcast.send(GuessTheSongServerEvent::GameEnd);
     game.reset();
 }

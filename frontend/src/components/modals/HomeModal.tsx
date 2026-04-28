@@ -3,14 +3,18 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../apiConfig";
 
-export default function GTSHomeModal({
+export default function HomeModal({
   open,
   onClose,
   setError,
+  game_code,
+  title,
 }: {
   open: boolean;
   onClose: () => void;
   setError: Dispatch<SetStateAction<string>>;
+  game_code: string,
+  title: string,
 }) {
   const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();
@@ -22,7 +26,7 @@ export default function GTSHomeModal({
     setcreateDisabled(true);
     let connectionError = true;
     try {
-      const res = await fetch(`${API_URL}/guess-the-song/create-lobby`, {
+      const res = await fetch(`${API_URL}/${game_code}/create-lobby`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -30,7 +34,7 @@ export default function GTSHomeModal({
         throw new Error("Error creating lobby");
       }
       const data = await res.json();
-      navigate(`/guess-the-song/${data.lobby_code}`);
+      navigate(`/${game_code}/${data.lobby_code}`);
     } catch (error: any) {
       if (connectionError) {
         setError("Failed to connect to server");
@@ -67,7 +71,7 @@ export default function GTSHomeModal({
             className="text-2xl font-bold text-center font-press-start text-white text-shadow-(--text-shadow-icon)
                                    pb-4 border-neon-yellow/60 border-b-4 w-full"
           >
-            GUESS THE SONG
+            {title}
           </h2>
 
           {/* START GAME */}
@@ -118,8 +122,8 @@ export default function GTSHomeModal({
             />
             <button
               disabled={!validLobbyCode()}
-              onClick={() => navigate(`/guess-the-song/${lobbyCode}`)}
-              className={`px-8 py-4 transition-all hover:scale-105 
+              onClick={() => navigate(`/${game_code}]/${lobbyCode}`)}
+              className={`px-8 py-4 transition-all hover:scale-105
                           ${
                             validLobbyCode()
                               ? "border-4 border-green-500 cursor-pointer"

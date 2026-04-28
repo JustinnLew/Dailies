@@ -1,16 +1,15 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import WaitingRoom from "./WaitingRoom";
-import Gameplay from "./Gameplay";
+// import Gameplay from "./Gameplay";
 import.meta.env;
 import type {
   Player,
-  GuessTheSongGameSettings,
-  ChatMessage,
   GameState,
+  GeoGuessrGameSettings,
 } from "../../utils/types";
 import Connecting from "../../components/loading/Connecting";
 import { WS_URL } from "../../apiConfig";
+import Waiting from "./WaitingRoom";
 import GameLoading from "../../components/loading/GameLoading";
 import Ending from "../../components/Ending";
 
@@ -20,63 +19,61 @@ export default function Game() {
   const username = localStorage.getItem("username") || "PLAYER";
   const [players, setPlayers] = useState<Map<string, Player>>(new Map());
   const [error, setError] = useState<string>("");
-  const [gameSettings, setGameSettings] = useState<GuessTheSongGameSettings>({
-    playlistLink: "",
-    numSongs: 10,
+  const [gameSettings, setGameSettings] = useState<GeoGuessrGameSettings>({
+    numRounds: 10,
     roundLengthSeconds: 30,
-    answerDelaySeconds: 0,
     roundDelaySeconds: 3,
   });
   const navigate = useNavigate();
   const socket = useRef<WebSocket>(null!);
   const updateGameSettings = useCallback(
-    (settings: GuessTheSongGameSettings) => {
+    (settings: GeoGuessrGameSettings) => {
       setGameSettings(settings);
 
       if (socket.current && socket.current.readyState === WebSocket.OPEN) {
         socket.current.send(
           JSON.stringify({
-            event: "UpdateGameSettings",
-            settings: settings,
+            type: "GameEvent",
+            data: {
+              event: "UpdateGameSettings",
+              settings: settings,
+            }
           }),
         );
       }
     },
     [],
   );
-  const [songState, setSongState] = useState<{
-    previewUrl: string;
-    roundStartTime: number;
-  }>({ previewUrl: "", roundStartTime: 0 });
   const [gameState, setGameState] = useState<GameState>("connecting");
-  const [chat, setChat] = useState<ChatMessage[]>([]);
   const [scores, setScores] = useState<Map<string, number>>(new Map());
 
   const resetGame = () => {
     setGameState("waiting");
-    setChat([]);
     setError("");
     setScores(new Map([...scores.keys()].map((key) => [key, 0])));
-    setPlayerReady(false);
   };
 
   useEffect(() => {
-    const s = new WebSocket(`${WS_URL}/guess-the-song`);
+    const s = new WebSocket(`${WS_URL}/geo-guessr`);
     socket.current = s;
 
     s.onopen = () => {
       socket.current.send(
         JSON.stringify({
-          event: "Join",
-          lobby_code: params.lobbyCode,
-          username: username,
+          type: "LobbyEvent",
+          data: {
+            event: "Join",
+            lobby_code: params.lobbyCode,
+            username: username,
+          }
         }),
       );
     };
     s.onclose = () => {};
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      switch (msg.event) {
+      console.log(msg.data)
+      switch (msg.data.event) {
         case "SyncState":
           setPlayers(
             new Map(
@@ -88,10 +85,6 @@ export default function Game() {
           );
           setGameSettings(msg.data.settings);
           setScores(new Map(Object.entries(msg.data.leaderboard)));
-          setSongState({
-            previewUrl: msg.data.preview_url || "",
-            roundStartTime: msg.data.round_start_time,
-          });
           setGameState(msg.data.status);
           break;
         case "PlayerJoin":
@@ -147,34 +140,17 @@ export default function Game() {
           setGameState("playing");
           break;
         case "RoundStart":
-          setSongState({
-            previewUrl: msg.data.preview_url,
-            roundStartTime: msg.data.round_start_time,
-          });
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
-          setSongState({ previewUrl: "", roundStartTime: 0 });
-          setChat((c) => [
-            ...c,
-            {
-              user: "",
-              message: `The correct song was '${msg.data.correct_title}' by ${msg.data.correct_artists.join(", ")}`,
-            },
-          ]);
           break;
         case "GameEnd":
-          socket.current.send(JSON.stringify({ event: "Unready" }));
+          socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
           setGameState("finished");
           break;
         case "PlayerGuess":
-          setChat((c) => [
-            ...c,
-            { user: msg.data.username, message: msg.data.content },
-          ]);
           break;
         case "CorrectGuess":
-          setChat((c) => [...c, { user: "", message: msg.data.msg }]);
           break;
         case "JoinError":
           navigate("/", { state: { error: msg.data.message } });
@@ -202,10 +178,10 @@ export default function Game() {
 
   const onReady = () => {
     if (playerReady) {
-      socket.current.send(JSON.stringify({ event: "Unready" }));
+      socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
       setPlayerReady(false);
     } else {
-      socket.current.send(JSON.stringify({ event: "Ready" }));
+      socket.current.send(JSON.stringify({type: "LobbyEvent", data: { event: "Ready" } }));
       setPlayerReady(true);
     }
   };
@@ -216,7 +192,7 @@ export default function Game() {
 
   if (gameState === "waiting") {
     return (
-      <WaitingRoom
+      <Waiting
         lobbyCode={params.lobbyCode!}
         onReady={onReady}
         players={players}
@@ -230,20 +206,20 @@ export default function Game() {
   }
 
   if (gameState === "loading") {
-    return <GameLoading text={"Preparing Playlist"} />;
+    return <GameLoading text={"Loading map"}/>;
   }
 
-  if (gameState === "playing") {
-    return (
-      <Gameplay
-        sendGuess={sendGuess}
-        songState={songState}
-        players={players}
-        chat={chat}
-        scores={scores}
-      />
-    );
-  }
+  // if (gameState === "playing") {
+  //   return (
+  //     <Gameplay
+  //       sendGuess={sendGuess}
+  //       songState={songState}
+  //       players={players}
+  //       chat={chat}
+  //       scores={scores}
+  //     />
+  //   );
+  // }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;
 }
