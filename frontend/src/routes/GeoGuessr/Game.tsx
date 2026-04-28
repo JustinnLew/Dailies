@@ -172,7 +172,7 @@ export default function Game() {
     };
   }, [params.lobbyCode, navigate, username]);
 
-  const sendGuess = (guess: string) => {
+  const sendGuess = (guess: [number, number]) => {
     socket.current.send(JSON.stringify({ event: "Guess", content: guess }));
   };
 
@@ -194,26 +194,26 @@ export default function Game() {
     return <Connecting />;
   }
 
-  // if (gameState === "waiting") {
-  //   return (
-  //     <Waiting
-  //       lobbyCode={params.lobbyCode!}
-  //       onReady={onReady}
-  //       players={players}
-  //       gameSettings={gameSettings}
-  //       updateGameSettings={updateGameSettings}
-  //       error={error}
-  //       setError={setError}
-  //       ready={playerReady}
-  //     />
-  //   );
-  // }
+  if (gameState === "waiting") {
+    return (
+      <Waiting
+        lobbyCode={params.lobbyCode!}
+        onReady={onReady}
+        players={players}
+        gameSettings={gameSettings}
+        updateGameSettings={updateGameSettings}
+        error={error}
+        setError={setError}
+        ready={playerReady}
+      />
+    );
+  }
 
   if (gameState === "loading") {
     return <GameLoading text={"Loading map"} />;
   }
 
-  if (gameState === "waiting") {
+  if (gameState === "playing") {
     return <Gameplay imageId="311497858152441" />;
   }
 
