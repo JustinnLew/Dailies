@@ -176,13 +176,13 @@ impl GeoGuessr {
                     state.all_players_guessed(player_count)
                 };
 
-                let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
-                    GeoGuessrGameEvent::PlayerGuess {
-                        player_id,
-                        lat,
-                        lng,
-                    },
-                ));
+                // let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                //     GeoGuessrGameEvent::PlayerGuess {
+                //         player_id,
+                //         lat,
+                //         lng,
+                //     },
+                // ));
 
                 // If everyone has guessed, wake up the round timer in run_game
                 if all_guessed {
