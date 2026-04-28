@@ -144,7 +144,7 @@ pub async fn handle_geo_guessr(socket: WebSocket, state: AppState) {
                                 game_obj.handle_lobby_event(player_id, player_username.clone(), e);
                             }
                             GeoGuesserClientEvent::GameEvent(e) => {
-                                game_obj.handle_game_event(player_id, player_username.clone(), e);
+                                game_obj.handle_game_event(player_id, e);
                             }
                         }
                     }

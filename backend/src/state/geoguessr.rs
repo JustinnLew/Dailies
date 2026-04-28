@@ -1,9 +1,12 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{collections::HashMap, sync::{Arc, Mutex}};
 
 use axum::extract::ws::{Message, WebSocket};
 use futures_util::{SinkExt, StreamExt, stream::{SplitSink, SplitStream}};
 use serde::{Deserialize, Serialize};
-use tokio::sync::broadcast;
+use tokio::{
+    sync::{broadcast},
+    time::{Duration, sleep},
+};
 use tracing::info;
 use uuid::Uuid;
 
@@ -21,6 +24,10 @@ pub(crate) struct GeoGuessr {
 }
 
 impl GeoGuessr {
+    fn reset(&self) {
+        self.state.lock().unwrap().reset();
+    }
+
     pub async fn await_join_req(receiver: &mut SplitStream<WebSocket>, sender: &mut SplitSink<WebSocket, Message>) -> Result<(String, String), ()>{
         let join_req = match receiver.next().await {
             Some(Ok(Message::Text(m))) => m,
@@ -94,10 +101,10 @@ impl GeoGuessr {
         self.lobby.lock().unwrap().status.clone()
     }
 
-    pub fn handle_game_event(&self, player_id: Uuid, player_username: String, event: GeoGuessrUserGameEvent) {
+    pub fn handle_game_event(&self, player_id: Uuid, event: GeoGuessrUserGameEvent) {
         match event {
             GeoGuessrUserGameEvent::UpdateGameSettings { settings } => {
-                let mut lobby = self.lobby.lock().unwrap();
+                let lobby = self.lobby.lock().unwrap();
                 if lobby.status != crate::state::LobbyStatus::Waiting {
                     return;
                 }
@@ -107,22 +114,95 @@ impl GeoGuessr {
                 }));
             },
             GeoGuessrUserGameEvent::Guess { lat, lng } => {
-
+                let _ = self.broadcast.send(
+                    GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::PlayerGuess {
+                        player_id: player_id.clone(),
+                        lat,
+                        lng,
+                    },
+                ));
             },
             _ => { return; }
        }
     }
 
-    pub fn handle_lobby_event(&self, player_id: Uuid, player_username: String, event: LobbyUserEvent) {
+    pub fn handle_lobby_event(self: &Arc<Self>, player_id: Uuid, player_username: String, event: LobbyUserEvent) {
         match event {
             LobbyUserEvent::Ready => {
-                // TODO
+                self.lobby.lock().unwrap().player_ready(&player_id);
+                let _ = self.broadcast.send(
+                    GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerReady {
+                        player_id: player_id.clone(),
+                    },
+                ));
+                if self.lobby.lock().unwrap().all_ready() && self.lobby.lock().unwrap().status == LobbyStatus::Waiting {
+                    let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::AllReady));
+                    let l = Arc::clone(self);
+                    tokio::spawn(async move {
+                        // Load locations
+                        GeoGuessr::run_game(l).await;
+                    });
+                }
             },
             LobbyUserEvent::Unready => {
-                // TODO
+                self.lobby.lock().unwrap().player_unready(&player_id);
+                let _ = self.broadcast.send(
+                    GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerUnready {
+                        player_id: player_id.clone(),
+                    },
+                ));
             },
             _ => { return; }
         }
+    }
+
+    pub async fn run_game(game: Arc<GeoGuessr>) {
+        info!("Starting GeoGuessr game");
+        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameStart));
+        sleep(Duration::from_secs(3)).await;
+        let settings = {
+            let s = game.settings.lock().unwrap();
+            s.clone()
+        };
+
+        for _ in 0..settings.num_rounds {
+            if game.lobby.lock().unwrap().empty() {
+                info!("Game empty, terminating loop");
+                return;
+            }
+            let location= {
+                let mut state = game.state.lock().unwrap();
+                match state.get_next_location() {
+                    Some(s) => {s}
+                    None => {
+                        info!("No locations left, ending game");
+                        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
+                        break;
+                    }
+                }
+            };
+
+            info!(location=%location.image_id, "ROUNDSTART:");
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundStart {
+                image_id: location.image_id.clone(),
+            }));
+            sleep(Duration::from_secs(settings.round_length_seconds as u64)).await;
+            info!("ROUNDEND");
+
+             let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
+                correct_lat: location.lat,
+                correct_lng: location.lng,
+                leaderboard: game.get_leaderboard(),
+            }));
+            sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
+        }
+
+        info!("GAME END");
+        if (settings.round_delay_seconds as u64) < 3 {
+            sleep(Duration::from_secs(3 - settings.round_delay_seconds as u64)).await;
+        }
+        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameEnd));
+        game.reset();
     }
 }
 
@@ -255,7 +335,7 @@ pub(crate) enum GeoGuessrGameEvent {
     },
     GameEnd,
     PlayerGuess {
-        username: String,
+        player_id: Uuid,
         lat: f32,
         lng: f32,
     },

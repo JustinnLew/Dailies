@@ -10,9 +10,9 @@ import type {
   GameState,
 } from "../../utils/types";
 import Connecting from "../../components/loading/Connecting";
-import PreparingPlaylist from "../../components/loading/PreparingPlaylist";
-import Ending from "./Ending";
 import { WS_URL } from "../../apiConfig";
+import GameLoading from "../../components/loading/GameLoading";
+import Ending from "../../components/Ending";
 
 export default function Game() {
   const params = useParams();
@@ -230,7 +230,7 @@ export default function Game() {
   }
 
   if (gameState === "loading") {
-    return <PreparingPlaylist />;
+    return <GameLoading text={"Preparing Playlist"} />;
   }
 
   if (gameState === "playing") {

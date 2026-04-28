@@ -4,15 +4,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import.meta.env;
 import type {
   Player,
-  ChatMessage,
   GameState,
   GeoGuessrGameSettings,
 } from "../../utils/types";
 import Connecting from "../../components/loading/Connecting";
-import PreparingPlaylist from "../../components/loading/PreparingPlaylist";
-// import Ending from "./Ending";
 import { WS_URL } from "../../apiConfig";
 import Waiting from "./WaitingRoom";
+import GameLoading from "../../components/loading/GameLoading";
+import Ending from "../../components/Ending";
 
 export default function Game() {
   const params = useParams();
@@ -52,7 +51,6 @@ export default function Game() {
     setGameState("waiting");
     setError("");
     setScores(new Map([...scores.keys()].map((key) => [key, 0])));
-    setPlayerReady(false);
   };
 
   useEffect(() => {
@@ -147,7 +145,7 @@ export default function Game() {
           setScores(new Map(Object.entries(msg.data.leaderboard)));
           break;
         case "GameEnd":
-          socket.current.send(JSON.stringify({ event: "Unready" }));
+          socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
           setGameState("finished");
           break;
         case "PlayerGuess":
@@ -180,10 +178,10 @@ export default function Game() {
 
   const onReady = () => {
     if (playerReady) {
-      socket.current.send(JSON.stringify({ event: "Unready" }));
+      socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
       setPlayerReady(false);
     } else {
-      socket.current.send(JSON.stringify({ event: "Ready" }));
+      socket.current.send(JSON.stringify({type: "LobbyEvent", data: { event: "Ready" } }));
       setPlayerReady(true);
     }
   };
@@ -207,9 +205,9 @@ export default function Game() {
     );
   }
 
-  // if (gameState === "loading") {
-  //   return <PreparingPlaylist />;
-  // }
+  if (gameState === "loading") {
+    return <GameLoading text={"Loading map"}/>;
+  }
 
   // if (gameState === "playing") {
   //   return (
@@ -223,5 +221,5 @@ export default function Game() {
   //   );
   // }
 
-  // return <Ending resetGame={resetGame} players={players} scores={scores} />;
+  return <Ending resetGame={resetGame} players={players} scores={scores} />;
 }
