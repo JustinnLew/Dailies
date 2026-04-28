@@ -21,6 +21,7 @@ export default function Gameplay({
   const viewerRef = useRef<Viewer>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [guessed, setGuessed] = useState(false);
 
   const MapEvents = () => {
     useMapEvents({
@@ -77,6 +78,7 @@ export default function Gameplay({
         ref={containerRef}
         className="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000"
       />
+      {!guessed &&
       <motion.div
         animate={
           mapExpanded
@@ -115,15 +117,21 @@ export default function Gameplay({
           <MapEvents />
           <MapResizer expanded={mapExpanded} />
         </MapContainer>
-        <button
+          <button
           disabled={!position}
-          onClick={() => position && sendGuess(position)}
+          onClick={() => {
+            if (position) {
+              sendGuess(position);
+              setGuessed(true);
+            }
+          }}
           className={`font-semibold font-mono text-lg absolute bottom-3 left-3 z-1000 w-1/4
-          ${position ? "bg-blue-500 cursor-pointer hover:bg-green-500" : "bg-red-300 cursor-not-allowed"} text-white rounded transition-colors px-2 py-1}`}
-        >
-          Guess
-        </button>
+            ${position ? "bg-blue-500 cursor-pointer hover:bg-green-500" : "bg-red-300 cursor-not-allowed"} text-white rounded transition-colors px-2 py-1}`}
+            >
+            Guess
+          </button>
       </motion.div>
+      }
     </div>
   );
 }

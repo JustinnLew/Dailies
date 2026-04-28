@@ -43,6 +43,7 @@ export default function Game() {
   }, []);
   const [gameState, setGameState] = useState<GameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
+  const [guesses, setGuesses] = useState<Map<string, [number, number]>>(new Map());
   const [imageId, setImageId] = useState<string>("");
 
   const resetGame = () => {
@@ -142,16 +143,13 @@ export default function Game() {
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
+          setGuesses(new Map(Object.entries(msg.data.guesses)));
           break;
         case "GameEnd":
           socket.current.send(
             JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" } }),
           );
           setGameState("finished");
-          break;
-        case "PlayerGuess":
-          break;
-        case "CorrectGuess":
           break;
         case "JoinError":
           navigate("/", { state: { error: msg.data.message } });
