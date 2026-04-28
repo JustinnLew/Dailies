@@ -101,6 +101,15 @@ impl GeoGuessr {
         self.lobby.lock().unwrap().status.clone()
     }
 
+    pub fn update_lobby_status(&self, status: LobbyStatus) {
+        let mut lobby = self.lobby.lock().unwrap();
+        lobby.status = status;
+    }
+
+    async fn load_locations(&self) -> Result<(), String> {
+        Ok(())
+    }
+
     pub fn handle_game_event(&self, player_id: Uuid, event: GeoGuessrUserGameEvent) {
         match event {
             GeoGuessrUserGameEvent::UpdateGameSettings { settings } => {
@@ -126,7 +135,7 @@ impl GeoGuessr {
        }
     }
 
-    pub fn handle_lobby_event(self: &Arc<Self>, player_id: Uuid, player_username: String, event: LobbyUserEvent) {
+    pub fn handle_lobby_event(self: &Arc<Self>, player_id: Uuid, event: LobbyUserEvent) {
         match event {
             LobbyUserEvent::Ready => {
                 self.lobby.lock().unwrap().player_ready(&player_id);
@@ -139,7 +148,21 @@ impl GeoGuessr {
                     let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::AllReady));
                     let l = Arc::clone(self);
                     tokio::spawn(async move {
-                        // Load locations
+                        let res = l.load_locations().await;
+                        match res {
+                            Ok(_) => {l.update_lobby_status(LobbyStatus::Playing); }
+                            Err(e) => {
+                                l.update_lobby_status(LobbyStatus::Waiting);
+                                l.lobby.lock().unwrap().player_unready(&player_id);
+                                let _ = l.broadcast.send(GeoGuessrServerEvent::LobbyEvent(LobbyServerEvent::PlayerUnready {
+                                    player_id: player_id,
+                                }));
+                                let _ = l.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::LoadingError {
+                                    message: format!("Failed to load locations: {}", e),
+                                }));
+                                return;
+                            }
+                        }
                         GeoGuessr::run_game(l).await;
                     });
                 }
@@ -159,11 +182,11 @@ impl GeoGuessr {
     pub async fn run_game(game: Arc<GeoGuessr>) {
         info!("Starting GeoGuessr game");
         let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameStart));
-        sleep(Duration::from_secs(3)).await;
         let settings = {
             let s = game.settings.lock().unwrap();
             s.clone()
         };
+        sleep(Duration::from_secs(3)).await;
 
         for _ in 0..settings.num_rounds {
             if game.lobby.lock().unwrap().empty() {
@@ -338,6 +361,9 @@ pub(crate) enum GeoGuessrGameEvent {
         player_id: Uuid,
         lat: f32,
         lng: f32,
+    },
+    LoadingError {
+        message: String,
     },
 }
 
