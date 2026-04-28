@@ -26,24 +26,21 @@ export default function Game() {
   });
   const navigate = useNavigate();
   const socket = useRef<WebSocket>(null!);
-  const updateGameSettings = useCallback(
-    (settings: GeoGuessrGameSettings) => {
-      setGameSettings(settings);
+  const updateGameSettings = useCallback((settings: GeoGuessrGameSettings) => {
+    setGameSettings(settings);
 
-      if (socket.current && socket.current.readyState === WebSocket.OPEN) {
-        socket.current.send(
-          JSON.stringify({
-            type: "GameEvent",
-            data: {
-              event: "UpdateGameSettings",
-              settings: settings,
-            }
-          }),
-        );
-      }
-    },
-    [],
-  );
+    if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+      socket.current.send(
+        JSON.stringify({
+          type: "GameEvent",
+          data: {
+            event: "UpdateGameSettings",
+            settings: settings,
+          },
+        }),
+      );
+    }
+  }, []);
   const [gameState, setGameState] = useState<GameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
   const [imageId, setImageId] = useState(null);
@@ -66,14 +63,14 @@ export default function Game() {
             event: "Join",
             lobby_code: params.lobbyCode,
             username: username,
-          }
+          },
         }),
       );
     };
     s.onclose = () => {};
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log(msg.data)
+      console.log(msg.data);
       switch (msg.data.event) {
         case "SyncState":
           setPlayers(
@@ -146,7 +143,9 @@ export default function Game() {
           setScores(new Map(Object.entries(msg.data.leaderboard)));
           break;
         case "GameEnd":
-          socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
+          socket.current.send(
+            JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" } }),
+          );
           setGameState("finished");
           break;
         case "PlayerGuess":
@@ -179,10 +178,14 @@ export default function Game() {
 
   const onReady = () => {
     if (playerReady) {
-      socket.current.send(JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" }}));
+      socket.current.send(
+        JSON.stringify({ type: "LobbyEvent", data: { event: "Unready" } }),
+      );
       setPlayerReady(false);
     } else {
-      socket.current.send(JSON.stringify({type: "LobbyEvent", data: { event: "Ready" } }));
+      socket.current.send(
+        JSON.stringify({ type: "LobbyEvent", data: { event: "Ready" } }),
+      );
       setPlayerReady(true);
     }
   };
@@ -207,14 +210,11 @@ export default function Game() {
   // }
 
   if (gameState === "loading") {
-    return <GameLoading text={"Loading map"}/>;
+    return <GameLoading text={"Loading map"} />;
   }
 
   if (gameState === "waiting") {
-    return (
-      <Gameplay imageId="1607255130507987"
-      />
-    );
+    return <Gameplay imageId="1607255130507987" />;
   }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;

@@ -17,16 +17,27 @@ export default function HomeGrid({
         "Test your music knowledge by guessing songs from short clips.",
       icon: <GTSIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
-        <HomeModal open={open} onClose={onClose} setError={setError} game_code={"guess-the-song"} title={"GUESS THE SONG"} />
+        <HomeModal
+          open={open}
+          onClose={onClose}
+          setError={setError}
+          game_code={"guess-the-song"}
+          title={"GUESS THE SONG"}
+        />
       ),
     },
     {
       title: "Geo Guessr",
-      description:
-        "Guess locations around the world.",
+      description: "Guess locations around the world.",
       icon: <GeoIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
-        <HomeModal open={open} onClose={onClose} setError={setError} game_code={"geo-guessr"} title={"GEO GUESSR"} />
+        <HomeModal
+          open={open}
+          onClose={onClose}
+          setError={setError}
+          game_code={"geo-guessr"}
+          title={"GEO GUESSR"}
+        />
       ),
     },
     {

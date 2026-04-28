@@ -12,10 +12,10 @@ type GuessTheSongGameSettings = {
 };
 
 type GeoGuessrGameSettings = {
-  numRounds: number,
+  numRounds: number;
   roundLengthSeconds: number;
   roundDelaySeconds: number;
-}
+};
 
 type Song = {
   title: string;
@@ -32,4 +32,11 @@ type GameState = "playing" | "waiting" | "connecting" | "loading" | "finished";
 
 export const reservedUsernames = ["SYSTEM", "ERROR"];
 
-export type { Player, GameState, GuessTheSongGameSettings, Song, ChatMessage, GeoGuessrGameSettings };
+export type {
+  Player,
+  GameState,
+  GuessTheSongGameSettings,
+  Song,
+  ChatMessage,
+  GeoGuessrGameSettings,
+};

@@ -13,8 +13,8 @@ export default function HomeModal({
   open: boolean;
   onClose: () => void;
   setError: Dispatch<SetStateAction<string>>;
-  game_code: string,
-  title: string,
+  game_code: string;
+  title: string;
 }) {
   const [createDisabled, setcreateDisabled] = useState(false);
   const navigate = useNavigate();

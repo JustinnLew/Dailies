@@ -18,12 +18,7 @@ function App() {
             </AudioProvider>
           }
         />
-        <Route
-          path="/geo-guessr/:lobbyCode"
-          element={
-            <GeoGuessr />
-          }
-        />
+        <Route path="/geo-guessr/:lobbyCode" element={<GeoGuessr />} />
       </Routes>
     </>
   );
