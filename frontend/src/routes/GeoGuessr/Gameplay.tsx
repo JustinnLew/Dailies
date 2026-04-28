@@ -44,6 +44,7 @@ export default function Gameplay({ imageId, sendGuess }: { imageId: string, send
       imageId: imageId || undefined,
       component: {
         cover: false,
+        cache: false,
         keyboard: false,
       },
     });
@@ -94,9 +95,10 @@ export default function Gameplay({ imageId, sendGuess }: { imageId: string, send
           <MapResizer expanded={mapExpanded} />
         </MapContainer>
         <button
-          onClick={() => setMapExpanded(!mapExpanded)}
-          className="font-semibold font-mono text-lg absolute bottom-3 left-3 z-1000 w-1/4
-          bg-blue-500 hover:bg-green-500 cursor-pointer text-white rounded transition-colors px-2 py-1"
+          disabled={!position}
+          onClick={() => position && sendGuess(position)}
+          className={`font-semibold font-mono text-lg absolute bottom-3 left-3 z-1000 w-1/4
+          ${position ? "bg-blue-500 cursor-pointer hover:bg-green-500" : "bg-red-300 cursor-not-allowed"} text-white rounded transition-colors px-2 py-1}`}
         >
           Guess
         </button>

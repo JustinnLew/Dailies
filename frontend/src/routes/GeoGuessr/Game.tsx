@@ -174,7 +174,14 @@ export default function Game() {
   }, [params.lobbyCode, navigate, username]);
 
   const sendGuess = (guess: [number, number]) => {
-    socket.current.send(JSON.stringify({ event: "Guess", content: guess }));
+    socket.current.send(JSON.stringify(
+      { type: "GameEvent",
+        data: {
+          event: "Guess",
+          lat: guess[0],
+          lng: guess[1],
+        }}
+    ));
   };
 
   const onReady = () => {
