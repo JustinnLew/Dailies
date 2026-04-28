@@ -13,7 +13,7 @@ use uuid::Uuid;
 use crate::{connections::ConnectionManager, state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent}};
 
 /// ===============================================
-/// Main Parent Struct for Guess The Song Game
+/// Main Parent Struct for GeoGuessr Game
 /// ===============================================
 pub(crate) struct GeoGuessr {
     pub lobby: Mutex<LobbyState>,
