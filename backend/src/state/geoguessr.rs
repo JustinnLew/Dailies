@@ -1,7 +1,8 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{collections::HashMap, sync::{Arc, LazyLock, Mutex}};
 
 use axum::extract::ws::{Message, WebSocket};
 use futures_util::{SinkExt, StreamExt, stream::{SplitSink, SplitStream}};
+use rand::seq::IndexedRandom;
 use serde::{Deserialize, Serialize};
 use tokio::{
     sync::{broadcast},
@@ -11,6 +12,16 @@ use tracing::info;
 use uuid::Uuid;
 
 use crate::{connections::ConnectionManager, state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent}};
+
+static LOCATIONS: LazyLock<Vec<Location>> = LazyLock::new(|| {
+    let data = include_str!("../geo_data/world.json");
+    let raw: Vec<Location> = serde_json::from_str(&data).expect("Failed to parse json");
+    raw.into_iter().map(|r| Location {
+        image_id: r.image_id,
+        lat: r.lat as f32,
+        lng: r.lng as f32,
+    }).collect()
+});
 
 /// ===============================================
 /// Main Parent Struct for GeoGuessr Game
@@ -107,6 +118,16 @@ impl GeoGuessr {
     }
 
     async fn load_locations(&self) -> Result<(), String> {
+        let mut rng = rand::rng();
+        let settings = self.settings.lock().unwrap().clone();
+
+        let sample: Vec<Location> = LOCATIONS
+            .choose_multiple(&mut rng, settings.num_rounds as usize)
+            .cloned()
+            .collect();
+
+        let mut state = self.state.lock().unwrap();
+        state.locations = sample;
         Ok(())
     }
 
@@ -149,6 +170,7 @@ impl GeoGuessr {
                     let l = Arc::clone(self);
                     tokio::spawn(async move {
                         let res = l.load_locations().await;
+                        info!("Locations loaded: {:?}", l.state.lock().unwrap().locations);
                         match res {
                             Ok(_) => {l.update_lobby_status(LobbyStatus::Playing); }
                             Err(e) => {
@@ -186,7 +208,6 @@ impl GeoGuessr {
             let s = game.settings.lock().unwrap();
             s.clone()
         };
-        sleep(Duration::from_secs(3)).await;
 
         for _ in 0..settings.num_rounds {
             if game.lobby.lock().unwrap().empty() {
@@ -398,7 +419,8 @@ pub(crate) enum GeoGuesserClientEvent {
 /// ===============================================
 /// Helper Structs
 /// ===============================================
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Location {
     pub image_id: String,
     pub lat: f32,
