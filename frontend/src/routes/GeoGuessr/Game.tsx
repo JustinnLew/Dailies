@@ -156,7 +156,7 @@ export default function Game() {
         case "JoinError":
           navigate("/", { state: { error: msg.data.message } });
           break;
-        case "PlaylistError":
+        case "LoadingErrorj":
           setGameState("waiting");
           setError(msg.data.message);
           setPlayerReady(false);
@@ -215,7 +215,7 @@ export default function Game() {
   }
 
   if (gameState === "playing") {
-    return <Gameplay imageId={imageId} />;
+    return <Gameplay imageId={imageId} sendGuess={sendGuess} />;
   }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;

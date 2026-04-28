@@ -108,7 +108,7 @@ export default function Waiting({
             {/* Round Length */}
             <div className="mb-2">
               <label className="block mb-1 font-medium text-sm">
-                Round Length (s):
+                Max Round Length (s):
               </label>
               <select
                 className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
@@ -120,7 +120,7 @@ export default function Waiting({
                   })
                 }
               >
-                {[5, 10, 20, 30].map((val) => (
+                {[15,30,60,120].map((val) => (
                   <option key={val} value={val}>
                     {val}s
                   </option>
@@ -131,7 +131,7 @@ export default function Waiting({
             {/* Round Delay */}
             <div className="mb-2">
               <label className="block mb-1 font-medium text-sm">
-                Round Delay (s):
+                Max Round Delay (s):
               </label>
               <select
                 className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
@@ -143,7 +143,7 @@ export default function Waiting({
                   })
                 }
               >
-                {[0, 1, 2, 3].map((val) => (
+                {[15,30,60].map((val) => (
                   <option key={val} value={val}>
                     {val}s
                   </option>

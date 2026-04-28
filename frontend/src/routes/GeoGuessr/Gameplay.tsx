@@ -4,7 +4,7 @@ import "mapillary-js/dist/mapillary.css";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import { motion } from "motion/react";
 
-export default function Gameplay({ imageId }: { imageId: string }) {
+export default function Gameplay({ imageId, sendGuess }: { imageId: string, sendGuess: (guess: [number, number]) => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
@@ -41,6 +41,7 @@ export default function Gameplay({ imageId }: { imageId: string }) {
     viewerRef.current = new Viewer({
       accessToken: "MLY|27623692320552297|6e04b1092adbc64d5d6eeb79a69570d6",
       container: containerRef.current,
+      imageId: imageId || undefined,
       component: {
         cover: false,
         keyboard: false,
@@ -58,13 +59,13 @@ export default function Gameplay({ imageId }: { imageId: string }) {
   }, []);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden">
+    <div className="relative w-full h-screen overflow-hidden bg-black">
       <div
         ref={containerRef}
         className="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000"
       />
       <motion.div
-        animate={mapExpanded ? { width: "75%", height: "83.333%" } : { width: "25%", height: "33.333%" }}
+        animate={mapExpanded ? { width: "60%", height: "75%" } : { width: "25%", height: "33%" }}
         transition={{ duration: 0.2, ease: "easeInOut" }}
         className="fixed bottom-4 left-4 border-2 border-white/20 rounded-lg shadow-2xl overflow-hidden"
       >
@@ -92,6 +93,13 @@ export default function Gameplay({ imageId }: { imageId: string }) {
           <MapEvents />
           <MapResizer expanded={mapExpanded} />
         </MapContainer>
+        <button
+          onClick={() => setMapExpanded(!mapExpanded)}
+          className="font-semibold font-mono text-lg absolute bottom-3 left-3 z-1000 w-1/4
+          bg-blue-500 hover:bg-green-500 cursor-pointer text-white rounded transition-colors px-2 py-1"
+        >
+          Guess
+        </button>
       </motion.div>
     </div>
   );

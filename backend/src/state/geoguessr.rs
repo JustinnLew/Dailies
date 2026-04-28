@@ -222,11 +222,11 @@ impl GeoGuessr {
 
     pub async fn run_game(game: Arc<GeoGuessr>) {
         info!("Starting GeoGuessr game");
-        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameStart));
         let settings = {
             let s = game.settings.lock().unwrap();
             s.clone()
         };
+        let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::GameStart));
 
         for _ in 0..settings.num_rounds {
             if game.lobby.lock().unwrap().empty() {
@@ -246,12 +246,9 @@ impl GeoGuessr {
                 }
             };
 
-            // Fresh notifier each round — prevents a stale notify_one from a
-            // previous round immediately firing in the next select!
             let round_notify = Arc::new(Notify::new());
             *game.round_notify.lock().unwrap() = Arc::clone(&round_notify);
 
-            // Also clear any guesses from the previous round
             game.state.lock().unwrap().begin_round();
 
             info!(location=%location.image_id, "ROUNDSTART");
@@ -259,7 +256,6 @@ impl GeoGuessr {
                 image_id: location.image_id.clone(),
             }));
 
-            // Race: countdown timer vs all players guessing early
             tokio::select! {
                 _ = sleep(Duration::from_secs(settings.round_length_seconds as u64)) => {
                     info!("ROUNDEND (timeout)");
@@ -269,12 +265,11 @@ impl GeoGuessr {
                 }
             }
 
-            // Score everyone based on their guess for this round (0 if no guess)
             let round_guesses = {
                 let mut state = game.state.lock().unwrap();
                 let player_ids: Vec<Uuid> = state.scores.keys().cloned().collect();
                 state.calculate_and_apply_scores(&location, &player_ids);
-                state.current_round_guesses.clone() // grab after scoring, before next begin_round()
+                state.current_round_guesses.clone()
             };
 
             let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
@@ -284,6 +279,7 @@ impl GeoGuessr {
                 guesses: round_guesses,
             }));
 
+            info!("{:?}", settings.round_delay_seconds);
             sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
         }
 
@@ -331,7 +327,7 @@ impl GeoGuessrSettings {
         Self {
             num_rounds: 10,
             round_length_seconds: 30,
-            round_delay_seconds: 3,
+            round_delay_seconds: 15,
         }
     }
 
