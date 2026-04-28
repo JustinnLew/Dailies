@@ -214,7 +214,7 @@ export default function Game() {
   }
 
   if (gameState === "waiting") {
-    return <Gameplay imageId="1607255130507987" />;
+    return <Gameplay imageId="311497858152441" />;
   }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;
