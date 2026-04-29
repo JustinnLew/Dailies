@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "leaflet/dist/leaflet.css";
 import type { GeoGuessrRoundResult, Player } from "../../utils/types";
 import ResultMap from "./ResultMap";
+import { AnimatePresence, motion } from "motion/react";
 
 const PALETTE = [
   "#5b7fff", "#ff9f43", "#26de81",
@@ -21,7 +22,7 @@ export default function Reveal({
   scores: Map<string, number>;
   players: Map<string, Player>;
 }) {
-  const [timeLeft, setTimeLeft] = useState(time);
+  const [timeLeft, setTimeLeft] = useState(Math.max(time, 0));
 //   const [nextEnabled, setNextEnabled] = useState(false);
 
   const sortedPlayers = [...scores.entries()].sort((a, b) => b[1] - a[1]);
@@ -49,13 +50,13 @@ return (
 
         {/* Header */}
         <div className="px-5 py-5 border-b border-white/10 shrink-0">
-          <h2 className="text-3xl font-bold text-white tracking-wide">Results</h2>
+          <h2 className="text-2xl font-press-start text-shadow-(--text-shadow-title) text-white tracking-wide">Results</h2>
 
           {/* Timer bar */}
           <div className="mt-4 flex items-center gap-3">
             <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
               <div
-                className="h-full rounded-full transition-all duration-1000 ease-linear"
+                className="h-full rounded-full transition-all duration-1000 ease-linear font-vt323"
                 style={{ width: `${timerPct}%`, background: timerColor }}
               />
             </div>
@@ -66,53 +67,64 @@ return (
         </div>
 
         {/* Leaderboard */}
-        <div className="flex-1 overflow-y-auto py-2">
-          {sortedPlayers.map(([id, totalScore], i) => {
-            const player = players.get(id);
-            const result = results.get(id);
-            const color = playerColors[id] ?? PALETTE[0];
+        <div className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+          <AnimatePresence>
+            {sortedPlayers.map(([id, totalScore], i) => {
+              const player = players.get(id);
+              const result = results.get(id);
+              const color = playerColors[id] ?? PALETTE[0];
 
-            return (
-              <div
-                key={id}
-                className="flex items-center gap-3 px-5 py-3 border-b border-white/5 hover:bg-white/5 transition-colors"
-              >
-                {/* Rank */}
-                <span className="text-xl font-bold tabular-nums w-6 shrink-0"
-                  style={{ color: i < 3 ? color : "rgba(255,255,255,0.2)" }}>
-                  {i + 1}
-                </span>
+              return (
+                <motion.div
+                  layout
+                  key={id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                    opacity: { duration: 0.2 },
+                  }}
+                  className="flex items-center gap-3 px-5 py-3 border-b-2 border-gray-700 bg-black/20 hover:bg-white/5 transition-colors"
+                >
+                  {/* Rank */}
+                  <span className="text-neon-yellow font-vt323 text-xl w-8 shrink-0">
+                    #{i + 1}
+                  </span>
 
-                {/* Colour dot */}
-                <div
-                  className="w-2.5 h-2.5 rounded-full shrink-0"
-                  style={{ background: color }}
-                />
+                  {/* Colour */}
+                  <div
+                    className="w-2.5 h-2.5 shrink-0"
+                    style={{ background: color }}
+                  />
 
-                {/* Name */}
-                <span className="flex-1 text-sm text-white/80 truncate">
-                  {player?.username ?? id}
-                </span>
+                  {/* Name */}
+                  <span className="flex-1 font-vt323 text-xl text-white/80 truncate">
+                    {player?.username ?? "PLAYER"}
+                  </span>
 
-                {/* Right side: score + round info */}
-                <div className="text-right shrink-0">
-                  <div className="text-base font-bold text-white tabular-nums">
-                    {totalScore.toLocaleString()}
+                  {/* Right side: score + round info */}
+                  <div className="text-right shrink-0">
+                    <div className="text-xs font-bold text-white font-press-start">
+                      {totalScore.toLocaleString()}
+                    </div>
+                    {result ? (
+                      <>
+                        <div className="text-lg text-emerald-400 font-vt323">+{result.pointsGained}</div>
+                        <div className="text-xs text-white/60">
+                          {Math.round(result.distanceKm)} km
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-xs text-white/20">no guess</div>
+                    )}
                   </div>
-                  {result ? (
-                    <>
-                      <div className="text-xs text-emerald-400">+{result.pointsGained}</div>
-                      <div className="text-xs text-white/30">
-                        {Math.round(result.distanceKm)} km
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-xs text-white/20">no guess</div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
 
         {/* Next button slot */}
