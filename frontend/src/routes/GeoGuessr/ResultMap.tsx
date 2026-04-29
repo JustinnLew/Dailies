@@ -47,8 +47,9 @@ export default function ResultMap({ correctLocation, results, scores }: {
 
   return (
     <MapContainer
+      zoom={4}
       maxZoom={19}
-      minZoom={3}
+      minZoom={2}
       zoomControl={false}
       className="w-screen h-screen overflow-hidden"
       attributionControl={false}
