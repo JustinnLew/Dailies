@@ -233,7 +233,7 @@ export default function Game() {
   }
 
   if (gameState === "playing") {
-    return <Gameplay imageId={imageId} sendGuess={sendGuess} />;
+    return <Gameplay imageId={imageId} sendGuess={sendGuess} time={gameSettings.roundLengthSeconds} />;
   }
 
   if (gameState === "answer_reveal") {

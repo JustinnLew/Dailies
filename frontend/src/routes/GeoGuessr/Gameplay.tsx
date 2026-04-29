@@ -13,9 +13,11 @@ import { motion, AnimatePresence } from "motion/react";
 export default function Gameplay({
   imageId,
   sendGuess,
+  time,
 }: {
   imageId: string;
   sendGuess: (guess: [number, number]) => void;
+  time: number
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer>(null);
@@ -23,6 +25,16 @@ export default function Gameplay({
   const [mapExpanded, setMapExpanded] = useState(false);
   const [guessed, setGuessed] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(Math.max(time, 0));
+
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const t = setTimeout(() => setTimeLeft((v) => v - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timeLeft]);
+
+  const timerPct = Math.max(0, (timeLeft / time) * 100);
+  const timerColor = timeLeft <= 10 ? "#ff5b5b" : timeLeft <= 20 ? "#ff9f43" : "#26de81";
 
   const MapEvents = () => {
     useMapEvents({
@@ -79,6 +91,21 @@ export default function Gameplay({
         ref={containerRef}
         className="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000"
       />
+      {/* Timer bar */}
+      <div className="absolute top-0 left-0 right-0 z-1000 h-1">
+        <div
+          className="h-full transition-all duration-1000 ease-linear"
+          style={{ width: `${timerPct}%`, background: timerColor }}
+        />
+      </div>
+
+      {/* Timer label */}
+      <div
+        className="absolute top-3 left-3 z-1000 font-press-start text-md px-2 py-0.5 rounded bg-black/40"
+        style={{ color: timerColor }}
+      >
+        {timeLeft}s
+      </div>
       {!guessed && (
         <motion.div
           animate={
