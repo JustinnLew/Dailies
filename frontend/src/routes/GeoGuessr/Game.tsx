@@ -3,8 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import.meta.env;
 import type {
   Player,
-  GameState,
   GeoGuessrGameSettings,
+  GeoGuesserGameState,
 } from "../../utils/types";
 import Connecting from "../../components/loading/Connecting";
 import { WS_URL } from "../../apiConfig";
@@ -12,6 +12,7 @@ import Waiting from "./WaitingRoom";
 import GameLoading from "../../components/loading/GameLoading";
 import Ending from "../../components/Ending";
 import Gameplay from "./Gameplay";
+import Reveal from "./Reveal";
 
 export default function Game() {
   const params = useParams();
@@ -41,9 +42,14 @@ export default function Game() {
       );
     }
   }, []);
-  const [gameState, setGameState] = useState<GameState>("connecting");
+  const [gameState, setGameState] = useState<GeoGuesserGameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
-  const [guesses, setGuesses] = useState<Map<string, [number, number]>>(new Map());
+  const [guesses, setGuesses] = useState<Map<string, [number, number]>>(
+    new Map(),
+  );
+  const [correctLocation, setCorrectLocation] = useState<
+    [number, number] | null
+  >(null);
   const [imageId, setImageId] = useState<string>("");
 
   const resetGame = () => {
@@ -140,10 +146,13 @@ export default function Game() {
           break;
         case "RoundStart":
           setImageId(msg.data.image_id);
+          setGameState("playing");
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
           setGuesses(new Map(Object.entries(msg.data.guesses)));
+          setCorrectLocation([msg.data.correct_lat, msg.data.correct_lng]);
+          setGameState("answer_reveal");
           break;
         case "GameEnd":
           socket.current.send(
@@ -223,6 +232,18 @@ export default function Game() {
 
   if (gameState === "playing") {
     return <Gameplay imageId={imageId} sendGuess={sendGuess} />;
+  }
+
+  if (gameState === "answer_reveal") {
+    return (
+      <Reveal
+        correctLocation={correctLocation}
+        guesses={guesses}
+        time={gameSettings.roundDelaySeconds}
+        scores={scores}
+        players={players}
+      />
+    );
   }
 
   return <Ending resetGame={resetGame} players={players} scores={scores} />;

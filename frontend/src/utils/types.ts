@@ -28,6 +28,13 @@ type ChatMessage = {
   message: string;
 };
 
+type GeoGuesserGameState =
+  | "answer_reveal"
+  | "playing"
+  | "waiting"
+  | "connecting"
+  | "loading"
+  | "finished";
 type GameState = "playing" | "waiting" | "connecting" | "loading" | "finished";
 
 export const reservedUsernames = ["SYSTEM", "ERROR"];
@@ -39,4 +46,5 @@ export type {
   Song,
   ChatMessage,
   GeoGuessrGameSettings,
+  GeoGuesserGameState,
 };
