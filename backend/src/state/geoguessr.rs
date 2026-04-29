@@ -168,24 +168,15 @@ impl GeoGuessr {
                     return;
                 }
 
+                let player_count = self.lobby.lock().unwrap().player_count();
                 let all_guessed = {
                     let mut state = self.state.lock().unwrap();
                     state.record_guess(player_id, lat, lng);
 
                     // Check if all lobby members have now guessed
-                    let player_count = self.lobby.lock().unwrap().player_count();
                     state.all_players_guessed(player_count)
                 };
 
-                // let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
-                //     GeoGuessrGameEvent::PlayerGuess {
-                //         player_id,
-                //         lat,
-                //         lng,
-                //     },
-                // ));
-
-                // If everyone has guessed, wake up the round timer in run_game
                 if all_guessed {
                     info!("All players guessed — ending round early");
                     self.round_notify.lock().unwrap().notify_one();
