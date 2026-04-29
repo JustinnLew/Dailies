@@ -47,8 +47,6 @@ export default function ResultMap({ correctLocation, results, scores }: {
 
   return (
     <MapContainer
-      center={[30, 15]}
-      zoom={2}
       maxZoom={19}
       minZoom={3}
       zoomControl={false}
