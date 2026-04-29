@@ -1,33 +1,39 @@
-import { MapContainer, TileLayer, Marker, Popup, Polyline, ZoomControl, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Polyline, ZoomControl, useMap, AttributionControl } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
+import type { GeoGuessrRoundResult } from "../../utils/types";
 
 const PALETTE = [
   "#5b7fff", "#ff9f43", "#26de81",
   "#fd79a8", "#a29bfe", "#00cec9",
 ];
 
-// Helper component to handle the fitBounds logic
-function MapBoundsHandler({ bounds }: { bounds: L.LatLngBoundsExpression }) {
+function MapBoundsHandler({ bounds }: { bounds: [number, number][] }) {
   const map = useMap();
   useEffect(() => {
-    if (bounds && (bounds as any[]).length > 0) {
-      map.fitBounds(bounds, { padding: [60, 60] });
+    if (bounds.length > 0) {
+      map.fitBounds(bounds as L.LatLngBoundsExpression, { padding: [60, 60] });
     }
   }, []);
   return null;
 }
 
-export default function ResultMap({ correctLocation, guesses, scores }: {
+export default function ResultMap({ correctLocation, results, scores }: {
   correctLocation: [number, number] | null;
-  guesses: Map<string, [number, number]>;
+  results: Map<string, GeoGuessrRoundResult>;
   scores: Map<string, number>;
 }) {
   if (!correctLocation) return null;
 
-  const bounds: [number, number][] = [correctLocation, ...Array.from(guesses.values())];
-  const playerColors: Record<string, string> = {};
+  const bounds: [number, number][] = [
+    correctLocation,
+    ...Array.from(results.values())
+      .filter(r => r.guess != null)
+      .map(r => r.guess),
+  ];
+
   const sortedPlayers = [...scores.entries()].sort((a, b) => b[1] - a[1]);
+  const playerColors: Record<string, string> = {};
   sortedPlayers.forEach(([name], i) => {
     playerColors[name] = PALETTE[i % PALETTE.length];
   });
@@ -47,14 +53,15 @@ export default function ResultMap({ correctLocation, guesses, scores }: {
       minZoom={3}
       zoomControl={false}
       className="w-screen h-screen overflow-hidden"
+      attributionControl={false}
     >
-      <ZoomControl position="bottomright" />
-
+      <ZoomControl position="topleft" />
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         attribution="&copy; OpenStreetMap &copy; CartoDB"
         maxZoom={19}
       />
+      <AttributionControl position="bottomleft" />
 
       <Marker position={correctLocation} icon={correctIcon}>
         <Popup>
@@ -62,7 +69,8 @@ export default function ResultMap({ correctLocation, guesses, scores }: {
         </Popup>
       </Marker>
 
-      {Array.from(guesses).map(([name, pos]) => {
+      {Array.from(results.entries()).map(([name, result]) => {
+        if (!result.guess) return null;
         const color = playerColors[name] ?? PALETTE[0];
 
         const guessIcon = L.divIcon({
@@ -73,35 +81,17 @@ export default function ResultMap({ correctLocation, guesses, scores }: {
         });
 
         return (
-          <div key={name}>
+          <div key={`line-${name}`}>
             <Polyline
-              positions={[pos, correctLocation]}
-              pathOptions={{
-                color,
-                weight: 2,
-                opacity: 0.7,
-                dashArray: "6 6",
-              }}
+              positions={[result.guess, correctLocation]}
+              pathOptions={{ color, weight: 2, opacity: 0.7, dashArray: "6 6" }}
             />
-
-            {/* Player Guess Marker */}
-            <Marker position={pos} icon={guessIcon}>
-              <Popup>
-                <span style={{ fontFamily: "monospace" }}>
-                  <b style={{ color }}>{name}</b>
-                  <br />
-                  {Math.round(1000)} km away
-                  <br />
-                  {scores.get(name) ?? 0} pts total
-                </span>
-              </Popup>
-            </Marker>
+            <Marker key={`marker-${name}`} position={result.guess} icon={guessIcon}/>
           </div>
         );
       })}
 
-      {/* Handle fitting the map to all markers */}
-      <MapBoundsHandler bounds={bounds as L.LatLngBoundsExpression} />
+      <MapBoundsHandler bounds={bounds} />
     </MapContainer>
   );
 }

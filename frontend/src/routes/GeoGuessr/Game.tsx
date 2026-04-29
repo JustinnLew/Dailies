@@ -5,6 +5,7 @@ import type {
   Player,
   GeoGuessrGameSettings,
   GeoGuesserGameState,
+  GeoGuessrRoundResult,
 } from "../../utils/types";
 import Connecting from "../../components/loading/Connecting";
 import { WS_URL } from "../../apiConfig";
@@ -44,7 +45,7 @@ export default function Game() {
   }, []);
   const [gameState, setGameState] = useState<GeoGuesserGameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
-  const [guesses, setGuesses] = useState<Map<string, [number, number]>>(
+  const [roundResults, setRoundResults] = useState<Map<string, GeoGuessrRoundResult>>(
     new Map(),
   );
   const [correctLocation, setCorrectLocation] = useState<
@@ -54,6 +55,7 @@ export default function Game() {
 
   const resetGame = () => {
     setGameState("waiting");
+    setPlayerReady(false);
     setError("");
     setScores(new Map([...scores.keys()].map((key) => [key, 0])));
   };
@@ -150,7 +152,7 @@ export default function Game() {
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
-          setGuesses(new Map(Object.entries(msg.data.guesses)));
+          setRoundResults(new Map(Object.entries(msg.data.results)));
           setCorrectLocation([msg.data.correct_lat, msg.data.correct_lng]);
           setGameState("answer_reveal");
           break;
@@ -238,7 +240,7 @@ export default function Game() {
     return (
       <Reveal
         correctLocation={correctLocation}
-        guesses={guesses}
+        results={roundResults}
         time={gameSettings.roundDelaySeconds}
         scores={scores}
         players={players}
