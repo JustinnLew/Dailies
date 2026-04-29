@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Viewer } from "mapillary-js";
+import L from "leaflet";
 import "mapillary-js/dist/mapillary.css";
 import {
   MapContainer,
@@ -176,7 +177,22 @@ export default function Gameplay({
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
               attribution='Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
             />
-            {position && <Marker position={position} />}
+            {position && (
+              <Marker
+                position={position}
+                icon={L.divIcon({
+                  html: `
+                    <div style="position:relative;width:22px;height:22px">
+                      <div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,91,91,0.4);animation:ping 1.2s ease-out infinite"></div>
+                      <div style="position:absolute;inset:3px;border-radius:50%;background:#ff5b5b;border:2px solid white"></div>
+                    </div>
+                    <style>@keyframes ping{0%{transform:scale(1);opacity:0.8}100%{transform:scale(2.2);opacity:0}}</style>`,
+                  className: "",
+                  iconSize: [24, 24],
+                  iconAnchor: [8, 8],
+                })}
+              />
+            )}
             <MapEvents />
             <MapResizer expanded={mapExpanded} />
           </MapContainer>

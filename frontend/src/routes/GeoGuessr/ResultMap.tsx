@@ -39,7 +39,12 @@ export default function ResultMap({ correctLocation, results, scores }: {
   });
 
   const correctIcon = L.divIcon({
-    html: `<div style="width:18px;height:18px;background:#ff5b5b;border:3px solid white;border-radius:50%;box-shadow:0 0 0 3px rgba(255,91,91,0.3)"></div>`,
+     html: `
+      <div style="position:relative;width:22px;height:22px">
+        <div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,91,91,0.4);animation:ping 1.2s ease-out infinite"></div>
+        <div style="position:absolute;inset:3px;border-radius:50%;background:#ff5b5b;border:2px solid white"></div>
+      </div>
+      <style>@keyframes ping{0%{transform:scale(1);opacity:0.8}100%{transform:scale(2.2);opacity:0}}</style>`,
     className: "",
     iconSize: [18, 18],
     iconAnchor: [9, 9],
