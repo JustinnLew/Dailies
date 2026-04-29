@@ -49,6 +49,7 @@ pub(crate) struct GeoGuessr {
 impl GeoGuessr {
     fn reset(&self) {
         self.state.lock().unwrap().reset();
+        self.lobby.lock().unwrap().reset();
     }
 
     pub async fn await_join_req(
@@ -332,6 +333,7 @@ impl GeoGuessr {
 impl ConnectionManager for GeoGuessr {
     fn connection_drop(&self, player_id: Uuid) {
         self.lobby.lock().unwrap().player_leave(&player_id);
+        self.state.lock().unwrap().scores.remove(&player_id);
         info!(
             "Player {} disconnected from lobby: {}",
             player_id, self.lobby_code
