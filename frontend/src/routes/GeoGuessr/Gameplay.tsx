@@ -162,7 +162,8 @@ export default function Gameplay({
               }
             }}
             className={`font-semibold font-mono text-lg absolute bottom-3 left-3 z-1000 w-1/4
-            ${position ? "bg-blue-500 cursor-pointer hover:bg-green-500" : "bg-red-300 cursor-not-allowed"} text-white rounded transition-colors px-2 py-1}`}
+            ${position ? "bg-neon-green/60 cursor-pointer hover:bg-neon-green" : "bg-red-500 cursor-not-allowed"}
+            text-white rounded transition-colors px-2 py-1 font-press-start}`}
           >
             Guess
           </button>

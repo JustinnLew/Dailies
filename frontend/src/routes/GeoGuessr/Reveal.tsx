@@ -46,7 +46,7 @@ return (
         <ResultMap correctLocation={correctLocation} scores={scores} results={results} />
       </div>
 
-      <div className="absolute top-0 right-0 h-full w-80 flex flex-col bg-black/70 backdrop-blur-sm border-l border-white/10 z-1000">
+      <div className="absolute top-0 right-0 h-full w-80 flex flex-col bg-black/70 backdrop-blur-sm border-l border-white/10 z-1000 scanlines">
 
         {/* Header */}
         <div className="px-5 py-5 border-b border-white/10 shrink-0">
@@ -130,7 +130,7 @@ return (
         {/* Next button slot */}
         <div className="px-5 py-4 shrink-0 border-t border-white/10">
           <button
-            className="w-full py-3 rounded bg-blue-400 text-white text-sm tracking-widest uppercase cursor-pointer"
+            className="w-full py-3 rounded bg-neon-pink text-white text-sm tracking-widest uppercase cursor-pointer font-press-start"
           >
             Next Round
           </button>
