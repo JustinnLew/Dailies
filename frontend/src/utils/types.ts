@@ -29,10 +29,10 @@ type ChatMessage = {
 };
 
 type GeoGuessrRoundResult = {
-  distanceKm : number,
-  pointsGained: number,
-  guess: [number, number]
-}
+  distanceKm: number;
+  pointsGained: number;
+  guess: [number, number];
+};
 
 type GeoGuesserGameState =
   | "answer_reveal"
@@ -53,5 +53,5 @@ export type {
   ChatMessage,
   GeoGuessrGameSettings,
   GeoGuesserGameState,
-  GeoGuessrRoundResult
+  GeoGuessrRoundResult,
 };

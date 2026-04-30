@@ -61,13 +61,10 @@ async fn main() {
                 .retain(|_, v| !v.lobby.lock().unwrap().empty());
 
             // Remove registry entries whose game no longer exists
-            scan_state
-                .games
-                .registry
-                .retain(|code, _| {
-                    scan_state.games.guess_the_song.contains_key(code)
-                        || scan_state.games.geo_guessr.contains_key(code)
-                });
+            scan_state.games.registry.retain(|code, _| {
+                scan_state.games.guess_the_song.contains_key(code)
+                    || scan_state.games.geo_guessr.contains_key(code)
+            });
         }
     });
 

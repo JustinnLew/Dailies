@@ -299,12 +299,14 @@ impl GeoGuessr {
                 results
             };
 
-            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(GeoGuessrGameEvent::RoundEnd {
-                correct_lat: location.lat,
-                correct_lng: location.lng,
-                leaderboard: game.get_leaderboard(),
-                results: round_results,
-            }));
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                GeoGuessrGameEvent::RoundEnd {
+                    correct_lat: location.lat,
+                    correct_lng: location.lng,
+                    leaderboard: game.get_leaderboard(),
+                    results: round_results,
+                },
+            ));
 
             info!("{:?}", settings.round_delay_seconds);
             sleep(Duration::from_secs(settings.round_delay_seconds as u64)).await;
@@ -430,26 +432,33 @@ impl GeoGuessrState {
         self.guesses.push(self.current_round_guesses.clone());
     }
 
-    pub fn build_round_results(&self, correct: &Location, player_ids: &[Uuid]) -> HashMap<Uuid, PlayerRoundResult> {
-        player_ids.iter().map(|id| {
-            let result = match self.current_round_guesses.get(id) {
-                Some(&(lat, lng)) => {
-                    let distance_km = haversine_km(lat, lng, correct.lat, correct.lng) as f32;
-                    let points_gained = haversine_score(lat, lng, correct.lat, correct.lng);
-                    PlayerRoundResult {
-                        guess: Some((lat, lng)),
-                        distance_km: Some(distance_km),
-                        points_gained,
+    pub fn build_round_results(
+        &self,
+        correct: &Location,
+        player_ids: &[Uuid],
+    ) -> HashMap<Uuid, PlayerRoundResult> {
+        player_ids
+            .iter()
+            .map(|id| {
+                let result = match self.current_round_guesses.get(id) {
+                    Some(&(lat, lng)) => {
+                        let distance_km = haversine_km(lat, lng, correct.lat, correct.lng) as f32;
+                        let points_gained = haversine_score(lat, lng, correct.lat, correct.lng);
+                        PlayerRoundResult {
+                            guess: Some((lat, lng)),
+                            distance_km: Some(distance_km),
+                            points_gained,
+                        }
                     }
-                }
-                None => PlayerRoundResult {
-                    guess: None,
-                    distance_km: None,
-                    points_gained: 0,
-                },
-            };
-            (*id, result)
-        }).collect()
+                    None => PlayerRoundResult {
+                        guess: None,
+                        distance_km: None,
+                        points_gained: 0,
+                    },
+                };
+                (*id, result)
+            })
+            .collect()
     }
 
     pub fn get_current_location(&self) -> Option<Location> {

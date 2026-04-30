@@ -45,9 +45,9 @@ export default function Game() {
   }, []);
   const [gameState, setGameState] = useState<GeoGuesserGameState>("connecting");
   const [scores, setScores] = useState<Map<string, number>>(new Map());
-  const [roundResults, setRoundResults] = useState<Map<string, GeoGuessrRoundResult>>(
-    new Map(),
-  );
+  const [roundResults, setRoundResults] = useState<
+    Map<string, GeoGuessrRoundResult>
+  >(new Map());
   const [correctLocation, setCorrectLocation] = useState<
     [number, number] | null
   >(null);
@@ -233,7 +233,13 @@ export default function Game() {
   }
 
   if (gameState === "playing") {
-    return <Gameplay imageId={imageId} sendGuess={sendGuess} time={gameSettings.roundLengthSeconds} />;
+    return (
+      <Gameplay
+        imageId={imageId}
+        sendGuess={sendGuess}
+        time={gameSettings.roundLengthSeconds}
+      />
+    );
   }
 
   if (gameState === "answer_reveal") {

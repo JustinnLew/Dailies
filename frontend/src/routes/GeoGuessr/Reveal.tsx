@@ -5,8 +5,12 @@ import ResultMap from "./ResultMap";
 import { AnimatePresence, motion } from "motion/react";
 
 const PALETTE = [
-  "#5b7fff", "#ff9f43", "#26de81",
-  "#fd79a8", "#a29bfe", "#00cec9",
+  "#5b7fff",
+  "#ff9f43",
+  "#26de81",
+  "#fd79a8",
+  "#a29bfe",
+  "#00cec9",
 ];
 
 export default function Reveal({
@@ -14,7 +18,7 @@ export default function Reveal({
   results,
   time,
   scores,
-  players
+  players,
 }: {
   correctLocation: [number, number] | null;
   results: Map<string, GeoGuessrRoundResult>;
@@ -23,7 +27,7 @@ export default function Reveal({
   players: Map<string, Player>;
 }) {
   const [timeLeft, setTimeLeft] = useState(Math.max(time, 0));
-//   const [nextEnabled, setNextEnabled] = useState(false);
+  //   const [nextEnabled, setNextEnabled] = useState(false);
 
   const sortedPlayers = [...scores.entries()].sort((a, b) => b[1] - a[1]);
   const playerColors: Record<string, string> = {};
@@ -39,18 +43,22 @@ export default function Reveal({
   const timerPct = (timeLeft / time) * 100;
   const timerColor = timeLeft <= 5 ? "#ff5b5b" : "#5b7fff";
 
-return (
+  return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-
       <div className="absolute inset-0">
-        <ResultMap correctLocation={correctLocation} scores={scores} results={results} />
+        <ResultMap
+          correctLocation={correctLocation}
+          scores={scores}
+          results={results}
+        />
       </div>
 
       <div className="absolute top-0 right-0 h-full w-80 flex flex-col bg-black/70 backdrop-blur-sm border-l border-white/10 z-1000 scanlines">
-
         {/* Header */}
         <div className="px-5 py-5 border-b border-white/10 shrink-0">
-          <h2 className="text-2xl font-press-start text-shadow-(--text-shadow-title) text-white tracking-wide">Results</h2>
+          <h2 className="text-2xl font-press-start text-shadow-(--text-shadow-title) text-white tracking-wide">
+            Results
+          </h2>
 
           {/* Timer bar */}
           <div className="mt-4 flex items-center gap-3">
@@ -60,7 +68,10 @@ return (
                 style={{ width: `${timerPct}%`, background: timerColor }}
               />
             </div>
-            <span className="text-xs tabular-nums" style={{ color: timerColor }}>
+            <span
+              className="text-xs tabular-nums"
+              style={{ color: timerColor }}
+            >
               {timeLeft}s
             </span>
           </div>
@@ -112,7 +123,9 @@ return (
                     </div>
                     {result ? (
                       <>
-                        <div className="text-lg text-emerald-400 font-vt323">+{result.pointsGained}</div>
+                        <div className="text-lg text-emerald-400 font-vt323">
+                          +{result.pointsGained}
+                        </div>
                         <div className="text-xs text-white/60">
                           {Math.round(result.distanceKm)} km
                         </div>
@@ -129,9 +142,7 @@ return (
 
         {/* Next button slot */}
         <div className="px-5 py-4 shrink-0 border-t border-white/10">
-          <button
-            className="w-full py-3 rounded bg-neon-pink text-white text-sm tracking-widest uppercase cursor-pointer font-press-start"
-          >
+          <button className="w-full py-3 rounded bg-neon-pink text-white text-sm tracking-widest uppercase cursor-pointer font-press-start">
             Next Round
           </button>
         </div>

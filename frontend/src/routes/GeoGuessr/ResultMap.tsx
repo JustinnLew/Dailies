@@ -1,11 +1,24 @@
-import { MapContainer, TileLayer, Marker, Popup, Polyline, ZoomControl, useMap, AttributionControl } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  ZoomControl,
+  useMap,
+  AttributionControl,
+} from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
 import type { GeoGuessrRoundResult } from "../../utils/types";
 
 const PALETTE = [
-  "#5b7fff", "#ff9f43", "#26de81",
-  "#fd79a8", "#a29bfe", "#00cec9",
+  "#5b7fff",
+  "#ff9f43",
+  "#26de81",
+  "#fd79a8",
+  "#a29bfe",
+  "#00cec9",
 ];
 
 function MapBoundsHandler({ bounds }: { bounds: [number, number][] }) {
@@ -18,7 +31,11 @@ function MapBoundsHandler({ bounds }: { bounds: [number, number][] }) {
   return null;
 }
 
-export default function ResultMap({ correctLocation, results, scores }: {
+export default function ResultMap({
+  correctLocation,
+  results,
+  scores,
+}: {
   correctLocation: [number, number] | null;
   results: Map<string, GeoGuessrRoundResult>;
   scores: Map<string, number>;
@@ -28,8 +45,8 @@ export default function ResultMap({ correctLocation, results, scores }: {
   const bounds: [number, number][] = [
     correctLocation,
     ...Array.from(results.values())
-      .filter(r => r.guess != null)
-      .map(r => r.guess),
+      .filter((r) => r.guess != null)
+      .map((r) => r.guess),
   ];
 
   const sortedPlayers = [...scores.entries()].sort((a, b) => b[1] - a[1]);
@@ -39,7 +56,7 @@ export default function ResultMap({ correctLocation, results, scores }: {
   });
 
   const correctIcon = L.divIcon({
-     html: `
+    html: `
       <div style="position:relative;width:22px;height:22px">
         <div style="position:absolute;inset:0;border-radius:50%;background:rgba(255,91,91,0.4);animation:ping 1.2s ease-out infinite"></div>
         <div style="position:absolute;inset:3px;border-radius:50%;background:#ff5b5b;border:2px solid white"></div>
@@ -70,7 +87,9 @@ export default function ResultMap({ correctLocation, results, scores }: {
 
       <Marker position={correctLocation} icon={correctIcon}>
         <Popup>
-          <b style={{ fontFamily: "monospace", color: "#ff5b5b" }}>✓ Correct Location</b>
+          <b style={{ fontFamily: "monospace", color: "#ff5b5b" }}>
+            ✓ Correct Location
+          </b>
         </Popup>
       </Marker>
 
@@ -91,7 +110,11 @@ export default function ResultMap({ correctLocation, results, scores }: {
               positions={[result.guess, correctLocation]}
               pathOptions={{ color, weight: 2, opacity: 0.7, dashArray: "6 6" }}
             />
-            <Marker key={`marker-${name}`} position={result.guess} icon={guessIcon}/>
+            <Marker
+              key={`marker-${name}`}
+              position={result.guess}
+              icon={guessIcon}
+            />
           </div>
         );
       })}

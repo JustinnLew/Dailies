@@ -18,7 +18,7 @@ export default function Gameplay({
 }: {
   imageId: string;
   sendGuess: (guess: [number, number]) => void;
-  time: number
+  time: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer>(null);
@@ -35,7 +35,8 @@ export default function Gameplay({
   }, [timeLeft]);
 
   const timerPct = Math.max(0, (timeLeft / time) * 100);
-  const timerColor = timeLeft <= 10 ? "#ff5b5b" : timeLeft <= 20 ? "#ff9f43" : "#26de81";
+  const timerColor =
+    timeLeft <= 10 ? "#ff5b5b" : timeLeft <= 20 ? "#ff9f43" : "#26de81";
 
   const MapEvents = () => {
     useMapEvents({
@@ -159,8 +160,14 @@ export default function Gameplay({
                 className="absolute inset-0 z-1000 bg-black/80 flex items-center justify-center p-4 text-center cursor-pointer"
               >
                 <div>
-                  <p className="font-bold mb-1 text-white text-md">Map Credits</p>
-                  <p className="text-sm text-gray-300">Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012</p>
+                  <p className="font-bold mb-1 text-white text-md">
+                    Map Credits
+                  </p>
+                  <p className="text-sm text-gray-300">
+                    Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ,
+                    USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China
+                    (Hong Kong), Esri (Thailand), TomTom, 2012
+                  </p>
                   <p className="mt-2 text-blue-400">Click to close</p>
                 </div>
               </motion.div>
@@ -175,7 +182,7 @@ export default function Gameplay({
           >
             <TileLayer
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-              attribution='Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+              attribution="Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"
             />
             {position && (
               <Marker
