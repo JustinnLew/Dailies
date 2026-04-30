@@ -61,9 +61,10 @@ export default function ResultMap({ correctLocation, results, scores }: {
     >
       <ZoomControl position="topleft" />
       <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        attribution="&copy; OpenStreetMap &copy; CartoDB"
+        url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+        attribution="'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012"
         maxZoom={19}
+        minZoom={2}
       />
       <AttributionControl position="bottomleft" />
 
