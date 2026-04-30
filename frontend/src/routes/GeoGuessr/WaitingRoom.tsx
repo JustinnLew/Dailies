@@ -143,8 +143,8 @@ export default function Waiting({
                   })
                 }
               >
-                {[15, 30, 60].map((val) => (
-                  <option key={val} value={val}>
+                {[5, 10, 15, 30, 60].map((val) => (
+                  <option key={val} defaultValue={5}>
                     {val}s
                   </option>
                 ))}
