@@ -359,7 +359,7 @@ impl GeoGuessrSettings {
         Self {
             num_rounds: 10,
             round_length_seconds: 30,
-            round_delay_seconds: 15,
+            round_delay_seconds: 5,
         }
     }
 
