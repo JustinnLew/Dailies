@@ -49,7 +49,7 @@ static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
         Map {
             center: (-25.2744, 133.7751),
             locations: load_locations!("../geo_data/australian_cities.json"),
-            zoom: 6,
+            zoom: 4,
         },
     );
     m.insert(

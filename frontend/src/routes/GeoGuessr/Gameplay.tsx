@@ -116,8 +116,8 @@ export default function Gameplay({
         <motion.div
           animate={
             mapExpanded
-              ? { width: "60%", height: "75%" }
-              : { width: "25%", height: "33%" }
+              ? { width: "70%", height: "80%" }
+              : { width: "33%", height: "40%" }
           }
           transition={{ duration: 0.2, ease: "easeInOut" }}
           className="fixed bottom-4 left-4 border-2 border-white/20 rounded-lg shadow-2xl overflow-hidden"
