@@ -15,6 +15,9 @@ type GeoGuessrGameSettings = {
   numRounds: number;
   roundLengthSeconds: number;
   roundDelaySeconds: number;
+  map: string;
+  mapCenter: [number, number] | [0, 0];
+  zoom: number;
 };
 
 type Song = {

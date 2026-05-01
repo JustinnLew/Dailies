@@ -25,6 +25,9 @@ export default function Game() {
     numRounds: 10,
     roundLengthSeconds: 30,
     roundDelaySeconds: 3,
+    map: "World",
+    mapCenter: [0, 0],
+    zoom: 3,
   });
   const navigate = useNavigate();
   const socket = useRef<WebSocket>(null!);
@@ -165,7 +168,7 @@ export default function Game() {
         case "JoinError":
           navigate("/", { state: { error: msg.data.message } });
           break;
-        case "LoadingErrorj":
+        case "LoadingError":
           setGameState("waiting");
           setError(msg.data.message);
           setPlayerReady(false);
@@ -238,6 +241,8 @@ export default function Game() {
         imageId={imageId}
         sendGuess={sendGuess}
         time={gameSettings.roundLengthSeconds}
+        center={gameSettings.mapCenter}
+        zoom={gameSettings.zoom}
       />
     );
   }

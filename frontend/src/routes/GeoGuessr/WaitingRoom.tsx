@@ -150,6 +150,27 @@ export default function Waiting({
                 ))}
               </select>
             </div>
+
+            {/* Map */}
+            <div className="mb-2">
+              <label className="block mb-1 font-medium text-sm">Map</label>
+              <select
+                className="w-full border rounded mt-2 p-2 cursor-pointer bg-black text-sm"
+                value={gameSettings.map}
+                onChange={(e) =>
+                  updateGameSettings({
+                    ...gameSettings,
+                    map: e.target.value,
+                  })
+                }
+              >
+                {["World", "Australian Cities", "Sydney"].map((val) => (
+                  <option key={val} defaultValue={"World"}>
+                    {val}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <ErrorSnackbar

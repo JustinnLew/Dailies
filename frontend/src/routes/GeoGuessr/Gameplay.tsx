@@ -15,10 +15,14 @@ export default function Gameplay({
   imageId,
   sendGuess,
   time,
+  center,
+  zoom,
 }: {
   imageId: string;
   sendGuess: (guess: [number, number]) => void;
   time: number;
+  center: [number, number];
+  zoom: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer>(null);
@@ -176,8 +180,8 @@ export default function Gameplay({
 
           <MapContainer
             className="w-full h-full"
-            center={[0, 0]}
-            zoom={3}
+            center={center}
+            zoom={zoom}
             attributionControl={false}
           >
             <TileLayer
