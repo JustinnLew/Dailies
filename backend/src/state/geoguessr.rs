@@ -22,16 +22,35 @@ use crate::{
     state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent},
 };
 
-static LOCATIONS: LazyLock<Vec<Location>> = LazyLock::new(|| {
-    let data = include_str!("../geo_data/australia_cities.json");
-    let raw: Vec<Location> = serde_json::from_str(&data).expect("Failed to parse json");
-    raw.into_iter()
-        .map(|r| Location {
-            image_id: r.image_id,
-            lat: r.lat as f32,
-            lng: r.lng as f32,
-        })
-        .collect()
+struct Map {
+    center: (f32, f32),
+    file: String,
+}
+
+static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
+    let mut m = HashMap::new();
+    m.insert(
+        "World".to_string(),
+        Map {
+            center: (0.0, 0.0),
+            file: "world.json".to_string(),
+        },
+    );
+    m.insert(
+        "Australian Cities".to_string(),
+        Map {
+            center: (-25.2744, 133.7751),
+            file: "australian_cities.json".to_string(),
+        },
+    );
+    m.insert(
+        "Sydney".to_string(),
+        Map {
+            center: (-25.2744, 133.7751),
+            file: "sydney.json".to_string(),
+        },
+    );
+    m
 });
 
 /// ===============================================
@@ -138,7 +157,19 @@ impl GeoGuessr {
         let mut rng = rand::rng();
         let settings = self.settings.lock().unwrap().clone();
 
-        let sample: Vec<Location> = LOCATIONS
+        let map = MAPS
+            .get(&settings.map)
+            .ok_or_else(|| format!("Unknown map: {}", settings.map))?;
+
+        let all_locations: Vec<Location> = {
+            let path = format!("../geo_data/{}.json", map.file);
+            let data = std::fs::read_to_string(&path)
+                .map_err(|e| format!("Failed to read {}: {}", path, e))?;
+            serde_json::from_str(&data)
+                .map_err(|e| format!("Failed to parse {}: {}", path, e))?
+        };
+
+        let sample: Vec<Location> = all_locations
             .choose_multiple(&mut rng, settings.num_rounds as usize)
             .cloned()
             .collect();
@@ -160,7 +191,7 @@ impl GeoGuessr {
                     .unwrap()
                     .update_game_settings(settings.clone());
                 let _ = self.broadcast.send(GeoGuessrServerEvent::GameEvent(
-                    GeoGuessrGameEvent::GameSettingsUpdated { settings },
+                    GeoGuessrGameEvent::GameSettingsUpdated { settings: self.settings.lock().unwrap().clone() },
                 ));
             }
             GeoGuessrUserGameEvent::Guess { lat, lng } => {
@@ -354,6 +385,8 @@ pub(crate) struct GeoGuessrSettings {
     pub num_rounds: u8,
     pub round_length_seconds: u8,
     pub round_delay_seconds: u8,
+    pub map: String,
+    pub map_center: (f32, f32),
 }
 
 impl GeoGuessrSettings {
@@ -362,6 +395,8 @@ impl GeoGuessrSettings {
             num_rounds: 10,
             round_length_seconds: 30,
             round_delay_seconds: 5,
+            map: "World".to_string(),
+            map_center: (0.0,0.0),
         }
     }
 
@@ -369,6 +404,12 @@ impl GeoGuessrSettings {
         self.num_rounds = settings.num_rounds;
         self.round_length_seconds = settings.round_length_seconds;
         self.round_delay_seconds = settings.round_delay_seconds;
+        self.map = settings.map.clone();
+        self.map_center = MAPS
+        .get(&settings.map)
+        .map(|m| m.center)
+        .unwrap_or((67.0,0.0));
+        info!("{:?}", self.map_center);
     }
 }
 
