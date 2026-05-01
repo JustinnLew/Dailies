@@ -23,7 +23,7 @@ use crate::{
 };
 
 static LOCATIONS: LazyLock<Vec<Location>> = LazyLock::new(|| {
-    let data = include_str!("../geo_data/world.json");
+    let data = include_str!("../geo_data/australia_cities.json");
     let raw: Vec<Location> = serde_json::from_str(&data).expect("Failed to parse json");
     raw.into_iter()
         .map(|r| Location {
