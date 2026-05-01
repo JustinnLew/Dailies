@@ -82,7 +82,6 @@ export default function Game() {
     s.onclose = () => {};
     s.onmessage = (event) => {
       const msg = JSON.parse(event.data);
-      console.log(msg.data);
       switch (msg.data.event) {
         case "SyncState":
           setPlayers(
