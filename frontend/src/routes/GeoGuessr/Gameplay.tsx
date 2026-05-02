@@ -71,7 +71,7 @@ export default function Gameplay({
     if (!containerRef.current || viewerRef.current) return;
 
     viewerRef.current = new Viewer({
-      accessToken: "MLY|27623692320552297|6e04b1092adbc64d5d6eeb79a69570d6",
+      accessToken: import.meta.env.VITE_MAPILLARY_API_KEY,
       container: containerRef.current,
       imageId: imageId || undefined,
       component: {
