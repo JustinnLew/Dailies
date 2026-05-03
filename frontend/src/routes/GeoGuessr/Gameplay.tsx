@@ -1,7 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Viewer } from "mapillary-js";
+import { useEffect, useState } from "react";
 import L from "leaflet";
-import "mapillary-js/dist/mapillary.css";
 import {
   MapContainer,
   TileLayer,
@@ -10,6 +8,8 @@ import {
   useMap,
 } from "react-leaflet";
 import { motion, AnimatePresence } from "motion/react";
+
+let GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY
 
 export default function Gameplay({
   imageId,
@@ -24,8 +24,6 @@ export default function Gameplay({
   center: [number, number];
   zoom: number;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<Viewer>(null);
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [guessed, setGuessed] = useState(false);
@@ -59,44 +57,19 @@ export default function Gameplay({
     return null;
   };
 
-  useEffect(() => {
-    if (viewerRef.current && imageId) {
-      viewerRef.current.moveTo(imageId).catch((error) => {
-        console.warn("Failed to move to imageId:", error);
-      });
-    }
-  }, [imageId]);
-
-  useEffect(() => {
-    if (!containerRef.current || viewerRef.current) return;
-
-    viewerRef.current = new Viewer({
-      accessToken: import.meta.env.VITE_MAPILLARY_API_KEY,
-      container: containerRef.current,
-      imageId: imageId || undefined,
-      component: {
-        cover: false,
-        cache: false,
-        keyboard: false,
-      },
-    });
-
-    viewerRef.current?.on("image", () => {
-      containerRef.current?.classList.replace("opacity-0", "opacity-100");
-    });
-
-    return () => {
-      viewerRef.current?.remove();
-      viewerRef.current = null;
-    };
-  }, []);
-
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black">
-      <div
-        ref={containerRef}
-        className="absolute inset-0 w-full h-full opacity-0 transition-opacity duration-1000"
-      />
+      <iframe
+        width="100%"
+        height="100%"
+        style={{border:0}}
+        loading="eager"
+        allowFullScreen
+        referrerPolicy="no-referrer-when-downgrade"
+        src={`https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_API_KEY}
+           &location=46.414382,10.013988&pano=${imageId}`}>
+      </iframe>
+
       {/* Timer bar */}
       <div className="absolute top-0 left-0 right-0 z-1000 h-1">
         <div
@@ -107,7 +80,8 @@ export default function Gameplay({
 
       {/* Timer label */}
       <div
-        className="absolute top-3 left-3 z-1000 font-press-start text-md px-2 py-0.5 rounded bg-black/40"
+        className="flex h-20 w-[250px] text-center justify-center items-center absolute top-2 left-0 z-1000 font-press-start text-lg px-2 py-0.5 rounded
+        bg-black text-shadow-(--text-shadow-icon)"
         style={{ color: timerColor }}
       >
         {timeLeft}s
