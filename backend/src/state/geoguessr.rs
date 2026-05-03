@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    env,
     sync::{Arc, LazyLock, Mutex},
 };
 
@@ -8,7 +9,7 @@ use futures_util::{
     SinkExt, StreamExt,
     stream::{SplitSink, SplitStream},
 };
-use rand::seq::IndexedRandom;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use tokio::{
     sync::{Notify, broadcast},
@@ -23,15 +24,8 @@ use crate::{
 };
 struct Map {
     center: (f32, f32),
-    locations: Vec<Location>,
+    bounding_box: (f32, f32, f32, f32),
     zoom: u8,
-}
-
-macro_rules! load_locations {
-    ($path:literal) => {
-        serde_json::from_str::<Vec<Location>>(include_str!($path))
-            .expect(concat!("Failed to parse ", $path))
-    };
 }
 
 static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
@@ -40,7 +34,7 @@ static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
         "World".to_string(),
         Map {
             center: (0.0, 0.0),
-            locations: load_locations!("../geo_data/world.json"),
+            bounding_box: (-60.0, 75.0, -180.0, 180.0),
             zoom: 3,
         },
     );
@@ -48,7 +42,7 @@ static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
         "Australian Cities".to_string(),
         Map {
             center: (-25.2744, 133.7751),
-            locations: load_locations!("../geo_data/australian_cities.json"),
+            bounding_box: (-43.6, -10.7, 113.3, 153.6),
             zoom: 4,
         },
     );
@@ -56,12 +50,75 @@ static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
         "Sydney".to_string(),
         Map {
             center: (-33.8688, 151.2093),
-            locations: load_locations!("../geo_data/sydney.json"),
+            bounding_box: (-34.17, -33.58, 150.65, 151.35),
             zoom: 10,
         },
     );
     m
 });
+
+#[derive(Deserialize)]
+struct StreetViewMetadataResponse {
+    status: String,
+    pano_id: Option<String>,
+    location: Option<StreetViewLocation>,
+}
+
+#[derive(Deserialize)]
+struct StreetViewLocation {
+    lat: f64,
+    lng: f64,
+}
+
+async fn fetch_random_streetview_location(
+    client: &reqwest::Client,
+    bounding_box: (f32, f32, f32, f32),
+) -> Location {
+    let (min_lat, max_lat, min_lng, max_lng) = bounding_box;
+    let api_key = env::var("GOOGLE_API_KEY").expect("GOOGLE_API_KEY not set");
+
+    loop {
+        let (lat, lng) = {
+            let mut rng = rand::rng();
+            (
+                rng.random_range(min_lat..max_lat),
+                rng.random_range(min_lng..max_lng),
+            )
+        };
+
+        let url = format!(
+            "https://maps.googleapis.com/maps/api/streetview/metadata\
+             ?location={},{}&key={}",
+            lat, lng, api_key
+        );
+
+        let resp = match client.get(&url).send().await {
+            Ok(r) => r,
+            Err(e) => {
+                tracing::warn!("Street View metadata request failed: {}", e);
+                continue;
+            }
+        };
+
+        let meta: StreetViewMetadataResponse = match resp.json().await {
+            Ok(m) => m,
+            Err(e) => {
+                tracing::warn!("Street View metadata parse failed: {}", e);
+                continue;
+            }
+        };
+
+        if meta.status == "OK" {
+            if let (Some(pano_id), Some(loc)) = (meta.pano_id, meta.location) {
+                return Location {
+                    image_id: pano_id,
+                    lat: loc.lat as f32,
+                    lng: loc.lng as f32,
+                };
+            }
+        }
+    }
+}
 
 /// ===============================================
 /// Main Parent Struct for GeoGuessr Game
@@ -164,20 +221,25 @@ impl GeoGuessr {
     }
 
     async fn load_locations(&self) -> Result<(), String> {
-        let mut rng = rand::rng();
         let settings = self.settings.lock().unwrap().clone();
 
-        let map = MAPS
-            .get(&settings.map)
-            .ok_or_else(|| format!("Unknown map: {}", settings.map))?;
+        let bounding_box = {
+            let map = MAPS
+                .get(&settings.map)
+                .ok_or_else(|| format!("Unknown map: {}", settings.map))?;
+            map.bounding_box
+        };
 
-        let sample: Vec<Location> = map
-            .locations
-            .choose_multiple(&mut rng, settings.num_rounds as usize)
-            .cloned()
-            .collect();
+        let client = reqwest::Client::new();
+        let mut locations = Vec::with_capacity(settings.num_rounds as usize);
 
-        self.state.lock().unwrap().locations = sample;
+        for i in 0..settings.num_rounds {
+            let loc = fetch_random_streetview_location(&client, bounding_box).await;
+            info!(round = i + 1, pano_id = %loc.image_id, "Fetched Street View location");
+            locations.push(loc);
+        }
+
+        self.state.lock().unwrap().locations = locations;
         Ok(())
     }
 
