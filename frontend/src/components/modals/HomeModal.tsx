@@ -122,7 +122,7 @@ export default function HomeModal({
             />
             <button
               disabled={!validLobbyCode()}
-              onClick={() => navigate(`/${game_code}]/${lobbyCode}`)}
+              onClick={() => navigate(`/${game_code}/${lobbyCode}`)}
               className={`px-8 py-4 transition-all hover:scale-105
                           ${
                             validLobbyCode()
