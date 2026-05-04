@@ -8,6 +8,7 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt};
 use tracing::{Instrument, info, instrument, warn};
+pub mod api;
 
 use crate::{
     connections::ConnectionGuard,
