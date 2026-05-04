@@ -24,7 +24,7 @@ export default function Game() {
   const [gameSettings, setGameSettings] = useState<GeoGuessrGameSettings>({
     numRounds: 10,
     roundLengthSeconds: 30,
-    roundDelaySeconds: 3,
+    roundDelaySeconds: 5,
     map: "World",
     mapCenter: [0, 0],
     zoom: 3,
