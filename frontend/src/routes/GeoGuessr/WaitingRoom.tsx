@@ -144,7 +144,7 @@ export default function Waiting({
                 }
               >
                 {[5, 10, 15, 30, 60].map((val) => (
-                  <option key={val} defaultValue={5}>
+                  <option key={val} value={val}>
                     {val}s
                   </option>
                 ))}
@@ -165,7 +165,7 @@ export default function Waiting({
                 }
               >
                 {["World", "Australian Cities", "Sydney"].map((val) => (
-                  <option key={val} defaultValue={"World"}>
+                  <option key={val} defaultValue={"World"} value={val}>
                     {val}
                   </option>
                 ))}

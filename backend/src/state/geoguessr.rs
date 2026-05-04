@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    sync::{Arc, LazyLock, Mutex},
+    sync::{Arc, Mutex},
 };
 
 use axum::extract::ws::{Message, WebSocket};
@@ -8,7 +8,6 @@ use futures_util::{
     SinkExt, StreamExt,
     stream::{SplitSink, SplitStream},
 };
-use rand::seq::IndexedRandom;
 use serde::{Deserialize, Serialize};
 use tokio::{
     sync::{Notify, broadcast},
@@ -16,52 +15,10 @@ use tokio::{
 };
 use tracing::info;
 use uuid::Uuid;
-
+use rand::prelude::IndexedRandom;
 use crate::{
-    connections::ConnectionManager,
-    state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent},
+    connections::ConnectionManager, geo_guessr::api::MAPS, state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent}
 };
-struct Map {
-    center: (f32, f32),
-    locations: Vec<Location>,
-    zoom: u8,
-}
-
-macro_rules! load_locations {
-    ($path:literal) => {
-        serde_json::from_str::<Vec<Location>>(include_str!($path))
-            .expect(concat!("Failed to parse ", $path))
-    };
-}
-
-static MAPS: LazyLock<HashMap<String, Map>> = LazyLock::new(|| {
-    let mut m = HashMap::new();
-    m.insert(
-        "World".to_string(),
-        Map {
-            center: (0.0, 0.0),
-            locations: load_locations!("../geo_data/world.json"),
-            zoom: 3,
-        },
-    );
-    m.insert(
-        "Australian Cities".to_string(),
-        Map {
-            center: (-25.2744, 133.7751),
-            locations: load_locations!("../geo_data/australian_cities.json"),
-            zoom: 4,
-        },
-    );
-    m.insert(
-        "Sydney".to_string(),
-        Map {
-            center: (-33.8688, 151.2093),
-            locations: load_locations!("../geo_data/sydney.json"),
-            zoom: 10,
-        },
-    );
-    m
-});
 
 /// ===============================================
 /// Main Parent Struct for GeoGuessr Game
