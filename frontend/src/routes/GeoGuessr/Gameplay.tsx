@@ -9,7 +9,7 @@ import {
 } from "react-leaflet";
 import { motion, AnimatePresence } from "motion/react";
 
-let GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY
+let GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 
 export default function Gameplay({
   imageId,
@@ -62,13 +62,13 @@ export default function Gameplay({
       <iframe
         width="100%"
         height="100%"
-        style={{border:0}}
+        style={{ border: 0 }}
         loading="eager"
         allowFullScreen
         referrerPolicy="no-referrer-when-downgrade"
         src={`https://www.google.com/maps/embed/v1/streetview?key=${GOOGLE_API_KEY}
-           &location=46.414382,10.013988&pano=${imageId}`}>
-      </iframe>
+           &location=46.414382,10.013988&pano=${imageId}`}
+      ></iframe>
 
       {/* Timer bar */}
       <div className="absolute top-0 left-0 right-0 z-1000 h-1">

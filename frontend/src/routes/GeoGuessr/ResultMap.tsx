@@ -13,12 +13,12 @@ import { useEffect } from "react";
 import type { GeoGuessrRoundResult } from "../../utils/types";
 
 const PALETTE = [
-  "#1a3aff", // deep blue
-  "#e65c00", // burnt orange
-  "#00843d", // forest green
-  "#c2006b", // deep pink
-  "#5c00d4", // deep purple
-  "#007a7a", // dark teal
+  "#1a3aff",
+  "#e65c00",
+  "#00843d",
+  "#c2006b",
+  "#5c00d4",
+  "#007a7a",
 ];
 
 function MapBoundsHandler({ bounds }: { bounds: [number, number][] }) {
@@ -55,7 +55,6 @@ export default function ResultMap({
     playerColors[name] = PALETTE[i % PALETTE.length];
   });
 
-  // Pin-shaped correct location icon (circle + pointer tip)
   const correctIcon = L.divIcon({
     html: `
       <style>
