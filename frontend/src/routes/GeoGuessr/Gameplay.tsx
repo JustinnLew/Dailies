@@ -33,10 +33,10 @@ export default function Gameplay({
   const [timeLeft, setTimeLeft] = useState(Math.max(time, 0));
 
   useEffect(() => {
-    if (roundEnding && (position && !guessed)) {
+    if (roundEnding && position && !guessed) {
       sendGuess(position);
     }
-  }, [roundEnding])
+  }, [roundEnding]);
 
   useEffect(() => {
     if (timeLeft <= 0) return;

@@ -3,11 +3,17 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use crate::{
+    connections::ConnectionManager,
+    geo_guessr::api::MAPS,
+    state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent},
+};
 use axum::extract::ws::{Message, WebSocket};
 use futures_util::{
     SinkExt, StreamExt,
     stream::{SplitSink, SplitStream},
 };
+use rand::prelude::IndexedRandom;
 use serde::{Deserialize, Serialize};
 use tokio::{
     sync::{Notify, broadcast},
@@ -15,10 +21,6 @@ use tokio::{
 };
 use tracing::info;
 use uuid::Uuid;
-use rand::prelude::IndexedRandom;
-use crate::{
-    connections::ConnectionManager, geo_guessr::api::MAPS, state::{GuessTheSongServerEvent, LobbyServerEvent, LobbyState, LobbyStatus, LobbyUserEvent}
-};
 
 /// ===============================================
 /// Main Parent Struct for GeoGuessr Game

@@ -82,7 +82,7 @@ export default function Waiting({
             Settings
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            {/* Number of Songs */}
+            {/* Number of Rounds */}
             <div className="mb-2">
               <label className="block mb-1 font-medium text-sm">
                 Number of Rounds:
