@@ -120,7 +120,7 @@ export default function Waiting({
                   })
                 }
               >
-                {[15, 30, 60, 120].map((val) => (
+                {[5, 10, 15, 30, 60, 120].map((val) => (
                   <option key={val} value={val}>
                     {val}s
                   </option>
