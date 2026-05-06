@@ -53,6 +53,7 @@ impl Games {
             state: Mutex::new(GeoGuessrState::new()),
             lobby_code: lobby_code.to_string(),
             round_notify: Mutex::new(Arc::new(Notify::new())),
+            round_ending_notify: Mutex::new(Arc::new(Notify::new())),
         };
         self.geo_guessr
             .insert(lobby_code.to_string(), Arc::new(lobby));

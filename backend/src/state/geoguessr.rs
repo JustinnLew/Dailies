@@ -30,6 +30,7 @@ pub(crate) struct GeoGuessr {
     pub state: Mutex<GeoGuessrState>,
     pub lobby_code: String,
     pub round_notify: Mutex<Arc<Notify>>,
+    pub round_ending_notify: Mutex<Arc<Notify>>,
 }
 
 impl GeoGuessr {
@@ -164,14 +165,12 @@ impl GeoGuessr {
                 let all_guessed = {
                     let mut state = self.state.lock().unwrap();
                     state.record_guess(player_id, lat, lng);
-
-                    // Check if all lobby members have now guessed
                     state.all_players_guessed(player_count)
                 };
 
                 if all_guessed {
-                    info!("All players guessed — ending round early");
                     self.round_notify.lock().unwrap().notify_one();
+                    self.round_ending_notify.lock().unwrap().notify_one();
                 }
             }
         }
@@ -263,7 +262,9 @@ impl GeoGuessr {
             };
 
             let round_notify = Arc::new(Notify::new());
+            let round_ending_notify = Arc::new(Notify::new());
             *game.round_notify.lock().unwrap() = Arc::clone(&round_notify);
+            *game.round_ending_notify.lock().unwrap() = Arc::clone(&round_ending_notify);
 
             game.state.lock().unwrap().begin_round();
 
@@ -280,6 +281,19 @@ impl GeoGuessr {
                 }
                 _ = round_notify.notified() => {
                     info!("ROUNDEND (all players guessed)");
+                }
+            }
+
+            let _ = game.broadcast.send(GeoGuessrServerEvent::GameEvent(
+                GeoGuessrGameEvent::RoundEnding,
+            ));
+
+            tokio::select! {
+                _ = sleep(Duration::from_millis(1500)) => {
+                    info!("Grace period elapsed");
+                }
+                _ = round_ending_notify.notified() => {
+                    info!("All players guessed during grace period");
                 }
             }
 
@@ -527,6 +541,7 @@ pub(crate) enum GeoGuessrGameEvent {
     RoundStart {
         image_id: String,
     },
+    RoundEnding,
     RoundEnd {
         correct_lat: f32,
         correct_lng: f32,

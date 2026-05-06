@@ -36,11 +36,12 @@ export default function Reveal({
   });
 
   useEffect(() => {
+    if (timeLeft <= 0) return;
     const t = setTimeout(() => setTimeLeft((v) => v - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft]);
 
-  const timerPct = (timeLeft / time) * 100;
+  const timerPct = Math.max(0, (timeLeft / time) * 100);
   const timerColor = timeLeft <= 5 ? "#ff5b5b" : "#5b7fff";
 
   return (
@@ -126,9 +127,11 @@ export default function Reveal({
                         <div className="text-lg text-emerald-400 font-vt323">
                           +{result.pointsGained}
                         </div>
-                        <div className="text-xs text-white/60">
-                          {Math.round(result.distanceKm)} km
-                        </div>
+                        {result.distanceKm != null && (
+                          <div className="text-xs text-white/60">
+                            {Math.round(result.distanceKm)} km
+                          </div>
+                        )}
                       </>
                     ) : (
                       <div className="text-xs text-white/20">no guess</div>
@@ -141,11 +144,11 @@ export default function Reveal({
         </div>
 
         {/* Next button slot */}
-        <div className="px-5 py-4 shrink-0 border-t border-white/10">
+        {/* <div className="px-5 py-4 shrink-0 border-t border-white/10">
           <button className="w-full py-3 rounded bg-neon-pink text-white text-sm tracking-widest uppercase cursor-pointer font-press-start">
             Next Round
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

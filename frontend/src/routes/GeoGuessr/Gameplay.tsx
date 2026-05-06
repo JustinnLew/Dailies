@@ -17,18 +17,26 @@ export default function Gameplay({
   time,
   center,
   zoom,
+  roundEnding,
 }: {
   imageId: string;
   sendGuess: (guess: [number, number]) => void;
   time: number;
   center: [number, number];
   zoom: number;
+  roundEnding: boolean;
 }) {
   const [position, setPosition] = useState<[number, number] | null>(null);
   const [mapExpanded, setMapExpanded] = useState(false);
   const [guessed, setGuessed] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
   const [timeLeft, setTimeLeft] = useState(Math.max(time, 0));
+
+  useEffect(() => {
+    if (roundEnding && (position && !guessed)) {
+      sendGuess(position);
+    }
+  }, [roundEnding])
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -86,7 +94,7 @@ export default function Gameplay({
       >
         {timeLeft}s
       </div>
-      {!guessed && (
+      {!guessed && !roundEnding && (
         <motion.div
           animate={
             mapExpanded

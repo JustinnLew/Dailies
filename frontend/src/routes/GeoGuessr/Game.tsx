@@ -55,6 +55,7 @@ export default function Game() {
     [number, number] | null
   >(null);
   const [imageId, setImageId] = useState<string>("");
+  const [roundEnding, setRoundEnding] = useState(false);
 
   const resetGame = () => {
     setGameState("waiting");
@@ -152,11 +153,15 @@ export default function Game() {
           setImageId(msg.data.image_id);
           setGameState("playing");
           break;
+        case "RoundEnding":
+          setRoundEnding(true);
+          break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
           setRoundResults(new Map(Object.entries(msg.data.results)));
           setCorrectLocation([msg.data.correct_lat, msg.data.correct_lng]);
           setGameState("answer_reveal");
+          setRoundEnding(false);
           break;
         case "GameEnd":
           socket.current.send(
@@ -242,6 +247,7 @@ export default function Game() {
         time={gameSettings.roundLengthSeconds}
         center={gameSettings.mapCenter}
         zoom={gameSettings.zoom}
+        roundEnding={roundEnding}
       />
     );
   }
