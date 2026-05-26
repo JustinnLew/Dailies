@@ -1,7 +1,7 @@
 use std::{
     collections::HashMap,
     env,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex}, time::{SystemTime, UNIX_EPOCH},
 };
 
 use axum::extract::ws::{Message, WebSocket};
@@ -78,6 +78,7 @@ pub(crate) struct TriviaState {
     pub scores: HashMap<Uuid, u32>,
     pub questions: Vec<TriviaQuestion>,
     pub question_index: usize,
+    pub round_start_time: u64,
     // current_round_guesses: player_id -> guess_content
     pub current_round_guesses: HashMap<Uuid, String>,
 }
@@ -88,6 +89,7 @@ impl TriviaState {
             scores: HashMap::new(),
             questions: Vec::new(),
             question_index: 0,
+            round_start_time: 0,
             current_round_guesses: HashMap::new(),
         }
     }
@@ -97,6 +99,11 @@ impl TriviaState {
         self.questions.clear();
         self.question_index = 0;
         self.current_round_guesses.clear();
+        self.round_start_time = 0;
+    }
+
+    pub fn get_current_question_index(&self) -> usize {
+        self.question_index
     }
 }
 
@@ -330,7 +337,14 @@ impl TriviaGame {
             game.begin_round();
 
             let question = match game.get_next_question() {
-                Some(q) => q,
+                Some(q) => {
+                    let now = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_secs();
+                    game.state.lock().unwrap().round_start_time = now;
+                    (q, now)
+                },
                 None => {
                     info!("No questions left, ending game");
                     break;
@@ -340,11 +354,12 @@ impl TriviaGame {
             let round_notify = Arc::new(tokio::sync::Notify::new());
             *game.round_notify.lock().unwrap() = Arc::clone(&round_notify);
 
-            info!(question=%question.question, "ROUND START");
             let _ =
                 game.broadcast
                     .send(TriviaServerEvent::GameEvent(TriviaGameEvent::RoundStart {
-                        question,
+                        question: question.0,
+                        round_start_time: question.1,
+                        current_round: game.state.lock().unwrap().get_current_question_index() as u8,
                     }));
 
             // Await round length or early notification
@@ -575,6 +590,8 @@ pub(crate) enum TriviaGameEvent {
     },
     RoundStart {
         question: TriviaQuestionPublic,
+        round_start_time: u64,
+        current_round: u8,
     },
     RoundEnd {
         correct_answer: String,
