@@ -20,6 +20,7 @@ mod connections;
 mod geo_guessr;
 mod guess_the_song;
 mod state;
+mod trivia;
 
 #[tokio::main]
 async fn main() {
@@ -59,11 +60,16 @@ async fn main() {
                 .games
                 .geo_guessr
                 .retain(|_, v| !v.lobby.lock().unwrap().empty());
+            scan_state
+                .games
+                .trivia
+                .retain(|_, v| !v.lobby_state.lock().unwrap().empty());
 
             // Remove registry entries whose game no longer exists
             scan_state.games.registry.retain(|code, _| {
                 scan_state.games.guess_the_song.contains_key(code)
                     || scan_state.games.geo_guessr.contains_key(code)
+                    || scan_state.games.trivia.contains_key(code)
             });
         }
     });
@@ -76,6 +82,10 @@ async fn main() {
         .route(
             "/api/geo-guessr/create-lobby",
             post(create_geo_guessr_lobby),
+        )
+        .route(
+            "/api/trivia/create-lobby",
+            post(trivia::trivia_create_lobby),
         )
         .route("/api/{game}", any(handle_ws))
         .layer(CorsLayer::very_permissive())
@@ -102,6 +112,7 @@ async fn handle_ws(
             ws.on_upgrade(move |socket| guess_the_song::handle_guess_the_song(socket, state))
         }
         "geo-guessr" => ws.on_upgrade(move |socket| geo_guessr::handle_geo_guessr(socket, state)),
+        "trivia" => ws.on_upgrade(move |socket| trivia::handle_trivia(socket, state)),
         _ => (StatusCode::NOT_FOUND, "Game mode not found").into_response(),
     }
 }
