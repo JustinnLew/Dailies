@@ -47,8 +47,8 @@ impl TriviaSettings {
     pub fn new() -> Self {
         Self {
             topic: "General Knowledge".to_string(),
-            num_questions: 10,
-            round_length_seconds: 20,
+            num_questions: 5,
+            round_length_seconds: 10,
             style: TriviaStyle::MultipleChoice,
         }
     }
@@ -560,7 +560,7 @@ pub(crate) enum TriviaServerEvent {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(tag = "event", content = "data")]
+#[serde(tag = "event")]
 pub(crate) enum TriviaGameEvent {
     SyncState {
         players: Vec<(Uuid, String, bool)>,
