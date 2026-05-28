@@ -41,6 +41,20 @@ export default function HomeGrid({
       ),
     },
     {
+      title: "Trivia",
+      description: "Challenge your knowledge across topics of your choice.",
+      icon: <NotFoundIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <HomeModal
+          open={open}
+          onClose={onClose}
+          setError={setError}
+          game_code={"trivia"}
+          title={"TRIVIA"}
+        />
+      ),
+    },
+    {
       title: "Coming Soon",
       description: "",
       icon: <NotFoundIcon color="white" />,
