@@ -5,11 +5,17 @@ use tracing::{info, warn};
 use crate::state::trivia::{TriviaQuestion, TriviaStyle};
 
 #[derive(Serialize)]
+struct OllamaOptions {
+    temperature: f32,
+}
+
+#[derive(Serialize)]
 struct OllamaGenerateRequest {
     model: String,
     prompt: String,
     stream: bool,
     format: String,
+    options: OllamaOptions,
 }
 
 #[derive(Deserialize)]
@@ -28,6 +34,7 @@ pub(crate) async fn load_trivia_questions(
     let url = format!("{}/api/generate", ollama_host);
 
     let prompt = match style {
+        // This formatting works, could also use the format parameter provided by Ollama
         TriviaStyle::MultipleChoice => {
             format!(
                 "You are a professional trivia generator. Generate exactly {} challenging and interesting multiple-choice trivia questions about the topic '{}'. \
@@ -74,6 +81,7 @@ pub(crate) async fn load_trivia_questions(
         prompt,
         stream: false,
         format: "json".to_string(),
+        options: OllamaOptions { temperature: 1.0 },
     };
 
     let response = client

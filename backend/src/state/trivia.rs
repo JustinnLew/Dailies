@@ -25,9 +25,10 @@ use crate::{
 /// Enums
 /// ===============================================
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
-#[serde(rename_all = "camelCase")]
 pub(crate) enum TriviaStyle {
+    #[serde(rename="Multiple Choice")]
     MultipleChoice,
+    #[serde(rename="Short Answer")]
     ShortAnswer,
 }
 
@@ -397,8 +398,7 @@ impl TriviaGame {
                     leaderboard: game.get_leaderboard(),
                 }));
 
-            // Delay between rounds hardcoded to 3 seconds as requested
-            sleep(Duration::from_secs(3)).await;
+            sleep(Duration::from_secs(6)).await;
         }
 
         info!("TRIVIA GAME END");
