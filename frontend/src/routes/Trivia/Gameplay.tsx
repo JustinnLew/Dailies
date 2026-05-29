@@ -41,6 +41,7 @@ export default function Gameplay({
   totalRounds: number;
 }) {
   const [shortAnswerInput, setShortAnswerInput] = useState("");
+  const [answered, setAnswered] = useState<number | null>(null);
   const navigate = useNavigate();
 
   return (
@@ -92,10 +93,23 @@ export default function Gameplay({
                 <button
                   key={option}
                   onClick={() => {
+                    if (answered !== null) return;
                     sendGuess(option);
+                    setAnswered(index);
                   }}
-                  className={`${color.bg} ${color.border} ${color.hover} border-4 rounded-lg p-4 text-sm md:text-base lg:text-lg transition-colors
-                  hover:brightness-110 hover:border-white text-center text-white text-shadow-(--text-shadow-icon)`}
+                  disabled={answered !== null}
+                  className={`
+                      ${color.bg} ${color.border} border-4 rounded-lg p-4 text-sm md:text-base lg:text-lg
+                      text-center text-white text-shadow-(--text-shadow-icon)
+                      transition-all duration-300
+                      ${
+                        answered === null
+                          ? `${color.hover} hover:brightness-110 hover:border-white cursor-pointer`
+                          : answered === index
+                            ? "brightness-125 border-white scale-105 cursor-default"
+                            : "opacity-30 brightness-50 cursor-default"
+                      }
+                    `}
                 >
                   <p className="text-shadow-(--text-shadow-icon)">{option}</p>
                 </button>
