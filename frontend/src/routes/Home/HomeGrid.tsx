@@ -43,7 +43,7 @@ export default function HomeGrid({
     },
     {
       title: "Trivia",
-      description: "Challenge your knowledge across topics of your choice.",
+      description: ` ✨ AI Generated: Challenge your knowledge across topics of your choice`,
       icon: <TriviaIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
         <HomeModal
