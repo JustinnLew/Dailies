@@ -4,6 +4,7 @@ import NotFoundIcon from "../../icons/NotFoundIcon";
 import type { Dispatch, SetStateAction } from "react";
 import HomeModal from "../../components/modals/HomeModal";
 import GeoIcon from "../../icons/GeoIcon";
+import TriviaIcon from "../../icons/TriviaIcon";
 
 export default function HomeGrid({
   setError,
@@ -43,7 +44,7 @@ export default function HomeGrid({
     {
       title: "Trivia",
       description: "Challenge your knowledge across topics of your choice.",
-      icon: <NotFoundIcon color="white" />,
+      icon: <TriviaIcon color="white" />,
       modal: (open: boolean, onClose: () => void) => (
         <HomeModal
           open={open}
