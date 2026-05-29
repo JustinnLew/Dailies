@@ -81,7 +81,9 @@ pub(crate) async fn load_trivia_questions(
         prompt,
         stream: false,
         format: "json".to_string(),
-        options: OllamaOptions { temperature: 1.0 },
+        options: OllamaOptions {
+            temperature: 1.2,
+        },
     };
 
     let response = client
