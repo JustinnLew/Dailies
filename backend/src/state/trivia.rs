@@ -1,7 +1,8 @@
 use std::{
     collections::HashMap,
     env,
-    sync::{Arc, Mutex}, time::{SystemTime, UNIX_EPOCH},
+    sync::{Arc, Mutex},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 use axum::extract::ws::{Message, WebSocket};
@@ -26,9 +27,9 @@ use crate::{
 /// ===============================================
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub(crate) enum TriviaStyle {
-    #[serde(rename="Multiple Choice")]
+    #[serde(rename = "Multiple Choice")]
     MultipleChoice,
-    #[serde(rename="Short Answer")]
+    #[serde(rename = "Short Answer")]
     ShortAnswer,
 }
 
@@ -345,7 +346,7 @@ impl TriviaGame {
                         .as_millis();
                     game.state.lock().unwrap().round_start_time = now;
                     (q, now)
-                },
+                }
                 None => {
                     info!("No questions left, ending game");
                     break;
@@ -360,7 +361,8 @@ impl TriviaGame {
                     .send(TriviaServerEvent::GameEvent(TriviaGameEvent::RoundStart {
                         question: question.0,
                         round_start_time: question.1,
-                        current_round: game.state.lock().unwrap().get_current_question_index() as u8,
+                        current_round: game.state.lock().unwrap().get_current_question_index()
+                            as u8,
                     }));
 
             // Await round length or early notification
