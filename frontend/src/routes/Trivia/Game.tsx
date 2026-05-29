@@ -57,6 +57,9 @@ export default function Game() {
   const [correctAnswer, setCorrectAnswer] = useState<string>("");
   const [roundStartTime, setRoundStartTime] = useState<number>(0);
   const [currentRound, setCurrentRound] = useState<number>(1);
+  const [guesses, setGuesses] = useState<
+    { username: string; content: string }[]
+  >([]);
 
   const resetGame = () => {
     setGameState("waiting");
@@ -163,6 +166,7 @@ export default function Game() {
           setCorrectAnswer("");
           setRoundStartTime(msg.data.round_start_time);
           setCurrentRound(msg.data.current_round);
+          setGuesses([]);
           break;
         case "RoundEnd":
           setScores(new Map(Object.entries(msg.data.leaderboard)));
@@ -182,6 +186,12 @@ export default function Game() {
           setGameState("waiting");
           setError(msg.data.message);
           setPlayerReady(false);
+          break;
+        case "PlayerGuess":
+          setGuesses((prev) => [
+            ...prev,
+            { username: msg.data.username, content: msg.data.content },
+          ]);
           break;
         default:
           break;
@@ -254,6 +264,7 @@ export default function Game() {
         roundStartTime={roundStartTime}
         currentRound={currentRound}
         totalRounds={gameSettings.numQuestions}
+        guesses={guesses}
       />
     );
   }
