@@ -25,7 +25,7 @@ type TriviaGameSettings = {
   roundLengthSeconds: number;
   topic: string;
   style: string;
-}
+};
 
 type Song = {
   title: string;
@@ -45,13 +45,14 @@ type GeoGuessrRoundResult = {
 };
 
 type GeoGuesserGameState =
-  "answer_reveal"
+  | "answer_reveal"
   | "playing"
   | "waiting"
   | "connecting"
   | "loading"
   | "finished";
-type TriviaGameState = "answer_reveal"
+type TriviaGameState =
+  | "answer_reveal"
   | "playing"
   | "waiting"
   | "connecting"
