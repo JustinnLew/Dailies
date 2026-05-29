@@ -7,6 +7,7 @@ use crate::state::trivia::{TriviaQuestion, TriviaStyle};
 #[derive(Serialize)]
 struct OllamaOptions {
     temperature: f32,
+    seed: u64,
 }
 
 #[derive(Serialize)]
@@ -14,7 +15,6 @@ struct OllamaGenerateRequest {
     model: String,
     prompt: String,
     stream: bool,
-    format: String,
     options: OllamaOptions,
 }
 
@@ -80,9 +80,9 @@ pub(crate) async fn load_trivia_questions(
         model: model.to_string(),
         prompt,
         stream: false,
-        format: "json".to_string(),
         options: OllamaOptions {
-            temperature: 1.2,
+            temperature: 1.0,
+            seed: rand::random(),
         },
     };
 
