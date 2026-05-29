@@ -192,7 +192,7 @@ impl TriviaGame {
                     tokio::spawn(async move {
                         let settings = l.get_settings();
                         let ollama_model =
-                            env::var("OLLAMA_MODEL").unwrap_or_else(|_| "llama3".to_string());
+                            env::var("OLLAMA_MODEL").unwrap_or_else(|_| "gemma4:31b-cloud".to_string());
                         let res = api::load_trivia_questions(
                             &settings.topic,
                             settings.num_questions,
