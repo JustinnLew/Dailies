@@ -79,7 +79,7 @@ pub(crate) struct TriviaState {
     pub scores: HashMap<Uuid, u32>,
     pub questions: Vec<TriviaQuestion>,
     pub question_index: usize,
-    pub round_start_time: u64,
+    pub round_start_time: u128,
     // current_round_guesses: player_id -> guess_content
     pub current_round_guesses: HashMap<Uuid, String>,
 }
@@ -342,7 +342,7 @@ impl TriviaGame {
                     let now = SystemTime::now()
                         .duration_since(UNIX_EPOCH)
                         .unwrap()
-                        .as_secs();
+                        .as_millis();
                     game.state.lock().unwrap().round_start_time = now;
                     (q, now)
                 },
@@ -590,7 +590,7 @@ pub(crate) enum TriviaGameEvent {
     },
     RoundStart {
         question: TriviaQuestionPublic,
-        round_start_time: u64,
+        round_start_time: u128,
         current_round: u8,
     },
     RoundEnd {
