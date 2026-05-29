@@ -6,10 +6,12 @@ pub mod games;
 pub mod geoguessr;
 pub mod guessthesong;
 pub mod lobby;
+pub mod trivia;
 
 pub(crate) use games::*;
 pub(crate) use guessthesong::*;
 pub(crate) use lobby::*;
+pub(crate) use trivia::*;
 
 #[derive(Clone)]
 pub(crate) struct AppState {

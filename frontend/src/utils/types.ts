@@ -20,6 +20,13 @@ type GeoGuessrGameSettings = {
   zoom: number;
 };
 
+type TriviaGameSettings = {
+  numQuestions: number;
+  roundLengthSeconds: number;
+  topic: string;
+  style: string;
+};
+
 type Song = {
   title: string;
   artists: string[];
@@ -44,6 +51,13 @@ type GeoGuesserGameState =
   | "connecting"
   | "loading"
   | "finished";
+type TriviaGameState =
+  | "answer_reveal"
+  | "playing"
+  | "waiting"
+  | "connecting"
+  | "loading"
+  | "finished";
 type GameState = "playing" | "waiting" | "connecting" | "loading" | "finished";
 
 export const reservedUsernames = ["SYSTEM", "ERROR"];
@@ -57,4 +71,6 @@ export type {
   GeoGuessrGameSettings,
   GeoGuesserGameState,
   GeoGuessrRoundResult,
+  TriviaGameSettings,
+  TriviaGameState,
 };

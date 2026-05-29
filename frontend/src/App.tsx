@@ -2,6 +2,7 @@ import "./index.css";
 import Home from "./routes/Home/Home.tsx";
 import { Route, Routes } from "react-router-dom";
 import GuessTheSong from "./routes/GuessTheSong/Game.tsx";
+import Trivia from "./routes/Trivia/Game.tsx";
 import GeoGuessr from "./routes/GeoGuessr/Game.tsx";
 import AudioProvider from "./components/audio/AudioProvider.tsx";
 
@@ -19,6 +20,7 @@ function App() {
           }
         />
         <Route path="/geo-guessr/:lobbyCode" element={<GeoGuessr />} />
+        <Route path="/trivia/:lobbyCode" element={<Trivia />} />
       </Routes>
     </>
   );

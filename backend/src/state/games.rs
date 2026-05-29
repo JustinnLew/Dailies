@@ -7,16 +7,19 @@ use crate::state::{
     GuessTheSongGame, GuessTheSongGameState, GuessTheSongServerEvent, LobbyState,
     geoguessr::{GeoGuessr, GeoGuessrServerEvent, GeoGuessrSettings, GeoGuessrState},
     guessthesong::GuessTheSongGameSettings,
+    trivia::{TriviaGame, TriviaServerEvent, TriviaSettings, TriviaState},
 };
 
 pub(crate) enum GameType {
     GuessTheSong,
     GeoGuessr,
+    Trivia,
 }
 
 pub(crate) struct Games {
     pub guess_the_song: DashMap<String, Arc<GuessTheSongGame>>,
     pub geo_guessr: DashMap<String, Arc<GeoGuessr>>,
+    pub trivia: DashMap<String, Arc<TriviaGame>>,
     pub registry: DashMap<String, GameType>,
 }
 
@@ -25,6 +28,7 @@ impl Games {
         Games {
             guess_the_song: DashMap::new(),
             geo_guessr: DashMap::new(),
+            trivia: DashMap::new(),
             registry: DashMap::new(),
         }
     }
@@ -61,6 +65,21 @@ impl Games {
             .insert(lobby_code.to_string(), GameType::GeoGuessr);
     }
 
+    pub fn add_trivia_lobby(&self, lobby_code: &String) {
+        let (send, _) = broadcast::channel::<TriviaServerEvent>(64);
+        let lobby = TriviaGame {
+            lobby_state: Mutex::new(LobbyState::new()),
+            broadcast: send,
+            settings: Mutex::new(TriviaSettings::new()),
+            state: Mutex::new(TriviaState::new()),
+            lobby_code: lobby_code.to_string(),
+            round_notify: Mutex::new(Arc::new(Notify::new())),
+        };
+        self.trivia.insert(lobby_code.to_string(), Arc::new(lobby));
+        self.registry
+            .insert(lobby_code.to_string(), GameType::Trivia);
+    }
+
     pub fn remove_lobby(&self, lobby_code: &str) {
         if let Some(game_type) = self.registry.get(lobby_code) {
             match *game_type {
@@ -69,6 +88,9 @@ impl Games {
                 }
                 GameType::GeoGuessr => {
                     self.geo_guessr.remove(lobby_code);
+                }
+                GameType::Trivia => {
+                    self.trivia.remove(lobby_code);
                 }
             }
         }

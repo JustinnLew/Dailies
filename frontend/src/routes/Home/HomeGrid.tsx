@@ -4,6 +4,7 @@ import NotFoundIcon from "../../icons/NotFoundIcon";
 import type { Dispatch, SetStateAction } from "react";
 import HomeModal from "../../components/modals/HomeModal";
 import GeoIcon from "../../icons/GeoIcon";
+import TriviaIcon from "../../icons/TriviaIcon";
 
 export default function HomeGrid({
   setError,
@@ -37,6 +38,20 @@ export default function HomeGrid({
           setError={setError}
           game_code={"geo-guessr"}
           title={"GEO GUESSR"}
+        />
+      ),
+    },
+    {
+      title: "Trivia",
+      description: ` ✨ AI Generated: Challenge your knowledge across topics of your choice`,
+      icon: <TriviaIcon color="white" />,
+      modal: (open: boolean, onClose: () => void) => (
+        <HomeModal
+          open={open}
+          onClose={onClose}
+          setError={setError}
+          game_code={"trivia"}
+          title={"TRIVIA"}
         />
       ),
     },
