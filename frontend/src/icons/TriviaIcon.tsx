@@ -13,7 +13,7 @@ export default function TriviaIcon({
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <g clip-path="url(#clip0_1128_12003)">
+      <g clipPath="url(#clip0_1128_12003)">
         <path d="M32 3.05H30.48V28.95H32V3.05Z" fill={color} />
         <path d="M30.4799 28.95H28.95V30.48H30.4799V28.95Z" fill={color} />
         <path d="M30.4799 1.52H28.95V3.05H30.4799V1.52Z" fill={color} />
