@@ -1,8 +1,178 @@
+use rand::seq::IteratorRandom;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::env;
+use std::path::PathBuf;
+use tokio::fs::OpenOptions;
+use tokio::io::AsyncWriteExt;
 use tracing::{info, warn};
 
 use crate::state::trivia::{TriviaQuestion, TriviaStyle};
+
+// ---------------------------------------------------------------------------
+// Subtopic cache
+// ---------------------------------------------------------------------------
+
+/// Default maximum number of subtopics held across all topics combined.
+const CACHE_CAPACITY: usize = 150;
+const LOG_LLM_OUTPUT: bool = false;
+
+/// Path to the persisted cache file, overridable via env var.
+fn cache_path() -> PathBuf {
+    env::var("SUBTOPIC_CACHE_PATH")
+        .unwrap_or_else(|_| "subtopic_cache.json".to_string())
+        .into()
+}
+
+/// Persistent, globally-shared cache of recently used subtopics.
+#[derive(Serialize, Deserialize, Default)]
+struct SubtopicCache {
+    seen: HashMap<String, Vec<String>>,
+    capacity: usize,
+}
+
+impl SubtopicCache {
+    fn new(capacity: usize) -> Self {
+        Self {
+            seen: HashMap::new(),
+            capacity,
+        }
+    }
+
+    fn total_len(&self) -> usize {
+        self.seen.values().map(|v| v.len()).sum()
+    }
+
+    fn insert(&mut self, topic: &str, subtopic: String) {
+        let bucket = self.seen.entry(topic.to_string()).or_default();
+        if bucket.contains(&subtopic) {
+            return;
+        }
+
+        if self.total_len() >= self.capacity {
+            let mut rng = rand::rng();
+            let victim_topic = self.seen.keys().choose(&mut rng).cloned();
+
+            if let Some(vt) = victim_topic {
+                let bucket = self.seen.get_mut(&vt).unwrap();
+                if !bucket.is_empty() {
+                    let idx = (0..bucket.len()).choose(&mut rng).unwrap();
+                    let evicted = bucket.swap_remove(idx);
+                    info!(topic=%vt, subtopic=%evicted, "Evicted subtopic from cache");
+                }
+                // Clean up empty buckets so the map doesn't grow forever.
+                if self.seen.get(&vt).map_or(false, |b| b.is_empty()) {
+                    self.seen.remove(&vt);
+                }
+            }
+        }
+
+        self.seen
+            .entry(topic.to_string())
+            .or_default()
+            .push(subtopic);
+    }
+
+    /// All known subtopics for `topic`, to be injected into the prompt
+    /// as a blocklist.
+    fn blocklist(&self, topic: &str) -> Vec<&str> {
+        self.seen
+            .get(topic)
+            .map(|v| v.iter().map(|s| s.as_str()).collect())
+            .unwrap_or_default()
+    }
+}
+
+/// Load the cache from disk, returning an empty one on any error.
+async fn load_cache() -> SubtopicCache {
+    let path = cache_path();
+    match tokio::fs::read_to_string(&path).await {
+        Ok(contents) => serde_json::from_str(&contents).unwrap_or_else(|e| {
+            warn!(path=?path, error=%e, "Failed to parse subtopic cache, starting fresh");
+            SubtopicCache::new(CACHE_CAPACITY)
+        }),
+        Err(_) => {
+            // File doesn't exist yet — that's fine on first run.
+            SubtopicCache::new(CACHE_CAPACITY)
+        }
+    }
+}
+
+/// Persist the cache back to disk. Failures are warnings only.
+async fn save_cache(cache: &SubtopicCache) {
+    let path = cache_path();
+    let json = match serde_json::to_string_pretty(cache) {
+        Ok(s) => s,
+        Err(e) => {
+            warn!(error=%e, "Failed to serialise subtopic cache");
+            return;
+        }
+    };
+    match tokio::fs::write(&path, json).await {
+        Ok(_) => info!(path=?path, "Subtopic cache saved"),
+        Err(e) => warn!(path=?path, error=%e, "Failed to save subtopic cache"),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// LLM output logging
+// ---------------------------------------------------------------------------
+
+/// One entry written to the log file per LLM call.
+#[derive(Serialize)]
+struct LlmLogEntry<'a> {
+    stage: &'a str,
+    model: &'a str,
+    topic: &'a str,
+    raw_response: &'a str,
+}
+
+/// Append one pretty-printed JSON entry to the log file, separated by a
+/// blank line. Failures are warnings only — logging must not break the
+/// main flow.
+async fn log_llm_output(stage: &str, model: &str, topic: &str, raw: &str) {
+    let log_path: PathBuf = env::var("LLM_LOG_PATH")
+        .unwrap_or_else(|_| "llm_output.json".to_string())
+        .into();
+
+    let entry = LlmLogEntry {
+        stage,
+        model,
+        topic,
+        raw_response: raw,
+    };
+
+    let mut line = match serde_json::to_string_pretty(&entry) {
+        Ok(s) => s,
+        Err(e) => {
+            warn!(error=%e, "Failed to serialise LLM log entry");
+            return;
+        }
+    };
+    line.push_str("\n\n");
+
+    match OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&log_path)
+        .await
+    {
+        Ok(mut file) => {
+            if let Err(e) = file.write_all(line.as_bytes()).await {
+                warn!(path=?log_path, error=%e, "Failed to write LLM log entry");
+            } else {
+                info!(path=?log_path, stage=%stage, "LLM output logged");
+            }
+        }
+        Err(e) => {
+            warn!(path=?log_path, error=%e, "Failed to open LLM log file");
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Ollama client
+// ---------------------------------------------------------------------------
 
 #[derive(Serialize)]
 struct OllamaOptions {
@@ -56,13 +226,21 @@ async fn ollama_call(
         .json(&req_body)
         .send()
         .await
-        .map_err(|e| format!("Ollama connection error: {}. Make sure Ollama is running at {} and the model is pulled.", e, url))?;
+        .map_err(|e| {
+            format!(
+                "Ollama connection error: {}. Make sure Ollama is running at {} and the model is pulled.",
+                e, url
+            )
+        })?;
 
     if !response.status().is_success() {
         let status = response.status();
         let err_text = response.text().await.unwrap_or_default();
         warn!(status=?status, err=%err_text, "Ollama returned error status");
-        return Err(format!("Ollama server returned error {}: {}", status, err_text));
+        return Err(format!(
+            "Ollama server returned error {}: {}",
+            status, err_text
+        ));
     }
 
     let gen_response = response
@@ -73,40 +251,66 @@ async fn ollama_call(
     Ok(gen_response.response)
 }
 
-/// Step 1 — generate n well-known, distinct subtopics for the given topic.
+// ---------------------------------------------------------------------------
+// Generation steps
+// ---------------------------------------------------------------------------
+
+/// Step 1 — generate n well-known, distinct subtopics for the given topic,
+/// excluding anything already in the cache.
 async fn generate_subtopics(
     client: &reqwest::Client,
     url: &str,
     model: &str,
     topic: &str,
     num_questions: u8,
+    cache: &SubtopicCache,
 ) -> Result<Vec<String>, String> {
+    let blocklist = cache.blocklist(topic);
+    let blocklist_clause = if blocklist.is_empty() {
+        String::new()
+    } else {
+        format!(
+            "The following subtopics have been used recently and must NOT appear in any form: [{}]. \
+            Choose subtopics that are clearly different in theme, era, and domain from this list. ",
+            blocklist.join(", ")
+        )
+    };
+
     let prompt = format!(
-        "Generate exactly {num_questions} x 3 trivia subtopics about '{topic}'. \
-        Each subtopic must be: \
-        (1) well-known enough that a general audience would recognise it, \
-        (2) clearly distinct from the others with no overlapping themes, \
-        (3) specific enough to produce one focused trivia question. \
-        Then pick a random {num_questions} of these subtopics to return.
-        Your response must be a single raw JSON array of strings. \
-        Do not wrap in markdown or any other tags. \
-        Example: [\"subtopic 1\", \"subtopic 2\"]"
+        "Think step by step: \
+        First, brainstorm 20 diverse subtopics about '{topic}' spanning different domains, regions, and eras. \
+        Then eliminate any that are among the top 5 most commonly known examples of '{topic}'. \
+        Then eliminate any that share a domain or era with another remaining subtopic. \
+        {blocklist_clause}\
+        From what remains, select exactly {num_questions} subtopics that are maximally different from each other. \
+        Finally, output ONLY a raw JSON array of your {num_questions} chosen subtopics. \
+        Do not include any reasoning, preamble, or markdown in your final output."
     );
 
     let options = OllamaOptions {
-        temperature: 1.0,
-        top_k: 80,
+        temperature: 1.1,
+        top_k: 150,
         top_p: 0.95,
         ..Default::default()
     };
 
-    info!(url=%url, model=%model, topic=%topic, "Generating subtopics");
+    info!(
+        url=%url, model=%model, topic=%topic,
+        blocklist_size=%blocklist.len(),
+        "Generating subtopics"
+    );
 
     let raw = ollama_call(client, url, model, prompt, options).await?;
+    if LOG_LLM_OUTPUT {
+        log_llm_output("subtopics", model, topic, &raw).await;
+    }
 
     let subtopics: Vec<String> = serde_json::from_str(&raw).map_err(|e| {
         warn!(response=%raw, error=%e, "Failed to parse subtopics JSON");
-        format!("Invalid subtopics JSON from model: {}. Raw response: {}", e, raw)
+        format!(
+            "Invalid subtopics JSON from model: {}. Raw response: {}",
+            e, raw
+        )
     })?;
 
     if subtopics.len() != num_questions as usize {
@@ -185,10 +389,16 @@ async fn generate_questions_from_subtopics(
     info!(url=%url, model=%model, topic=%topic, "Generating questions from subtopics");
 
     let raw = ollama_call(client, url, model, prompt, options).await?;
+    if LOG_LLM_OUTPUT {
+        log_llm_output("questions", model, topic, &raw).await;
+    }
 
     let mut questions: Vec<TriviaQuestion> = serde_json::from_str(&raw).map_err(|e| {
         warn!(response=%raw, error=%e, "Failed to parse trivia questions JSON");
-        format!("Invalid trivia JSON from model: {}. Raw response: {}", e, raw)
+        format!(
+            "Invalid trivia JSON from model: {}. Raw response: {}",
+            e, raw
+        )
     })?;
 
     // Validate and normalise
@@ -229,6 +439,10 @@ async fn generate_questions_from_subtopics(
     Ok(questions)
 }
 
+// ---------------------------------------------------------------------------
+// Public entry point
+// ---------------------------------------------------------------------------
+
 pub(crate) async fn load_trivia_questions(
     topic: &str,
     num_questions: u8,
@@ -244,7 +458,17 @@ pub(crate) async fn load_trivia_questions(
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))?;
 
-    let subtopics = generate_subtopics(&client, &url, model, topic, num_questions).await?;
+    // Load the global subtopic cache, generate subtopics with the blocklist
+    // injected, then persist the updated cache before returning.
+    let mut cache = load_cache().await;
+
+    let subtopics = generate_subtopics(&client, &url, model, topic, num_questions, &cache).await?;
+
+    // Add the freshly generated subtopics to the cache.
+    for subtopic in &subtopics {
+        cache.insert(topic, subtopic.clone());
+    }
+    save_cache(&cache).await;
 
     let questions =
         generate_questions_from_subtopics(&client, &url, model, topic, &subtopics, style).await?;

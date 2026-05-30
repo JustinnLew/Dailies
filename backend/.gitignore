@@ -24,3 +24,6 @@ src/geo_data/
 #.idea/
 
 .env
+
+llm_output.json
+subtopic_cache.json
