@@ -191,8 +191,8 @@ impl TriviaGame {
                     let l = Arc::clone(self);
                     tokio::spawn(async move {
                         let settings = l.get_settings();
-                        let ollama_model =
-                            env::var("OLLAMA_MODEL").unwrap_or_else(|_| "gemma4:31b-cloud".to_string());
+                        let ollama_model = env::var("OLLAMA_MODEL")
+                            .unwrap_or_else(|_| "gemma4:31b-cloud".to_string());
                         let res = api::load_trivia_questions(
                             &settings.topic,
                             settings.num_questions,
