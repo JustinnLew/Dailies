@@ -13,11 +13,9 @@ use crate::state::trivia::{TriviaQuestion, TriviaStyle};
 // Subtopic cache
 // ---------------------------------------------------------------------------
 
-/// Default maximum number of subtopics held across all topics combined.
 const CACHE_CAPACITY: usize = 150;
 const LOG_LLM_OUTPUT: bool = false;
 
-/// Path to the persisted cache file, overridable via env var.
 fn cache_path() -> PathBuf {
     env::var("SUBTOPIC_CACHE_PATH")
         .unwrap_or_else(|_| "subtopic_cache.json".to_string())
@@ -83,7 +81,6 @@ impl SubtopicCache {
     }
 }
 
-/// Load the cache from disk, returning an empty one on any error.
 async fn load_cache() -> SubtopicCache {
     let path = cache_path();
     match tokio::fs::read_to_string(&path).await {
@@ -98,7 +95,6 @@ async fn load_cache() -> SubtopicCache {
     }
 }
 
-/// Persist the cache back to disk. Failures are warnings only.
 async fn save_cache(cache: &SubtopicCache) {
     let path = cache_path();
     let json = match serde_json::to_string_pretty(cache) {
@@ -127,9 +123,6 @@ struct LlmLogEntry<'a> {
     raw_response: &'a str,
 }
 
-/// Append one pretty-printed JSON entry to the log file, separated by a
-/// blank line. Failures are warnings only — logging must not break the
-/// main flow.
 async fn log_llm_output(stage: &str, model: &str, topic: &str, raw: &str) {
     let log_path: PathBuf = env::var("LLM_LOG_PATH")
         .unwrap_or_else(|_| "llm_output.json".to_string())
@@ -206,7 +199,6 @@ struct OllamaGenerateResponse {
     response: String,
 }
 
-/// Shared HTTP call to Ollama — returns the raw response string.
 async fn ollama_call(
     client: &reqwest::Client,
     url: &str,
@@ -255,7 +247,7 @@ async fn ollama_call(
 // Generation steps
 // ---------------------------------------------------------------------------
 
-/// Step 1 — generate n well-known, distinct subtopics for the given topic,
+/// generate n well-known, distinct subtopics for the given topic,
 /// excluding anything already in the cache.
 async fn generate_subtopics(
     client: &reqwest::Client,
@@ -277,18 +269,38 @@ async fn generate_subtopics(
     };
 
     let prompt = format!(
-        "Think step by step: \
-        First, brainstorm 20 diverse subtopics about '{topic}' spanning different domains, regions, and eras. \
-        Then eliminate any that are among the top 5 most commonly known examples of '{topic}'. \
-        Then eliminate any that share a domain or era with another remaining subtopic. \
-        {blocklist_clause}\
-        From what remains, select exactly {num_questions} subtopics that are maximally different from each other. \
-        Finally, output ONLY a raw JSON array of your {num_questions} chosen subtopics. \
+        "Brainstorm {num_questions} * 3 trivia subtopics about '{topic}'.
+
+        Aim for broad coverage across multiple domains where relevant:
+        history, science, technology, sport, cuisine, games, music,
+        film, literature, fashion, geography, nature, and everyday culture.
+
+        Do not over-concentrate on any single domain.
+        If history or science are relevant to '{topic}', include them,
+        but they should not dominate the results.
+
+        If the topic is highly specific, focus on relevance of subtopics instead, prioritising
+        high relevance.
+
+        Prefer a balanced mix of:
+        - different domains
+        - different regions of the world
+        - different time periods
+        - famous and moderately well-known subjects
+
+        Do not prefix any subtopic with 'The', 'A', or 'An'.
+
+        {blocklist_clause}
+
+        Select exactly {num_questions} subtopics that maximize diversity
+        across domain, region, and time period.
+
+        Finally, output ONLY a raw JSON array of your {num_questions} chosen subtopics.
         Do not include any reasoning, preamble, or markdown in your final output."
     );
 
     let options = OllamaOptions {
-        temperature: 1.1,
+        temperature: 1.0,
         top_k: 150,
         top_p: 0.95,
         ..Default::default()
@@ -325,7 +337,6 @@ async fn generate_subtopics(
     Ok(subtopics)
 }
 
-/// Step 2 — generate one question per subtopic.
 async fn generate_questions_from_subtopics(
     client: &reqwest::Client,
     url: &str,
@@ -382,7 +393,7 @@ async fn generate_questions_from_subtopics(
     };
 
     let options = OllamaOptions {
-        temperature: 0.6,
+        temperature: 0.8,
         ..Default::default()
     };
 
